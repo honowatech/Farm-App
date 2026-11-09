@@ -1,0 +1,11 @@
+{
+    "name": "GestionCaisse",
+    "alias": "gestioncaisse",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\GestionCaisse\\Providers\\GestionCaisseServiceProvider"
+    ],
+    "files": []
+}

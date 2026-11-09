@@ -1,0 +1,190 @@
+@extends('admin/templates/template')
+
+@section('title')
+{{'Editer '}} {{$client->nom}}
+@endsection
+@section('menu')
+    @php
+        $role = auth()->user()->type_user->libelle;
+    @endphp
+    @include($role.'.menu.menu')
+@endsection
+@section('contenu')
+
+<div class="content app-content">
+    <div class="content-overlay"></div>
+    <div class="header-navbar-shadow"></div>
+    <div class="content-wrapper">
+            <div class="content-header row">
+    	 <div class="mb-2 content-header-left col-md-12 col-12">
+            <div class="row breadcrumbs-top">
+                <div class="col-12">
+                        <h2 class="float-left mb-0 content-header-title">Editer {{$client->nom}}</h2>
+                        <div class="breadcrumb-wrapper">
+                            <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{route('home')}}">Acceuil</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="{{route(session()->get("info")[0].'.index')}}">
+                            @if(session()->get('info')[0]  == 'client')
+                                    Liste des Clients
+                            @else
+                                    Liste des Utilisateurs
+                            @endif
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active">Editer {{$client->nom}}
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+            </div>
+	    <div class="content-body">
+<section id="multiple-column-form">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="card-title">Formulaire</h4>
+                                </div>
+                                <div class="card-body">
+                                    <form class="form" action="{{route('client.update',$client->id)}}" method="POST">
+                                    	@csrf
+                                        @method('PATCH')
+                                        <div class="mx-auto row col-12 col-lg-10">
+                                            <div class="mx-auto col-md-6 col-12">
+                                                <div class="form-group">
+                                                        <label for="name">Nom</label>
+                                                        <span class="cursor-pointer text-danger" title="Obligatoire">*</span>
+                                                    <div class="form-group">
+                                                        <div class="input-group input-group-merge @error('nom') is-invalid @enderror">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text"><i data-feather="at-sign"></i></span>
+                                                            </div>
+                                                            <input type="text" id="nom" class="form-control @error('nom') is-invalid @enderror" name="nom" placeholder="Nom" value="{{ old('nom') == null ? $client->nom : old('nom') }}" / required>
+                                                        </div>
+                                                        @error('nom')
+                                                        <small class="alert alert-danger">{{ $message }}</small>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mx-auto col-md-6 col-12">
+                                                <div class="form-group">
+                                                        <label for="prenom">Prénoms</label>
+                                                        <span class="cursor-pointer text-danger" title="Obligatoire">*</span>
+                                                    <div class="form-group">
+                                                        <div class="input-group input-group-merge @error('prenom') is-invalid @enderror">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text"><i data-feather="at-sign"></i></span>
+                                                            </div>
+                                                            <input type="text" id="prenom" class="form-control @error('prenom') is-invalid @enderror" name="prenom" placeholder="Prénoms" value="{{ old('prenom') == null ? $client->prenom : old('prenom') }}" / required>
+                                                        </div>
+                                                        @error('prenom')
+                                                        <small class="alert alert-danger">{{ $message }}</small>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mx-auto col-md-6 col-12">
+                                                <div class="form-group">
+                                                        <label for="email-icon">Email</label>
+                                                        <span class="cursor-pointer text-danger" title="Obligatoire">*</span>
+                                                    <div class="form-group">
+                                                        <div class="input-group input-group-merge  @error('email') is-invalid @enderror">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text"><i data-feather="mail"></i></span>
+                                                            </div>
+                                                            <input type="email" id="email-icon" class="form-control @error('email') is-invalid @enderror" name="email" placeholder="Email" value="{{ old('email') == null ? $client->email : old('email') }}"  required/>
+                                                        </div>
+                                                        @error('email')
+                                                            	<small class="alert alert-danger">{{ $message }}</small>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mx-auto col-md-6 col-12">
+                                                <div class="form-group">
+                                                        <label for="telephone">Numéro de téléphone</label>
+                                                        <span class="cursor-pointer text-danger" title="Obligatoire">*</span>
+                                                    <div class="form-group">
+                                                        <div class="input-group input-group-merge  @error('telephone') is-invalid @enderror">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text">
+                                                                    <i class="mr-1 flag-icon flag-icon-cm"></i>
+                                                                    +237
+                                                                </span>
+                                                            </div>
+                                                            <input type="telephone" id="telephone" class="form-control @error('telephone') is-invalid @enderror" placeholder="Numéro de téléphone" value="{{ old('telephone') == null ? $client->telephone : old('telephone') }}" onkeyup="phone('telephone');" required/>
+                                                            <div class="input-group-append">
+                                                                <span class="input-group-text">
+                                                                    <i data-feather="phone"></i>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <input type="text" hidden id="telephone2" name="telephone"/>
+                                                        @error('telephone')
+                                                                <small class="alert alert-danger">{{ $message }}</small>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mx-auto col-md-6 col-12">
+                                                <div class="form-group">
+                                                        <label for="adresse">Adresse</label>
+                                                        <span class="cursor-pointer text-danger" title="Obligatoire">*</span>
+                                                    <div class="form-group">
+                                                        <div class="input-group input-group-merge @error('adresse') is-invalid @enderror">
+                                                            <div class="input-group-prepend">
+                                                                <span class="input-group-text"><i data-feather="map-pin"></i></span>
+                                                            </div>
+                                                            <input type="text" id="adresse" class="form-control @error('adresse') is-invalid @enderror" name="adresse" placeholder="Adresse" value="{{ old('adresse') == null ? $client->adresse : old('adresse') }}" / required autofocus>
+                                                        </div>
+                                                        @error('adresse')
+                                                        <small class="alert alert-danger">{{ $message }}</small>
+                                                        @enderror
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mx-auto row col-12">
+                                            <div class="mx-auto text-center d-none d-md-block col-bg-5 col-lg-8 col-md-12 col-12">
+                                                <button type="reset" class="mt-1 btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-danger mt-md-2 mr-md-4">
+                                                    <i class="mr-1" data-feather='x'></i> Effacer
+                                                </button>
+                                                <button type="submit" class="mt-1 btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-success mt-md-2">
+                                                    <i class="mr-1" data-feather='download'></i> Enregistrer
+                                                </button>
+                                            </div>
+                                            <div class="mx-auto text-center d-block d-md-none col-bg-5 col-lg-8 col-md-12 col-12">
+                                                <button type="submit" class="mt-1 btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-success mt-md-2 mr-md-2">
+                                                        <i class="mr-1" data-feather='download'></i> Enregistrer
+                                                </button>
+                                                <button type="reset" class="mt-1 btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-danger mt-md-2">
+                                                        <i class="mr-1" data-feather='x'></i> Effacer
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+	    </div>
+	</div>
+</div>
+
+@endsection
+@section('javascript')
+	<script type="text/javascript">
+        @if(session()->get('info')[0] =='client')
+            document.querySelector('#ClientListe').classList.add('active');
+        @else
+            document.querySelector('#UserListe').classList.add('active');
+        @endif
+        phone('telephone');
+	</script>
+@endsection

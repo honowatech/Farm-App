@@ -1,0 +1,1 @@
+<span class="text-{{$color}}">{{$number}} {{$letter}}</span> {{$verb}} pour les infos choisies
