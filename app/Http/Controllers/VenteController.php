@@ -12,6 +12,8 @@ use App\Models\Client;
 use App\Models\Typeusers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use App\Http\Requests\StoreVenteRequest;
+use App\Services\StockService;
 use Illuminate\Http\Request;
 use App\Models\Type_produit;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -58,29 +60,12 @@ class VenteController extends Controller
    *
    * @return Response
    */
-  public function store(Request $request)
+  public function store(StoreVenteRequest $request, StockService $stock)
   {
-    // Décoder et valider la liste des articles
-    $data = json_decode($request->input('tableau_donnees'), true);
+    $lignes = $request->lignes();
 
-    if (! is_array($data) || empty($data)) {
+    if (empty($lignes)) {
         return redirect()->back()->with('error', 'Aucun article dans la vente.');
-    }
-
-    $lignes = [];
-    foreach ($data as $item) {
-        $qte = (float) ($item['qte'] ?? 0);
-        if (empty($item['id_produit']) || $qte <= 0) {
-            return redirect()->back()->with('error', 'Ligne de vente invalide.');
-        }
-        $lignes[] = [
-            'id_produit' => (int) $item['id_produit'],
-            'qte' => $qte,
-            'type' => $item['type'] ?? null,
-            'mode_paiement' => $item['mode_paiement'] ?? null,
-            'date' => $item['date'] ?? now()->toDateTimeString(),
-            'id_client' => ! empty($item['id_client']) ? (int) $item['id_client'] : null,
-        ];
     }
 
     $produits = Produit::whereIn('id', array_column($lignes, 'id_produit'))
@@ -88,43 +73,38 @@ class VenteController extends Controller
         ->keyBy('id');
 
     try {
-        DB::transaction(function () use ($lignes, $produits) {
+        DB::transaction(function () use ($lignes, $produits, $stock) {
             $factureDate = $lignes[0]['date'];
             $idClient = $lignes[0]['id_client'];
-            $totalHt = 0;
-            $mouvements = [];
 
-            // 1) Vérifier les stocks et calculer les montants AVANT toute écriture
+            // 1) Vérifier les stocks (quantités cumulées par produit) AVANT toute écriture
+            $quantites = [];
             foreach ($lignes as $ligne) {
                 $produit = $produits->get($ligne['id_produit']);
                 if (! $produit) {
                     throw new \RuntimeException('Produit introuvable.');
                 }
+                $quantites[$ligne['id_produit']] = ($quantites[$ligne['id_produit']] ?? 0) + $ligne['qte'];
+            }
 
-                $dernierStock = (float) (Stock_produit::where('id_produit', $ligne['id_produit'])
-                    ->orderBy('id', 'desc')
-                    ->value('nouveau_stock') ?? 0);
-
-                if ($dernierStock < $ligne['qte'] || $dernierStock <= 0) {
-                    throw new \RuntimeException("Quantité de {$produit->nom} insuffisante pour la transaction. Il n'en reste que {$dernierStock}.");
+            foreach ($quantites as $idProduit => $qteTotale) {
+                $disponible = $stock->stockProduit($idProduit);
+                if ($disponible < $qteTotale || $disponible <= 0) {
+                    $nom = $produits->get($idProduit)->nom;
+                    throw new \RuntimeException("Quantité de {$nom} insuffisante pour la transaction. Il n'en reste que {$disponible}.");
                 }
+            }
 
-                $totalLigne = round((float) $produit->prix_unitaire * $ligne['qte'], 2);
-                $totalHt += $totalLigne;
-
-                $mouvements[] = [
-                    'produit' => $produit,
-                    'ligne' => $ligne,
-                    'dernier_stock' => $dernierStock,
-                    'nouveau_stock' => $dernierStock - $ligne['qte'],
-                    'total_ligne' => $totalLigne,
-                ];
+            // 2) Calculer les totaux à partir des prix serveur
+            $totalHt = 0;
+            foreach ($lignes as $ligne) {
+                $totalHt += round((float) $produits->get($ligne['id_produit'])->prix_unitaire * $ligne['qte'], 2);
             }
 
             $tva = round($totalHt * self::TAUX_TVA, 2);
             $totalTtc = $totalHt + $tva;
 
-            // 2) Écrire la facture, la vente puis les mouvements/lignes
+            // 3) Écrire la facture, la vente puis les mouvements/lignes
             $facture = Facture::create([
                 'date_facturation' => $factureDate,
                 'total_ht' => $totalHt,
@@ -144,26 +124,19 @@ class VenteController extends Controller
                 'date_vente' => $factureDate,
             ]);
 
-            foreach ($mouvements as $m) {
-                $mouvement = Stock_produit::create([
-                    'id_produit' => $m['ligne']['id_produit'],
-                    'type_mouvement' => 'destockage',
-                    'qte' => $m['ligne']['qte'],
-                    'dernier_stock' => $m['dernier_stock'],
-                    'nouveau_stock' => $m['nouveau_stock'],
-                    'date_sortie' => $m['ligne']['date'],
-                ]);
+            foreach ($lignes as $ligne) {
+                $mouvement = $stock->sortieProduit($ligne['id_produit'], $ligne['qte'], $ligne['date']);
 
                 Ligne_facture::create([
-                    'mode_paiement' => $m['ligne']['mode_paiement'],
+                    'mode_paiement' => $ligne['mode_paiement'],
                     'id_facture' => $facture->id,
-                    'id_produit' => $m['ligne']['id_produit'],
-                    'type_vente' => $m['ligne']['type'],
+                    'id_produit' => $ligne['id_produit'],
+                    'type_vente' => $ligne['type'],
                     'id_stock_produit' => $mouvement->id,
                     'id_bande' => null,
-                    'qte' => $m['ligne']['qte'],
-                    'prix_unitaire' => (float) $m['produit']->prix_unitaire,
-                    'total_ligne' => $m['total_ligne'],
+                    'qte' => $ligne['qte'],
+                    'prix_unitaire' => (float) $produits->get($ligne['id_produit'])->prix_unitaire,
+                    'total_ligne' => round((float) $produits->get($ligne['id_produit'])->prix_unitaire * $ligne['qte'], 2),
                 ]);
             }
         });
