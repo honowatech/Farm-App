@@ -81,18 +81,12 @@ Route::group(['middleware' => ['auth', 'web',]], function() {
 
     // Business routes (admin + agent selon whitelist)
     Route::middleware('agent_access')->group(function () {
-    // Bande
-    Route::get('/gestion-bande/{id}', [BandeController::class, 'gestion_bande'])->name('gestion_bande');
-    Route::get('/gestion-bande-get-form/{id}', [BandeController::class, 'gestion_bande_get_form'])->name('get-form-bande');
+    // Bande (route spécifique ; les autres bandes sont dans le groupe dédié plus bas)
     Route::patch('/terminer-bande/{id}', [BandeController::class, 'teminer_bande'])->name('terminer_bande');
-    Route::get('/recherche-bande', [BandeController::class, 'search'])->name('bande.search');
 
-    // Nutrition
+    // Nutrition (routes spécifiques ; les autres sont dans le groupe dédié plus bas)
     Route::get('/api/nutrition/{bande}/calendrier', [NutritionController::class, 'getNutritionCalendar'])->name('nutrition.calendar.data');
     Route::get('/nutrition/calendar/{bande}', [NutritionController::class, 'showCalendar'])->name('nutrition.calendar');
-    Route::get('/check', [NutritionController::class, 'checkNutrition'])->name('nutrition.check');
-    Route::get('/search-nutruition', [NutritionController::class, 'search'])->name('nutrition.search');
-    Route::get('/get-form', [NutritionController::class, 'take_form'])->name('load_form');
 
     // Achat
     Route::get('/search-achat', [AchatController::class, 'search'])->name('achat.search');

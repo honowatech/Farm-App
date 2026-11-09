@@ -131,8 +131,12 @@ class VenteController extends Controller
                 'tva' => $tva,
                 'id_client' => $idClient,
                 'total_ttc' => $totalTtc,
-                'matricule' => 'FACT-' . uniqid(),
+                'matricule' => 'FACT-TMP-' . uniqid(),
             ]);
+
+            // Numérotation séquentielle stable, dérivée de l'identifiant auto-incrémenté
+            $facture->matricule = sprintf('FACT-%s-%06d', date('Y'), $facture->id);
+            $facture->save();
 
             Vente::create([
                 'id_saver' => auth()->user()->id,
