@@ -25,7 +25,6 @@ class GestionCaisseServiceProvider extends ServiceProvider
     {
         $this->registerTranslations();
         $this->registerConfig();
-        $this->registerAssets();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->moduleName, 'Database/Migrations'));
     }
@@ -74,20 +73,6 @@ class GestionCaisseServiceProvider extends ServiceProvider
         $this->loadViewsFrom(array_merge($this->getPublishableViewPaths(), [$sourcePath]), $this->moduleNameLower);
     }
 
-    /**
-     * Register module assets.
-     *
-     * @return void
-     */
-    protected function registerAssets()
-    {
-        $sourcePath = module_path($this->moduleName, 'Resources/assets');
-        $publicPath = public_path('modules/gestioncaisse');
-
-        $this->publishes([
-            $sourcePath => $publicPath,
-        ], ['module-assets', 'laravel-assets']);
-    }
 
     /**
      * Register translations.
