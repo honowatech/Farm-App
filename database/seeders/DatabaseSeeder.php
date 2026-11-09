@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Admin Farm-App',
             'password' => Hash::make('11111111'),
             'email' => 'test@example.com',
+            'statut' => 1,
         ]);
     }
 }
