@@ -17,8 +17,6 @@ class Depense extends Model
 
     use SoftDeletes;
 
-    protected $dates = ['deleted_at'];
-
     public function categorie_depense()
     {
         return $this->belongsTo('Modules\Depenses\Entities\Categorie', 'id_categorie');

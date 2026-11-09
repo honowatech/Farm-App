@@ -23,10 +23,13 @@ class FoodSettingVersion extends Model
         'ended_at',
     ];
 
-    protected $casts = [
-        'activated_at' => 'datetime',
-        'ended_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'activated_at' => 'datetime',
+            'ended_at' => 'datetime',
+        ];
+    }
 
     /**
      * Relation : Une version appartient à un planning parent.

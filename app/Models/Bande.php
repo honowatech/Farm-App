@@ -22,11 +22,14 @@ class Bande extends Model
 
     protected $visible = ['nom', 'date_fin_bande', 'date_lancement_bande', 'prix_acquisition', 'unite_age_depart', 'nbre_sujet', 'age_depart', 'statut_bande', 'id_type_animal', 'id_batiment'];
 
-    protected $casts = [
-        'deleted_at' => 'datetime',
-        'date_lancement_bande' => 'datetime', // On dit à Laravel de traiter ce champ comme un objet Carbon
-        'date_fin_bande' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'deleted_at' => 'datetime',
+            'date_lancement_bande' => 'datetime', // On dit à Laravel de traiter ce champ comme un objet Carbon
+            'date_fin_bande' => 'datetime',
+        ];
+    }
 
     // --- Relations (inchangées) ---
     public function animal()

@@ -13,8 +13,6 @@ class Detail_fournisseur extends Model
 
     use HasFactory;
 
-    protected $dates = ['deleted_at'];
-
     protected $fillable = ['id_fournisseur', 'id_matiere_premiere'];
 
     protected $visible = ['id_fournisseur', 'id_matiere_premiere'];

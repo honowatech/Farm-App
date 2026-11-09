@@ -13,8 +13,6 @@ class Unite extends Model
 
     use SoftDeletes;
 
-    protected $dates = ['deleted_at'];
-
     protected $fillable = ['libelle', 'abrege'];
 
     protected $visible = ['libelle', 'abrege'];

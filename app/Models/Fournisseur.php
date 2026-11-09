@@ -13,8 +13,6 @@ class Fournisseur extends Model
 
     use SoftDeletes;
 
-    protected $dates = ['deleted_at'];
-
     protected $fillable = ['nom', 'adresse', 'telephone', 'telephone_secondaire', 'statut'];
 
     protected $visible = ['nom', 'adresse', 'telephone', 'telephone_secondaire', 'statut'];

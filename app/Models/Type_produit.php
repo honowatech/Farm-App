@@ -13,8 +13,6 @@ class Type_produit extends Model
 
     use HasFactory;
 
-    protected $dates = ['deleted_at'];
-
     protected $fillable = ['nom'];
 
     protected $visible = ['nom'];

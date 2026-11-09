@@ -14,8 +14,6 @@ class Achat extends Model
 
     use HasFactory, SoftDeletes;
 
-    protected $dates = ['deleted_at'];
-
     protected $fillable = ['id_stock_matiere_premiere', 'unite_achat', 'id_matiere_premiere', 'prix_unitaire', 'qte', 'prix_total', 'mode_de_paiement', 'id_fournisseur', 'date'];
 
     protected $visible = ['id_stock_matiere_premiere', 'unite_achat', 'id_matiere_premiere', 'prix_unitaire', 'qte', 'prix_total', 'mode_de_paiement', 'id_fournisseur', 'date'];

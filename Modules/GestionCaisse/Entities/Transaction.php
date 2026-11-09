@@ -22,9 +22,12 @@ class Transaction extends Model
         'id_depense',
     ];
 
-    protected $casts = [
-        'transaction_date' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'transaction_date' => 'datetime',
+        ];
+    }
 
     // Define relationships if needed
     public function compte()

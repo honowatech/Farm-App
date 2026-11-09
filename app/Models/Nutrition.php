@@ -13,8 +13,6 @@ class Nutrition extends Model
 
     public $timestamps = true;
 
-    protected $dates = ['deleted_at'];
-
     protected $fillable = ['id_bande', 'id_aliment', 'qte', 'date', 'id_unite', 'nombre_de_passages', 'derniere_nutrition', 'compteur_nutrition',  'prochaine_nutrition', 'statut_nutrition'];
 
     protected $visible = ['id_bande', 'id_aliment', 'qte', 'date', 'id_unite', 'nombre_de_passages', 'derniere_nutrition', 'compteur_nutrition',  'prochaine_nutrition', 'statut_nutrition'];

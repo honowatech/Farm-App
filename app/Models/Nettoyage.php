@@ -31,9 +31,12 @@ class Nettoyage extends Model
      *
      * @var array
      */
-    protected $casts = [
-        'verif' => 'boolean',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'verif' => 'boolean',
+        ];
+    }
 
     /**
      * relation avec les differerent models

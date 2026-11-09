@@ -13,8 +13,6 @@ class Ramassage extends Model
 
     use SoftDeletes;
 
-    protected $dates = ['deleted_at'];
-
     protected $fillable = ['id_bande', 'ids_derive', 'valeurs_derive', 'id_prestataire', 'id_saver', 'to_do_date', 'do_date', 'commentaire', 'statut', 'id_produit'];
 
     protected $visible = ['id_bande', 'ids_derive', 'valeurs_derive', 'id_prestataire', 'id_saver', 'to_do_date', 'do_date', 'commentaire', 'statut', 'id_produit'];
@@ -34,10 +32,10 @@ class Ramassage extends Model
         return $this->belongsTo('App\Models\User', 'id_saver');
     }
 
-    //public function prestataire()
-    //{
+    // public function prestataire()
+    // {
     //    return $this->belongsTo('App\Models\User', 'id_prestataire');
-    //}
+    // }
 
     public function agent_name()
     {

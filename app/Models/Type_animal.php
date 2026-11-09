@@ -14,8 +14,6 @@ class Type_animal extends Model
 
     use HasFactory , SoftDeletes;
 
-    protected $dates = ['deleted_at'];
-
     protected $fillable = ['id_type_animal', 'nom', 'description', 'type_reproduction'];
 
     protected $visible = ['id_type_animal', 'nom', 'description', 'type_reproduction'];

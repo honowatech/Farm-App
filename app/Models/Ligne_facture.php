@@ -13,8 +13,6 @@ class Ligne_facture extends Model
 
     use SoftDeletes;
 
-    protected $dates = ['deleted_at'];
-
     protected $fillable = ['id_facture', 'id_produit', 'type_vente', 'id_stock_produit', 'mode_paiement', 'id_bande', 'qte', 'prix_unitaire', 'total_ligne'];
 
     protected $visible = ['id_facture', 'id_produit', 'type_vente', 'id_stock_produit', 'mode_paiement', 'id_bande', 'qte', 'prix_unitaire', 'total_ligne'];

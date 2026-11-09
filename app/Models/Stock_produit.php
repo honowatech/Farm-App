@@ -13,8 +13,6 @@ class Stock_produit extends Model
 
     use SoftDeletes;
 
-    protected $dates = ['deleted_at'];
-
     protected $fillable = ['id_produit', 'id_derive_produit', 'type_mouvement', 'qte', 'dernier_stock', 'nouveau_stock', 'date_entree', 'date_sortie'];
 
     protected $visible = ['id_produit', 'id_derive_produit', 'type_mouvement', 'qte', 'dernier_stock', 'nouveau_stock', 'date_entree', 'date_sortie'];

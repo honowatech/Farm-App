@@ -14,8 +14,6 @@ class Salaries extends Model
 
     use HasFactory, SoftDeletes;
 
-    protected $dates = ['deleted_at'];
-
     protected $fillable = ['nom', 'adresse', 'id_saver', 'telephone', 'telephone_secondaire', 'accumulateur', 'type_periode', 'salaire', 'date_debut_contrat', 'date_dernier_paiement', 'statut'];
 
     protected $visible = ['nom', 'adresse', 'id_saver', 'telephone', 'telephone_secondaire', 'accumulateur', 'type_periode', 'salaire', 'date_debut_contrat', 'date_dernier_paiement', 'statut'];

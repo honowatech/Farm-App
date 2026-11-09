@@ -14,8 +14,6 @@ class Produit extends Model
 
     use HasFactory, SoftDeletes;
 
-    protected $dates = ['deleted_at'];
-
     protected $fillable = ['id_type_animal', 'prix_unitaire', 'nom', 'description', 'statut', 'id_type_produit'];
 
     protected $visible = ['id_type_animal', 'prix_unitaire', 'nom', 'description', 'statut', 'id_type_produit'];

@@ -13,8 +13,6 @@ class Derive_produit extends Model
 
     use SoftDeletes;
 
-    protected $dates = ['deleted_at'];
-
     protected $fillable = ['noms', 'id_produit', 'valeurs_derive', 'min', 'max', 'id_unite', 'prix_unitaire', 'statut'];
 
     protected $visible = ['noms', 'id_produit', 'valeurs_derive', 'min', 'max', 'id_unite', 'prix_unitaire', 'statut'];

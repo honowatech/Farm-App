@@ -13,8 +13,6 @@ class Stock_matiere_premiere extends Model
 
     use SoftDeletes;
 
-    protected $dates = ['deleted_at'];
-
     protected $fillable = ['id_matiere_premiere', 'type_mouvement', 'quantite', 'dernier_stock', 'nouveau_stock', 'date_entree', 'date_sortie', 'motif'];
 
     protected $visible = ['id_matiere_premiere', 'type_mouvement', 'quantite', 'dernier_stock', 'nouveau_stock', 'date_entree', 'date_sortie', 'motif'];

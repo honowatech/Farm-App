@@ -4,6 +4,7 @@ namespace Modules\GestionCaisse\Entities;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Modules\GestionCaisse\Database\factories\TransfertFactory;
 
 class Transfert extends Model
 {
@@ -34,6 +35,6 @@ class Transfert extends Model
 
     protected static function newFactory()
     {
-        return \Modules\GestionCaisse\Database\factories\TransfertFactory::new();
+        return TransfertFactory::new();
     }
 }

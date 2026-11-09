@@ -13,8 +13,6 @@ class Batiment extends Model
 
     use SoftDeletes;
 
-    protected $dates = ['deleted_at'];
-
     protected $fillable = ['nom', 'description'];
 
     protected $visible = ['nom', 'description'];

@@ -14,8 +14,6 @@ class Client extends Model
 
     use HasFactory, SoftDeletes;
 
-    protected $dates = ['deleted_at'];
-
     protected $fillable = ['nom', 'telephone', 'adresse', 'email', 'id_user'];
 
     protected $visible = ['nom', 'telephone', 'adresse', 'email', 'id_user'];

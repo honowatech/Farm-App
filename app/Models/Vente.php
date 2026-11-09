@@ -13,8 +13,6 @@ class Vente extends Model
 
     use SoftDeletes;
 
-    protected $dates = ['deleted_at'];
-
     protected $fillable = ['id_facture', 'id_saver', 'date_vente'];
 
     protected $visible = ['id_facture', 'id_saver', 'date_vente'];

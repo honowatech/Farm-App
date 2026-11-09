@@ -31,9 +31,12 @@ class Seance_de_vaccination extends Model
      *
      * @var array
      */
-    protected $casts = [
-        'verification' => 'boolean', // Convertit automatiquement la colonne "verification" en un type booléen (true/false)
-    ];
+    protected function casts(): array
+    {
+        return [
+            'verification' => 'boolean', // Convertit automatiquement la colonne "verification" en un type booléen (true/false)
+        ];
+    }
 
     /**
      * Get the veterinarian associated with the vaccination session.

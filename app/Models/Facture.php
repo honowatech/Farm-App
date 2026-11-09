@@ -13,8 +13,6 @@ class Facture extends Model
 
     use SoftDeletes;
 
-    protected $dates = ['deleted_at'];
-
     protected $fillable = ['date_facturation', 'total_ht', 'id_client', 'tva', 'total_ttc', 'matricule'];
 
     protected $visible = ['date_facturation', 'total_ht', 'id_client', 'tva', 'total_ttc', 'matricule'];
