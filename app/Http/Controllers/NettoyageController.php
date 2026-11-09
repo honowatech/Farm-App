@@ -87,7 +87,7 @@ class NettoyageController extends Controller
                         $liste .= ', ';
                     }
                     $liste .= $agent->nom;
-                    $liste .= $first = false;
+                    $first = false;
                 }
             }
         }

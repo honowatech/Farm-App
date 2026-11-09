@@ -355,7 +355,7 @@
             }
             @if(session()->has('message'))
                 toastr['success'](
-                    "{!!session()->get('message')!!}",
+                    @json(session('message')),
                     'Succès',
                     {
                         closeButton: true,
@@ -364,7 +364,7 @@
                 );
                 @elseif(session()->has('error'))
                 toastr['error'](
-                    "{!!session()->get('error')!!}",
+                    @json(session('error')),
                     'Erreur',
                     {
                         closeButton: true,

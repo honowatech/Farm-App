@@ -2,7 +2,7 @@
         <div class="divider">
         <div class="divider-text">Agent</div>
         <div class="mt-2">
-            {!! $liste !!}
+            {{ $liste }}
         </div>
         </div>
         <div class="divider">

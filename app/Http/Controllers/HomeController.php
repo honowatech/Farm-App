@@ -34,8 +34,10 @@ class HomeController extends Controller
                             ->where('statut_bande', 'encours')
                             ->get();
 
+        $role = Auth::user()->type_user?->libelle;
+
         // Si l'utilisateur est un agent, afficher la vue agent
-        if (Auth::user()->type_user->libelle === 'agent') {
+        if ($role === 'agent') {
             // Statistiques pour l'agent
             $nutritions_total = \App\Models\Nutrition::count();
             $nettoyages_total = \App\Models\Nettoyage::count();
@@ -57,10 +59,14 @@ class HomeController extends Controller
             ));
         }
 
-        // Pour les autres utilisateurs, garder la vue admin existante
-        $matiere_premieres = Matiere_premiere::get();
-        $batiments = Batiment::get();
-        return view('admin.pages.home.home', compact('bandes_en_cours', 'matiere_premieres', 'batiments'));
+        // Pour les administrateurs, garder la vue admin existante
+        if ($role === 'admin') {
+            $matiere_premieres = Matiere_premiere::get();
+            $batiments = Batiment::get();
+            return view('admin.pages.home.home', compact('bandes_en_cours', 'matiere_premieres', 'batiments'));
+        }
+
+        abort(403, 'Accès non autorisé.');
     }
 
     /**

@@ -80,7 +80,6 @@
                                         <td>
                                             <span class="font-weight-bolder text-uppercase">
                                                 {{$client->nom}}
-                                                {{$client->prenom}}
                                             </span>
                                         </td>
                                         <td>
@@ -119,7 +118,7 @@
                                                         <i data-feather="edit-2" class="mr-50"></i>
                                                         <span class="ml-1">Editer</span>
                                                     </a>
-                                                    <span class="dropdown-item" onclick="actions('form_active_{{$client->id}}', @if($client->statut == 1) 'Désactiver' @else 'Activer' @endif ,'{{$client->nom}} {{$client->prenom}}')">
+                                                    <span class="dropdown-item" onclick="actions('form_active_{{$client->id}}', @if($client->statut == 1) 'Désactiver' @else 'Activer' @endif ,'{{$client->nom}}')">
                                                         @if($client->statut == 1)
                                                             <i class="text-danger" data-feather='user-minus'></i>
                                                             <span class="ml-1" type="button">

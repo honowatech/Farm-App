@@ -15,8 +15,8 @@ class Client extends Model
     use SoftDeletes, HasFactory;
 
     protected $dates = ['deleted_at'];
-    protected $fillable = array('nom', 'prenom', 'telephone', 'adresse', 'email', 'id_user');
-    protected $visible = array('nom', 'prenom', 'telephone', 'adresse', 'email', 'id_user');
+    protected $fillable = array('nom', 'telephone', 'adresse', 'email', 'id_user');
+    protected $visible = array('nom', 'telephone', 'adresse', 'email', 'id_user');
 
     public function user()
     {

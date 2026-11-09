@@ -15,6 +15,7 @@ return [
     'middleware' => [
         'web',    // Ce middleware est nécessaire pour gérer les sessions, les cookies, etc.
         'auth',   // Ce middleware assure que seuls les utilisateurs authentifiés accèdent à cette route.
+        'role:admin', // Restreint la gestion des traductions aux administrateurs.
     ],
 ],
     /**

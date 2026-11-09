@@ -45,7 +45,7 @@ class ClientController extends Controller
    */
   public function store(Request $request)
   {
-    $id_type_user = TypeUsers::whereIn(strtoupper('libelle'),[strtoupper('client'),strtoupper('clients')])->first()->id;
+    $id_type_user = Typeusers::whereIn('libelle', ['client', 'clients'])->first()->id;
     $nom = $request->input('nom');
 
     $email = $request->input('email');
@@ -56,11 +56,11 @@ class ClientController extends Controller
         'nom' => 'bail|required|max:255',
         'telephone' => 'bail|required|unique:clients|regex:/^[6,2][0-9]{8}$/',
         
-        'email' => 'bail|required|unique:clients|unique:users|max:255',
+        'email' => 'bail|required|email|unique:clients|unique:users|max:255',
         'password' => 'bail|required|min:8',
         'adresse' => 'bail|required|min:4',
     ]);
-// dd($nom,$prenom,$email,$password,$telephone,$adresse,);
+// dd($nom,$email,$password,$telephone,$adresse,);
 //on crèe son compte utilisateur
     $user = new User;
     $user->name = $nom;
@@ -76,7 +76,7 @@ class ClientController extends Controller
     $client->email = $email;
     $client->id_user  = $user->id;
     $client->save();
-    $message = "Client(e)"." ".strtoupper($nom)." ".strtoupper($prenom)." "."créé(e) avec <b class='text-success'> Succès.</b>";
+    $message = "Client(e) ".strtoupper($nom)." créé(e) avec succès.";
     session()->flash('message',$message);
     return redirect()->route('client.show',$client->id);
   }
@@ -151,12 +151,11 @@ class ClientController extends Controller
 // On édite le client
     $client = Client::findOrFail($id);
     $client->nom = $nom;
-    $client->prenom = $prenom;
     $client->telephone = $telephone;
     $client->adresse = $adresse;
     $client->email = $email;
     $client->save();
-    $message = "Client"." ".strtoupper($nom)." ".strtoupper($prenom)." "."mis à jour avec <b class='text-success'> Succès.</b>";
+    $message = "Client ".strtoupper($nom)." mis à jour avec succès.";
     session()->flash('message',$message);
     return redirect()->route(session()->get("info")[0].'.index');
   }
@@ -175,11 +174,11 @@ class ClientController extends Controller
     if ($client->statut == 0) {
       $client->statut = 1;
       $user->statut = 1;
-      $message = "Client"." ".strtoupper($client->nom)." ".strtoupper($client->prenom)." "." Activé(e) avec <b class='text-success'> Succès.</b>";
+      $message = "Client ".strtoupper($client->nom)." activé(e) avec succès.";
     }else{
       $client->statut = 0;
       $user->statut = 0;
-      $message = "Client"." ".strtoupper($client->nom)." ".strtoupper($client->prenom)." "." Desactivé(e) avec <b class='text-success'> Succès.</b>";
+      $message = "Client ".strtoupper($client->nom)." désactivé(e) avec succès.";
     }
     $client->save();
     $user->save();

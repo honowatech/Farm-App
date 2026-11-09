@@ -27,35 +27,24 @@ class LogoController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-{
-    $file = $request->file('logo');
-    $fileName = Str::random(40). '.' . $file->getClientOriginalExtension();
-////////////// Vérifier si un fichier de logo a été téléchargé /////////////
-    if ($request->hasFile('logo')) {
-////////////// Récupérer le fichier de logo depuis la requête //////////////
-            $validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'svg'];
-            if ($file->isValid() && in_array($file->getClientOriginalExtension(), $validExtensions) ) {
-            $path = $file->move(public_path('app-assets/images/avatars'), $fileName);
-            $logo  = New Logo;
-            $logo->path =  'app-assets/images/avatars/' . $fileName;
-            $message= 'Logo modifié avec <span class="text-success">succès</span>';
-            $logo->save();
-////////////// Retourner une redirection avec un message de succès //////////////
-            session()->flash('message', $message);
-            return redirect()->back();
-        } else {
-////////////// Retourner une redirection avec un message d'erreur si le fichier n'est pas valide //////////////
-            $modal= 'Veuillez selectionner une image';
-            session()->put('modal', $modal);
-            return redirect()->back();
-        }
-    } else {
-////////////// Retourner une redirection avec un message d'erreur si aucun fichier de logo n'a été trouvé //////////////
-        $modal= 'Aucun fichier trouvé';
-        session()->put('modal', $modal);
+    {
+        $request->validate([
+            'logo' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ]);
+
+        $file = $request->file('logo');
+        $fileName = Str::random(40) . '.' . $file->extension();
+
+        $file->move(public_path('app-assets/images/avatars'), $fileName);
+
+        $logo = new Logo;
+        $logo->path = 'app-assets/images/avatars/' . $fileName;
+        $logo->save();
+
+        session()->flash('message', 'Logo modifié avec succès');
+
         return redirect()->back();
     }
-}
 
     /**
      * Display the specified resource.

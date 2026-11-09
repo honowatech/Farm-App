@@ -79,6 +79,8 @@ Route::group(['middleware' => ['auth', 'web',]], function() {
     ]);
 });
 
+    // Business routes (admin + agent selon whitelist)
+    Route::middleware('agent_access')->group(function () {
     // Bande
     Route::get('/gestion-bande/{id}', [BandeController::class, 'gestion_bande'])->name('gestion_bande');
     Route::get('/gestion-bande-get-form/{id}', [BandeController::class, 'gestion_bande_get_form'])->name('get-form-bande');
@@ -86,7 +88,7 @@ Route::group(['middleware' => ['auth', 'web',]], function() {
     Route::get('/recherche-bande', [BandeController::class, 'search'])->name('bande.search');
 
     // Nutrition
-    Route::get('/api/nutrition/{bande}/calendrier', [NutritionController::class, 'getNutritionCalendar']);
+    Route::get('/api/nutrition/{bande}/calendrier', [NutritionController::class, 'getNutritionCalendar'])->name('nutrition.calendar.data');
     Route::get('/nutrition/calendar/{bande}', [NutritionController::class, 'showCalendar'])->name('nutrition.calendar');
     Route::get('/check', [NutritionController::class, 'checkNutrition'])->name('nutrition.check');
     Route::get('/search-nutruition', [NutritionController::class, 'search'])->name('nutrition.search');
@@ -121,6 +123,7 @@ Route::group(['middleware' => ['auth', 'web',]], function() {
         Route::resource('foods-setting', Foods_settingController::class)->except(['edit', 'show','update']);
         Route::get('/foods-setting/{foods_setting}', [Foods_settingController::class, 'show'])->name('foods-setting.show');
     });
+    });
 });
 
 Route::group(['middleware' => ['auth', 'web', 'agent_access']], function() {
@@ -138,11 +141,4 @@ Route::group(['middleware' => ['auth', 'web', 'agent_access']], function() {
     Route::resource('seanceVaccination', 'App\Http\Controllers\SeanceVaccinationController');
 });
 
-Auth::routes();
-
-Route::get('translations', '\Barryvdh\TranslationManager\Controller@getIndex');
-
-Route::get('/migrate', function () {
-    Artisan::call('migrate', ['--force' => true]);
-    return "Migrations exécutées avec succès.";
-});
+Auth::routes(['register' => false]);

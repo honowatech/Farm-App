@@ -14,6 +14,7 @@ class AgentAccess
     private $agentAllowedRoutes = [
         'nutrition.index',
         'nutrition.calendar',
+        'nutrition.calendar.data',
         'nutrition.check',
         'nutrition.search',
         'load_form',
@@ -49,6 +50,11 @@ class AgentAccess
         }
 
         $user = Auth::user();
+
+        // Si l'utilisateur n'a pas de rôle défini, refuser l'accès
+        if (! $user->type_user) {
+            return redirect()->route('home')->with('error', 'Accès non autorisé.');
+        }
 
         // Si l'utilisateur est un admin, autoriser tout
         if ($user->type_user->libelle === 'admin') {

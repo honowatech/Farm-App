@@ -73,23 +73,6 @@
                                             </div>
                                             <div class="mx-auto col-md-6 col-12">
                                                 <div class="form-group">
-                                                        <label for="prenom">Prénoms</label>
-                                                        <span class="cursor-pointer text-danger" title="Obligatoire">*</span>
-                                                    <div class="form-group">
-                                                        <div class="input-group input-group-merge @error('prenom') is-invalid @enderror">
-                                                            <div class="input-group-prepend">
-                                                                <span class="input-group-text"><i data-feather="at-sign"></i></span>
-                                                            </div>
-                                                            <input type="text" id="prenom" class="form-control @error('prenom') is-invalid @enderror" name="prenom" placeholder="Prénoms" value="{{ old('prenom') == null ? $client->prenom : old('prenom') }}" / required>
-                                                        </div>
-                                                        @error('prenom')
-                                                        <small class="alert alert-danger">{{ $message }}</small>
-                                                        @enderror
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="mx-auto col-md-6 col-12">
-                                                <div class="form-group">
                                                         <label for="email-icon">Email</label>
                                                         <span class="cursor-pointer text-danger" title="Obligatoire">*</span>
                                                     <div class="form-group">
