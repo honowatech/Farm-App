@@ -9,33 +9,6 @@ use Illuminate\Support\Facades\Auth;
 class AgentAccess
 {
     /**
-     * Liste des routes autorisées pour les agents
-     */
-    private $agentAllowedRoutes = [
-        'nutrition.index',
-        'nutrition.calendar',
-        'nutrition.calendar.data',
-        'nutrition.check',
-        'nutrition.search',
-        'load_form',
-        'bande.index',
-        'bande.create',
-        'bande.store',
-        'bande.show',
-        'bande.edit',
-        'bande.update',
-        'bande.destroy',
-        'nutrition.create',
-        'nutrition.edit',
-        'nutrition.update',
-        'gestion_bande',
-        'get-form-bande',
-        'bande.search',
-        'nettoyage.index',
-        'seanceVaccination.index',
-    ];
-
-    /**
      * Handle an incoming request.
      *
      * @return mixed
@@ -64,7 +37,7 @@ class AgentAccess
             $currentRouteName = $request->route()->getName();
 
             // Vérifier si la route est dans la liste des routes autorisées
-            if (in_array($currentRouteName, $this->agentAllowedRoutes)) {
+            if (in_array($currentRouteName, config('agent_access.allowed_routes'))) {
                 return $next($request);
             }
 
