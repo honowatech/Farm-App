@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->timestamps();
             $table->softDeletes();
-            $table->enum('type', array('avance', 'paiement_complet'));
+            $table->enum('type', ['avance', 'paiement_complet']);
             $table->datetime('date_paiement');
             $table->string('telephone', 255)->nullable();
             $table->bigInteger('id_salarie')->constrained('salaries');

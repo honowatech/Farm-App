@@ -1,4 +1,5 @@
-<?php 
+<?php
+
 return [
     'Noms' => 'Names',
     'Infos sur' => 'Info about',
@@ -19,11 +20,11 @@ return [
     'Complet' => 'Complete',
     'Date de début' => 'Start Date',
     'Date de fin' => 'End Date',
-    'Type' => 'Type', 
+    'Type' => 'Type',
     'Montant' => 'Amount',
     'Echéance' => 'Due Date',
     'date de paiement' => 'Payment Date',
-    'Action' => 'Action',  
+    'Action' => 'Action',
     'Modifier' => 'Edit',
     'Désactiver' => 'Deactivate',
     'Janvier' => 'January',
@@ -40,15 +41,15 @@ return [
     'Décembre' => 'December',
     'Désactivé' => 'Disabled',
     'Entrer le nombre de mois à payer' => 'Enter the number of months to pay',
-	'Nombre de mois' => 'Number of months',
-	'Vous allez payer le salaire de' => 'You are going to pay the salary of',
-	'cela va couter' => 'this will cost',
-	'pour' => 'for',
-	'Payer le salaire de' => 'Pay the salary of',
-	'Annuler' => 'cancel',
-	'Avancer le salaire de' => 'Advance the salary of',
-	'Entrer le montant d\'argent à payer' => 'Enter the amount of money to pay',
-	'L\'avance ne doit pas dépasser' => 'The advance must not exceed',
+    'Nombre de mois' => 'Number of months',
+    'Vous allez payer le salaire de' => 'You are going to pay the salary of',
+    'cela va couter' => 'this will cost',
+    'pour' => 'for',
+    'Payer le salaire de' => 'Pay the salary of',
+    'Annuler' => 'cancel',
+    'Avancer le salaire de' => 'Advance the salary of',
+    'Entrer le montant d\'argent à payer' => 'Enter the amount of money to pay',
+    'L\'avance ne doit pas dépasser' => 'The advance must not exceed',
     'Mois' => 'Month',
     'Chaque' => 'Every',
     'Nom et Prénoms' => 'Name and Surname',
@@ -67,7 +68,3 @@ return [
     'périodicité' => 'periodicity',
     'Finir l\'avance en cours' => 'Finish the current advance',
 ];
-
-
-
- ?>

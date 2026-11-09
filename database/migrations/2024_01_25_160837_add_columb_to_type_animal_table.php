@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('type_animals', function (Blueprint $table) {
-            $table->enum('type_reproduction', array('ponte', 'normal'))->default('normal');
+            $table->enum('type_reproduction', ['ponte', 'normal'])->default('normal');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('type_animals', function (Blueprint $table) {
-            // 
+            //
         });
     }
 };

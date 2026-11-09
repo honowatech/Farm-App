@@ -2,40 +2,43 @@
 
 namespace App\Models;
 
-use Carbon\Carbon;
-use App\Models\Setting;
-use App\Models\Batiment;
-use Carbon\CarbonInterval;
-use App\Models\Type_animal;
-// Ajout du Trait que nous avons créé
 use App\Traits\FindsValidFoodSettings;
-use Illuminate\Support\Facades\Cache;
+use Carbon\Carbon;
+// Ajout du Trait que nous avons créé
+use Carbon\CarbonInterval;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Bande extends Model
 {
-    use SoftDeletes, HasFactory, FindsValidFoodSettings; // On inclut le Trait ici !
+    use FindsValidFoodSettings, HasFactory, SoftDeletes; // On inclut le Trait ici !
 
     protected $table = 'bandes';
+
     public $timestamps = true;
-    protected $fillable = ['nom', 'date_fin_bande', 'date_lancement_bande','prix_acquisition','unite_age_depart', 'nbre_sujet', 'age_depart', 'statut_bande', 'id_type_animal', 'id_batiment'];
-    protected $visible = ['nom', 'date_fin_bande', 'date_lancement_bande', 'prix_acquisition','unite_age_depart','nbre_sujet', 'age_depart', 'statut_bande', 'id_type_animal', 'id_batiment'];
+
+    protected $fillable = ['nom', 'date_fin_bande', 'date_lancement_bande', 'prix_acquisition', 'unite_age_depart', 'nbre_sujet', 'age_depart', 'statut_bande', 'id_type_animal', 'id_batiment'];
+
+    protected $visible = ['nom', 'date_fin_bande', 'date_lancement_bande', 'prix_acquisition', 'unite_age_depart', 'nbre_sujet', 'age_depart', 'statut_bande', 'id_type_animal', 'id_batiment'];
+
     protected $casts = [
-        'deleted_at'           => 'datetime',
+        'deleted_at' => 'datetime',
         'date_lancement_bande' => 'datetime', // On dit à Laravel de traiter ce champ comme un objet Carbon
-        'date_fin_bande'       => 'datetime',
+        'date_fin_bande' => 'datetime',
     ];
+
     // --- Relations (inchangées) ---
     public function animal()
     {
         return $this->belongsTo(Type_animal::class, 'id_type_animal');
     }
+
     public function batiment()
     {
         return $this->belongsTo(Batiment::class, 'id_batiment');
     }
+
     public function animaux()
     {
         return $this->hasMany('App\Models\Animal', 'id_bande');
@@ -46,17 +49,17 @@ class Bande extends Model
     /**
      * Calcule l'âge de la bande en jours à une date spécifique.
      * C'est la fonction de base pour tous les calculs d'âge.
-     * @param Carbon|null $date La date pour laquelle calculer l'âge. Si null, utilise la date actuelle.
-     * @return int
+     *
+     * @param  Carbon|null  $date  La date pour laquelle calculer l'âge. Si null, utilise la date actuelle.
      */
-    public function getAgeOnDate(Carbon $date = null): int
+    public function getAgeOnDate(?Carbon $date = null): int
     {
         // Si aucune date n'est fournie, on utilise la date et l'heure actuelles
         $targetDate = $date ? $date->copy()->startOfDay() : now()->startOfDay();
-        
+
         return $this->date_lancement_bande->diffInDays($targetDate) + $this->age_depart;
     }
-    
+
     /**
      * ACCESSEUR : Retourne l'âge actuel en jours.
      * Appelé avec : $bande->age_en_jours
@@ -73,9 +76,9 @@ class Bande extends Model
     public function getAgeFormateAttribute(): string
     {
         CarbonInterval::setLocale('fr');
+
         return CarbonInterval::days($this->age_en_jours)->cascade()->forHumans(['parts' => 2, 'join' => true]);
     }
-
 
     // --- Logique de Planning de Nutrition (entièrement révisée) ---
 
@@ -108,7 +111,6 @@ class Bande extends Model
         return $this->total_frequency_today > 0;
     }
 
-
     // --- Accesseurs liés aux enregistrements de nutrition (révisés pour utiliser la nouvelle logique) ---
 
     /**
@@ -122,7 +124,7 @@ class Bande extends Model
             ->orderBy('created_at', 'desc')
             ->first();
     }
-    
+
     /**
      * ACCESSEUR : Donne le statut de nutrition pour aujourd'hui.
      * Appelé avec : $bande->statut_nutrition_aujourdhui
@@ -174,5 +176,4 @@ class Bande extends Model
 
         return $passages_faits_hier >= $frequence_attendue_hier ? 'Complet' : 'Incomplet';
     }
-
 }

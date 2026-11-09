@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('gestion_caisse_comptes', function (Blueprint $table) {
-             $table->string('numero_compte')->nullable(); // Remplacez 'nom' par la colonne précédente si nécessaire            
+            $table->string('numero_compte')->nullable(); // Remplacez 'nom' par la colonne précédente si nécessaire
         });
     }
 

@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Bande;
+use App\Models\Food_Setting;
 use App\Models\Nutrition;
-use App\Models\Food_Setting; // Pour récupérer la fréquence totale de nutrition
-use Carbon\Carbon;
+use Carbon\Carbon; // Pour récupérer la fréquence totale de nutrition
+use Illuminate\Console\Command;
 
 class DailyNutritionCheck extends Command
 {
@@ -42,11 +42,11 @@ class DailyNutritionCheck extends Command
                 ->where('age_min', '<=', $age)
                 ->where('age_max', '>=', $age)
                 ->get();
-            
+
             $total_frequency = $food_settings->sum('frequency');
 
             // Vérifier si la bande a été nourrie aujourd'hui ou si le compteur est insuffisant
-            if (!$derniere_nutrition || Carbon::parse($derniere_nutrition->derniere_nutrition)->lt($date_actuelle) || $derniere_nutrition->compteur_nutrition < $total_frequency) {
+            if (! $derniere_nutrition || Carbon::parse($derniere_nutrition->derniere_nutrition)->lt($date_actuelle) || $derniere_nutrition->compteur_nutrition < $total_frequency) {
                 // Pas de nutrition pour aujourd'hui ou nutrition insuffisante, ajustement de la prochaine nutrition
                 $prochaine_nutrition = $date_actuelle->copy()->addDay();
 

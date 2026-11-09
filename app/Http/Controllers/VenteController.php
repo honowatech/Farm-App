@@ -1,163 +1,171 @@
-<?php 
+<?php
 
 namespace App\Http\Controllers;
-use App\Models\Produit;
-use App\Models\User;
-use Carbon\Carbon;
-use App\Models\Facture;
-use App\Models\Vente;
-use App\Models\Stock_produit;
-use App\Models\Ligne_facture;
-use App\Models\Client;
-use App\Models\Typeusers;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
+
 use App\Http\Requests\StoreVenteRequest;
-use App\Services\StockService;
-use Illuminate\Http\Request;
+use App\Models\Client;
+use App\Models\Facture;
+use App\Models\Ligne_facture;
+use App\Models\Produit;
 use App\Models\Type_produit;
+use App\Models\Typeusers;
+use App\Models\User;
+use App\Models\Vente;
+use App\Services\StockService;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class VenteController extends Controller 
+class VenteController extends Controller
 {
-  /**
-   * Taux de TVA appliqué aux factures (0 = prix déjà TTC).
-   * À déplacer vers un paramètre (settings) lors de la phase dédiée.
-   */
-  const TAUX_TVA = 0.0;
+    /**
+     * Taux de TVA appliqué aux factures (0 = prix déjà TTC).
+     * À déplacer vers un paramètre (settings) lors de la phase dédiée.
+     */
+    const TAUX_TVA = 0.0;
 
-  /**
-   * Display a listing of the resource.
-   *
-   * @return Response
-   */
-  public function index(Request $request)
-  {
-    $ventes = Vente::Where('date_vente', 'like', '%' . $request->input('recherche') . '%')
-        ->paginate(20);
-      session()->flash('search',$request->input('recherche'));
-    $produits = Produit::all();
-    $clients = Client::all();
-    return view('admin.pages.vente.index',compact('ventes','produits','clients'));
-  }
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Response
+     */
+    public function index(Request $request)
+    {
+        $ventes = Vente::Where('date_vente', 'like', '%'.$request->input('recherche').'%')
+            ->paginate(20);
+        session()->flash('search', $request->input('recherche'));
+        $produits = Produit::all();
+        $clients = Client::all();
 
-  /**
-   * Show the form for creating a new resource.
-   *
-   * @return Response
-   */
-  public function create()
-  {
-    $types_produits = Type_produit::All();
-    $produits = Produit::All();
-    $clients  = Client::All();
-    return view('admin.pages.vente.create', compact('produits','clients','types_produits'));
-  }
-
-  /**
-   * Store a newly created resource in storage.
-   *
-   * @return Response
-   */
-  public function store(StoreVenteRequest $request, StockService $stock)
-  {
-    $lignes = $request->lignes();
-
-    if (empty($lignes)) {
-        return redirect()->back()->with('error', 'Aucun article dans la vente.');
+        return view('admin.pages.vente.index', compact('ventes', 'produits', 'clients'));
     }
 
-    $produits = Produit::whereIn('id', array_column($lignes, 'id_produit'))
-        ->get()
-        ->keyBy('id');
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return Response
+     */
+    public function create()
+    {
+        $types_produits = Type_produit::All();
+        $produits = Produit::All();
+        $clients = Client::All();
 
-    try {
-        DB::transaction(function () use ($lignes, $produits, $stock) {
-            $factureDate = $lignes[0]['date'];
-            $idClient = $lignes[0]['id_client'];
+        return view('admin.pages.vente.create', compact('produits', 'clients', 'types_produits'));
+    }
 
-            // 1) Vérifier les stocks (quantités cumulées par produit) AVANT toute écriture
-            $quantites = [];
-            foreach ($lignes as $ligne) {
-                $produit = $produits->get($ligne['id_produit']);
-                if (! $produit) {
-                    throw new \RuntimeException('Produit introuvable.');
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @return Response
+     */
+    public function store(StoreVenteRequest $request, StockService $stock)
+    {
+        $lignes = $request->lignes();
+
+        if (empty($lignes)) {
+            return redirect()->back()->with('error', 'Aucun article dans la vente.');
+        }
+
+        $produits = Produit::whereIn('id', array_column($lignes, 'id_produit'))
+            ->get()
+            ->keyBy('id');
+
+        try {
+            DB::transaction(function () use ($lignes, $produits, $stock) {
+                $factureDate = $lignes[0]['date'];
+                $idClient = $lignes[0]['id_client'];
+
+                // 1) Vérifier les stocks (quantités cumulées par produit) AVANT toute écriture
+                $quantites = [];
+                foreach ($lignes as $ligne) {
+                    $produit = $produits->get($ligne['id_produit']);
+                    if (! $produit) {
+                        throw new \RuntimeException('Produit introuvable.');
+                    }
+                    $quantites[$ligne['id_produit']] = ($quantites[$ligne['id_produit']] ?? 0) + $ligne['qte'];
                 }
-                $quantites[$ligne['id_produit']] = ($quantites[$ligne['id_produit']] ?? 0) + $ligne['qte'];
-            }
 
-            foreach ($quantites as $idProduit => $qteTotale) {
-                $disponible = $stock->stockProduit($idProduit);
-                if ($disponible < $qteTotale || $disponible <= 0) {
-                    $nom = $produits->get($idProduit)->nom;
-                    throw new \RuntimeException("Quantité de {$nom} insuffisante pour la transaction. Il n'en reste que {$disponible}.");
+                foreach ($quantites as $idProduit => $qteTotale) {
+                    $disponible = $stock->stockProduit($idProduit);
+                    if ($disponible < $qteTotale || $disponible <= 0) {
+                        $nom = $produits->get($idProduit)->nom;
+                        throw new \RuntimeException("Quantité de {$nom} insuffisante pour la transaction. Il n'en reste que {$disponible}.");
+                    }
                 }
-            }
 
-            // 2) Calculer les totaux à partir des prix serveur
-            $totalHt = 0;
-            foreach ($lignes as $ligne) {
-                $totalHt += round((float) $produits->get($ligne['id_produit'])->prix_unitaire * $ligne['qte'], 2);
-            }
+                // 2) Calculer les totaux à partir des prix serveur
+                $totalHt = 0;
+                foreach ($lignes as $ligne) {
+                    $totalHt += round((float) $produits->get($ligne['id_produit'])->prix_unitaire * $ligne['qte'], 2);
+                }
 
-            $tva = round($totalHt * self::TAUX_TVA, 2);
-            $totalTtc = $totalHt + $tva;
+                $tva = round($totalHt * self::TAUX_TVA, 2);
+                $totalTtc = $totalHt + $tva;
 
-            // 3) Écrire la facture, la vente puis les mouvements/lignes
-            $facture = Facture::create([
-                'date_facturation' => $factureDate,
-                'total_ht' => $totalHt,
-                'tva' => $tva,
-                'id_client' => $idClient,
-                'total_ttc' => $totalTtc,
-                'matricule' => 'FACT-TMP-' . uniqid(),
-            ]);
-
-            // Numérotation séquentielle stable, dérivée de l'identifiant auto-incrémenté
-            $facture->matricule = sprintf('FACT-%s-%06d', date('Y'), $facture->id);
-            $facture->save();
-
-            Vente::create([
-                'id_saver' => auth()->user()->id,
-                'id_facture' => $facture->id,
-                'date_vente' => $factureDate,
-            ]);
-
-            foreach ($lignes as $ligne) {
-                $mouvement = $stock->sortieProduit($ligne['id_produit'], $ligne['qte'], $ligne['date']);
-
-                Ligne_facture::create([
-                    'mode_paiement' => $ligne['mode_paiement'],
-                    'id_facture' => $facture->id,
-                    'id_produit' => $ligne['id_produit'],
-                    'type_vente' => $ligne['type'],
-                    'id_stock_produit' => $mouvement->id,
-                    'id_bande' => null,
-                    'qte' => $ligne['qte'],
-                    'prix_unitaire' => (float) $produits->get($ligne['id_produit'])->prix_unitaire,
-                    'total_ligne' => round((float) $produits->get($ligne['id_produit'])->prix_unitaire * $ligne['qte'], 2),
+                // 3) Écrire la facture, la vente puis les mouvements/lignes
+                $facture = Facture::create([
+                    'date_facturation' => $factureDate,
+                    'total_ht' => $totalHt,
+                    'tva' => $tva,
+                    'id_client' => $idClient,
+                    'total_ttc' => $totalTtc,
+                    'matricule' => 'FACT-TMP-'.uniqid(),
                 ]);
-            }
-        });
-    } catch (\RuntimeException $e) {
-        return redirect()->back()->with('error', $e->getMessage());
-    } catch (\Throwable $e) {
-        report($e);
-        return redirect()->back()->with('error', 'Une erreur est survenue lors de l\'enregistrement de la vente.');
+
+                // Numérotation séquentielle stable, dérivée de l'identifiant auto-incrémenté
+                $facture->matricule = sprintf('FACT-%s-%06d', date('Y'), $facture->id);
+                $facture->save();
+
+                Vente::create([
+                    'id_saver' => auth()->user()->id,
+                    'id_facture' => $facture->id,
+                    'date_vente' => $factureDate,
+                ]);
+
+                foreach ($lignes as $ligne) {
+                    $mouvement = $stock->sortieProduit($ligne['id_produit'], $ligne['qte'], $ligne['date']);
+
+                    Ligne_facture::create([
+                        'mode_paiement' => $ligne['mode_paiement'],
+                        'id_facture' => $facture->id,
+                        'id_produit' => $ligne['id_produit'],
+                        'type_vente' => $ligne['type'],
+                        'id_stock_produit' => $mouvement->id,
+                        'id_bande' => null,
+                        'qte' => $ligne['qte'],
+                        'prix_unitaire' => (float) $produits->get($ligne['id_produit'])->prix_unitaire,
+                        'total_ligne' => round((float) $produits->get($ligne['id_produit'])->prix_unitaire * $ligne['qte'], 2),
+                    ]);
+                }
+            });
+        } catch (\RuntimeException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return redirect()->back()->with('error', 'Une erreur est survenue lors de l\'enregistrement de la vente.');
+        }
+
+        session()->flash('message', 'Vente enregistrée avec succès');
+
+        return redirect()->route('vente.index');
     }
 
-    session()->flash('message', 'Vente enregistrée avec succès');
+    public function get_formulaire()
+    {
+        return view('admin.pages.vente.create_client');
+    }
 
-    return redirect()->route('vente.index');
-  }
-   public function get_formulaire(){
-    return view('admin.pages.vente.create_client');
-   }
-   public function get_client(){
-    $clients  = Client::All();
-    return view('admin.pages.vente.ajax', compact('clients'));
-   }
+    public function get_client()
+    {
+        $clients = Client::All();
+
+        return view('admin.pages.vente.ajax', compact('clients'));
+    }
 
     public function save_client(Request $request)
     {
@@ -208,96 +216,105 @@ class VenteController extends Controller
         } catch (\Exception $e) {
             // Gestion des autres erreurs potentielles
             report($e);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Une erreur s\'est produite lors de l\'enregistrement du client.',
             ], 500);
         }
     }
-  /**
-   * Display the specified resource.
-   *
-   * @param  int  $id
-   * @return Response
-   */
-  public function show($id)
-  {
-    
-  }
 
-  /**
-   * Show the form for editing the specified resource.
-   *
-   * @param  int  $id
-   * @return Response
-   */
-  public function edit($id)
-  {
-    
-  }
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function show($id) {}
 
-  /**
-   * Update the specified resource in storage.
-   *
-   * @param  int  $id
-   * @return Response
-   */
-  public function update($id)
-  {
-    
-  }
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function edit($id) {}
 
-  public function get_prix(Request $request){
-    $table_data = $request->input('table_data');
-    $id_produit = $table_data[0];
-    $details = Produit::where('id',$id_produit)->get();
-     return view('admin.pages.vente.ajax',compact('details'));
-  }
-  public function get_facture(Request $request, $id){
-    $id_facture = Vente::where('id', $id)->value('id_facture');
-    $id_vendeur = Vente::where('id', $id)->value('id_saver');
-    $vendeur = User::findOrFail($id_vendeur);
-    $facture = Facture::findOrFail($id_facture);
-    $date = Carbon::now()->format('d/m/Y');
-    $lignes  = Ligne_facture::where('id_facture',$id_facture)->get();
-     return view('admin.pages.vente.facture',compact('facture','date','vendeur','lignes'));
-  }
-  public function get_animal(Request $request){
-    $table_data = $request->input('table_data');
-    $id_type_produit = $table_data[0];
-    $produits = Produit::where('id_type_produit',$id_type_produit)->get();
-    return view('admin.pages.vente.animal',compact('produits'));
-  }
-  public function get_animal_pondeur(Request $request){
-    $type_animal = Type_produit::where('nom','animal')->firstOrFail();
-    $id_animal = $type_animal->id;
-    $produits = Produit::where('id_type_produit',$id_animal)->get();
-     return view('admin.pages.vente.oeuf',compact('produits'));
-  }
-  public function get_fiente(Request $request){
-   
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function update($id) {}
+
+    public function get_prix(Request $request)
+    {
+        $table_data = $request->input('table_data');
+        $id_produit = $table_data[0];
+        $details = Produit::where('id', $id_produit)->get();
+
+        return view('admin.pages.vente.ajax', compact('details'));
+    }
+
+    public function get_facture(Request $request, $id)
+    {
+        $id_facture = Vente::where('id', $id)->value('id_facture');
+        $id_vendeur = Vente::where('id', $id)->value('id_saver');
+        $vendeur = User::findOrFail($id_vendeur);
+        $facture = Facture::findOrFail($id_facture);
+        $date = Carbon::now()->format('d/m/Y');
+        $lignes = Ligne_facture::where('id_facture', $id_facture)->get();
+
+        return view('admin.pages.vente.facture', compact('facture', 'date', 'vendeur', 'lignes'));
+    }
+
+    public function get_animal(Request $request)
+    {
+        $table_data = $request->input('table_data');
+        $id_type_produit = $table_data[0];
+        $produits = Produit::where('id_type_produit', $id_type_produit)->get();
+
+        return view('admin.pages.vente.animal', compact('produits'));
+    }
+
+    public function get_animal_pondeur(Request $request)
+    {
+        $type_animal = Type_produit::where('nom', 'animal')->firstOrFail();
+        $id_animal = $type_animal->id;
+        $produits = Produit::where('id_type_produit', $id_animal)->get();
+
+        return view('admin.pages.vente.oeuf', compact('produits'));
+    }
+
+    public function get_fiente(Request $request)
+    {
+
         try {
             // Essaye de trouver le produit
             $produit = Produit::where('nom', 'fiente')->firstOrFail();
         } catch (ModelNotFoundException $e) {
             // Attrape l'exception ModelNotFoundException avant qu'elle ne soit convertie en NotFoundHttpException
             $produit = null;
-            
+
             // Log l'exception ou fais quelque chose d'autre si nécessaire
-            \Log::error("Produit non trouvé : " . $e->getMessage());
+            \Log::error('Produit non trouvé : '.$e->getMessage());
+
             return view('admin.pages.vente.fiente', compact('produit'));
             // Flash un message d'erreur pour l'utilisateur
         } catch (NotFoundHttpException $e) {
             // Si tu souhaites capturer la NotFoundHttpException aussi
-            \Log::error("Erreur HTTP 404 : " . $e->getMessage());
+            \Log::error('Erreur HTTP 404 : '.$e->getMessage());
+
             return response()->view('errors.404', [], 404);
         }
 
         // Si tout est correct, retourner la vue
         return view('admin.pages.vente.fiente', compact('produit'));
-  
-}
-public function search(Request $request)
+
+    }
+
+    public function search(Request $request)
     {
         $query = Vente::query();
 
@@ -313,36 +330,31 @@ public function search(Request $request)
         // Filtrage par produit
         if ($request->filled('id_produit')) {
             $id_produit = $request->input('id_produit');
-             $query->whereHas('facture.lignes_facture.produit', function ($q) use ($id_produit) {
-            $q->where('id_produit', $id_produit);
-        });
+            $query->whereHas('facture.lignes_facture.produit', function ($q) use ($id_produit) {
+                $q->where('id_produit', $id_produit);
+            });
         }
 
         // Filtrage par clients
         if ($request->filled('id_client')) {
-                $id_client = $request->input('id_client');
-                 $query->whereHas('facture.client_facture', function ($q) use ($id_client) {
-                $q->where('id_client',$id_client);
+            $id_client = $request->input('id_client');
+            $query->whereHas('facture.client_facture', function ($q) use ($id_client) {
+                $q->where('id_client', $id_client);
             });
         }
 
         // Exécution de la requête et récupération des résultats
         $ventes = $query->paginate(30);
 
-        return view('admin.pages.vente.result_ajax',compact('ventes'))->render();
-    
+        return view('admin.pages.vente.result_ajax', compact('ventes'))->render();
+
     }
 
-  /**
-   * Remove the specified resource from storage.
-   *
-   * @param  int  $id
-   * @return Response
-   */
-  public function destroy($id)
-  {
-    
-  }
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function destroy($id) {}
 }
-
-?>

@@ -4,19 +4,16 @@ namespace App\Http\Controllers;
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
 use App\Models\Bande;
-use App\Models\Animal;
-use App\Models\Nutrition;
-use App\Models\Type_animal;
-use App\Models\FoodSetting;
-use App\Models\FoodSettingVersion;
-use App\Traits\FindsValidFoodSettings;
-use Illuminate\Http\Request;
 use App\Models\Matiere_premiere;
+use App\Models\Nutrition;
 use App\Models\Stock_matiere_premiere;
-use Illuminate\Support\Facades\Validator;
+use App\Models\Type_animal;
+use App\Traits\FindsValidFoodSettings;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class NutritionController extends Controller
 {
@@ -27,10 +24,11 @@ class NutritionController extends Controller
      */
     public function index(Request $request)
     {
-        $nutritions = Nutrition::where('date', 'like', '%' . $request->input('recherche') . '%')
+        $nutritions = Nutrition::where('date', 'like', '%'.$request->input('recherche').'%')
             ->orderBy('updated_at', 'desc')->paginate(20);
         $bandes = Bande::all();
         session()->flash('search', $request->input('recherche'));
+
         return view('admin.pages.nutrition.index', compact('nutritions', 'bandes'));
     }
 
@@ -41,7 +39,8 @@ class NutritionController extends Controller
     {
         $animals = Type_animal::All();
         $bandes = Bande::all();
-        return view('admin.pages.nutrition.create',compact('animals','bandes'));
+
+        return view('admin.pages.nutrition.create', compact('animals', 'bandes'));
     }
 
     /**
@@ -99,7 +98,7 @@ class NutritionController extends Controller
                     ->latest('date_entree')
                     ->first();
 
-                if (!$dernierAchat || !$dernierAchat->conversion_sac) {
+                if (! $dernierAchat || ! $dernierAchat->conversion_sac) {
                     return redirect()->back()->with('error', 'Impossible de trouver le poids de conversion pour un sac de cet aliment. Veuillez vérifier les achats.')->withInput();
                 }
                 $quantiteEnKg = $quantiteDonnee * $dernierAchat->conversion_sac;
@@ -114,18 +113,18 @@ class NutritionController extends Controller
             ->sum(DB::raw('quantite * (CASE WHEN type_mouvement = "approvisionnement" THEN 1 ELSE -1 END)'));
 
         if ($stock_disponible < $quantiteEnKg) {
-             return redirect()->back()->with('error', 'Stock insuffisant. Stock actuel : ' . $stock_disponible . ' Kg, Requis : ' . $quantiteEnKg . ' Kg.')->withInput();
+            return redirect()->back()->with('error', 'Stock insuffisant. Stock actuel : '.$stock_disponible.' Kg, Requis : '.$quantiteEnKg.' Kg.')->withInput();
         }
 
         // 5. Vérification des fréquences (logique inchangée)
         $total_frequency_attendue = $food_settings_valides->sum('frequency');
         $passages_deja_faits_ce_jour = Nutrition::where('id_bande', $bande->id)
-                                                ->whereDate('date', $date_nutrition)
-                                                ->count();
+            ->whereDate('date', $date_nutrition)
+            ->count();
         $passages_aliment_deja_faits_ce_jour = Nutrition::where('id_bande', $bande->id)
-                                                ->where('id_aliment', $id_aliment)
-                                                ->whereDate('date', $date_nutrition)
-                                                ->count();
+            ->where('id_aliment', $id_aliment)
+            ->whereDate('date', $date_nutrition)
+            ->count();
         if ($passages_deja_faits_ce_jour >= $total_frequency_attendue) {
             return redirect()->back()->with('error', 'Cette bande a déjà atteint le nombre total de repas prévus pour cette date.')->withInput();
         }
@@ -153,22 +152,25 @@ class NutritionController extends Controller
                     'quantite' => $quantiteEnKg, // On utilise la quantité en KG
                     'nouveau_stock' => $stock_disponible - $quantiteEnKg,
                     'date_sortie' => $request->input('date'),
-                    'motif' => 'Nutrition des animaux (Bande: ' . $bande->nom . ')',
+                    'motif' => 'Nutrition des animaux (Bande: '.$bande->nom.')',
                 ]);
             });
-        } catch(\Exception $e) {
-            \Log::error("Erreur lors de l'enregistrement de la nutrition : " . $e->getMessage());
+        } catch (\Exception $e) {
+            \Log::error("Erreur lors de l'enregistrement de la nutrition : ".$e->getMessage());
+
             return redirect()->back()->with('error', 'Une erreur est survenue lors de l\'enregistrement.')->withInput();
         }
 
         return redirect()->route('bande.show', $bande->id)->with('message', 'Nutrition enregistrée avec succès.');
     }
+
     /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
         $nutrition = Nutrition::findOrFail($id);
+
         return view('admin.pages.nutrition.infos', compact('nutrition'));
     }
 
@@ -187,13 +189,14 @@ class NutritionController extends Controller
     {
         //
     }
+
     /**
      * Affiche le formulaire pré-rempli pour nourrir une bande.
      */
     public function take_form(Request $request)
     {
         $id_bande = $request->input('table_data')[0] ?? null;
-        if (!$id_bande) {
+        if (! $id_bande) {
             return response()->json('<div class="mt-1 mb-1 text-center col-12 text-danger"><strong>Veuillez sélectionner une bande!!</strong></div>');
         }
 
@@ -227,7 +230,6 @@ class NutritionController extends Controller
         return view('admin.pages.nutrition.form', compact('nutritions_prevues', 'age', 'nbre_sujet', 'animal_name', 'aliments_concernes', 'bande'));
     }
 
-
     /**
      * Vérifie le statut de nutrition pour un aliment donné aujourd'hui (utilisé par AJAX).
      */
@@ -242,7 +244,7 @@ class NutritionController extends Controller
         $food_settings_valides = $this->getValidFoodSettings($bande->id_type_animal, $age, $date_actuelle);
         $food_setting_choisi = $food_settings_valides->firstWhere('aliment', $id_aliment);
 
-        if (!$food_setting_choisi) {
+        if (! $food_setting_choisi) {
             return response()->json(['message' => 'Aucun paramètre valide trouvé pour cet aliment aujourd\'hui.'], 404);
         }
 
@@ -256,35 +258,34 @@ class NutritionController extends Controller
 
         return response()->json([
             'nom_aliment' => $aliment->nom_produit,
-            'message' => "{$aliment->nom_produit} : {$nombre_passages}/{$frequence_max} effectué(s)"
+            'message' => "{$aliment->nom_produit} : {$nombre_passages}/{$frequence_max} effectué(s)",
         ]);
     }
 
     public function search(Request $request)
     {
-            $query = Nutrition::query();
+        $query = Nutrition::query();
 
-            // Filtrage par dates
-            if ($request->filled('date_debut')) {
-                $query->where('date', '>=', $request->input('date_debut'));
-            }
+        // Filtrage par dates
+        if ($request->filled('date_debut')) {
+            $query->where('date', '>=', $request->input('date_debut'));
+        }
 
-            if ($request->filled('date_fin')) {
-                $query->where('date', '<=', $request->input('date_fin'));
-            }
+        if ($request->filled('date_fin')) {
+            $query->where('date', '<=', $request->input('date_fin'));
+        }
 
-            // Filtrage par catégorie (id_type)
-            if ($request->filled('id_bande')) {
-                $id_bande = $request->input('id_bande');
-                $query->where('id_bande', $id_bande);
-            }
+        // Filtrage par catégorie (id_type)
+        if ($request->filled('id_bande')) {
+            $id_bande = $request->input('id_bande');
+            $query->where('id_bande', $id_bande);
+        }
 
-            // Exécution de la requête et récupération des résultats
-            $nutritions = $query->paginate(30);
+        // Exécution de la requête et récupération des résultats
+        $nutritions = $query->paginate(30);
 
-            return view('admin.pages.nutrition.details', compact('nutritions'))->render();
+        return view('admin.pages.nutrition.details', compact('nutritions'))->render();
     }
-
 
     /**
      * Remove the specified resource from storage.
@@ -293,7 +294,8 @@ class NutritionController extends Controller
     {
         //
     }
-     /**
+
+    /**
      * Génère les données pour le calendrier de nutrition.
      */
     public function getNutritionCalendar($bandeId)
@@ -307,7 +309,7 @@ class NutritionController extends Controller
             ->whereDate('date', '>=', $dateLancement)
             ->with(['aliment_name:id,nom_produit', 'unite:id,abrege'])
             ->get()
-            ->groupBy(fn($n) => Carbon::parse($n->date)->toDateString());
+            ->groupBy(fn ($n) => Carbon::parse($n->date)->toDateString());
 
         $events = [];
         $currentDate = $dateLancement->copy();
@@ -326,9 +328,10 @@ class NutritionController extends Controller
 
                 $details = $settingsForDate->map(function ($setting) use ($nutritionForDate, $nbre_animal) {
                     $passagesForThisAliment = $nutritionForDate->where('id_aliment', $setting->aliment);
+
                     return [
                         'aliment' => $setting->foodSetting->alimentName->nom_produit ?? 'N/A',
-                        'score' => $passagesForThisAliment->count() . " / " . $setting->frequency,
+                        'score' => $passagesForThisAliment->count().' / '.$setting->frequency,
                         'est_complet' => $passagesForThisAliment->count() >= $setting->frequency,
                         'quantite_donnee' => $passagesForThisAliment->sum('qte'),
                         'unite' => $setting->unite->abrege ?? '',
@@ -357,9 +360,9 @@ class NutritionController extends Controller
             }
             $currentDate->addDay();
         }
+
         return response()->json($events);
     }
-
 
     public function showCalendar($bande)
     {

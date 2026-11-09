@@ -8,13 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 class Type_produit extends Model
 {
     protected $table = 'type_produits';
+
     public $timestamps = true;
 
     use HasFactory;
 
     protected $dates = ['deleted_at'];
-    protected $fillable = array('nom');
-    protected $visible = array('nom');
+
+    protected $fillable = ['nom'];
+
+    protected $visible = ['nom'];
 
     public function type_produit()
     {

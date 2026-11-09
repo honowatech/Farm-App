@@ -1,12 +1,11 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Typeusers;
+
 use App\Models\Bande;
 use App\Models\Batiment;
 use App\Models\Matiere_premiere;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
@@ -27,12 +26,12 @@ class HomeController extends Controller
      */
     public function index()
     {
-        session()->forget("info");
+        session()->forget('info');
 
         // Récupérer les bandes en cours
         $bandes_en_cours = Bande::where('date_lancement_bande', '<', now())
-                            ->where('statut_bande', 'encours')
-                            ->get();
+            ->where('statut_bande', 'encours')
+            ->get();
 
         $role = Auth::user()->type_user?->libelle;
 
@@ -63,6 +62,7 @@ class HomeController extends Controller
         if ($role === 'admin') {
             $matiere_premieres = Matiere_premiere::get();
             $batiments = Batiment::get();
+
             return view('admin.pages.home.home', compact('bandes_en_cours', 'matiere_premieres', 'batiments'));
         }
 

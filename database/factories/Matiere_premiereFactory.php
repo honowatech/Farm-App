@@ -2,8 +2,9 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Matiere_premiere;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Matiere_premiere>
  */
@@ -14,7 +15,8 @@ class Matiere_premiereFactory extends Factory
      *
      * @return array<string, mixed>
      */
-     protected $model = Matiere_premiere::class;
+    protected $model = Matiere_premiere::class;
+
     public function definition(): array
     {
         return [

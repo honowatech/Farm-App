@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('foods_setting', function (Blueprint $table) {
-             $table->integer('frequency')->default(1); // Nombre de fois de nutrition par période
-             $table->string('period')->default('day'); // Période de nutrition (day, week, month)
+            $table->integer('frequency')->default(1); // Nombre de fois de nutrition par période
+            $table->string('period')->default('day'); // Période de nutrition (day, week, month)
         });
     }
 

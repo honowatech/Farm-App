@@ -4,8 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Stock_produit;
 use App\Services\StockService;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class StockServiceTest extends TestCase

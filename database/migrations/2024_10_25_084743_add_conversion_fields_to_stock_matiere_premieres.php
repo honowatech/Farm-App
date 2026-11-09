@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-         Schema::table('stock_matiere_premieres', function (Blueprint $table) {
+        Schema::table('stock_matiere_premieres', function (Blueprint $table) {
             $table->string('unite_principale')->default('kg');  // Ex : 'kg' ou 'sac'
             $table->decimal('conversion_kg', 8, 2)->default(1); // Conversion vers kg
             $table->decimal('conversion_gr', 8, 2)->default(1000); // Conversion vers grammes
@@ -24,7 +24,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-         Schema::table('stock_matiere_premieres', function (Blueprint $table) {
+        Schema::table('stock_matiere_premieres', function (Blueprint $table) {
             $table->dropColumn(['unite_principale', 'conversion_kg', 'conversion_gr', 'conversion_sac']);
         });
     }

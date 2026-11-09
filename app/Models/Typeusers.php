@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Typeusers extends Model
 {
     protected $table = 'type_users';
+
     public $timestamps = true;
-    protected $fillable = array('libelle');
-    protected $visible = array('libelle');
+
+    protected $fillable = ['libelle'];
+
+    protected $visible = ['libelle'];
 
     public function users()
     {

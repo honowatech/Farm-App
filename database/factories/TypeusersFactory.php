@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Typeusers;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Typeusers>
@@ -16,6 +16,7 @@ class TypeusersFactory extends Factory
      * @return array<string, mixed>
      */
     protected $model = Typeusers::class;
+
     public function definition(): array
     {
         return [

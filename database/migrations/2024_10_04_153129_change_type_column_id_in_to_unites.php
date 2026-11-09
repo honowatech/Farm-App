@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('unite', function (Blueprint $table) {
-             $table->unsignedBigInteger('id')->change();
+            $table->unsignedBigInteger('id')->change();
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('unite', function (Blueprint $table) {
-             $table->bigInteger('id')->change();
+            $table->bigInteger('id')->change();
         });
     }
 };

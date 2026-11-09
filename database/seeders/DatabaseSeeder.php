@@ -1,10 +1,10 @@
 <?php
+
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
@@ -21,14 +21,14 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
         \App\Models\Typeusers::create([
-                'libelle' => 'admin'
+            'libelle' => 'admin',
         ]);
         \App\Models\Typeusers::create([
-                'libelle' => 'agent'
+            'libelle' => 'agent',
         ]);
 
         \App\Models\Typeusers::create([
-                'libelle' => 'client'
+            'libelle' => 'client',
         ]);
 
         \App\Models\User::create([

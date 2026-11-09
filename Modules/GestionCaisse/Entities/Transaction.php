@@ -2,10 +2,9 @@
 
 namespace Modules\GestionCaisse\Entities;
 
-use Illuminate\Database\Eloquent\Model;
-use Modules\GestionCaisse\Entities\Compte;
-use Modules\Depenses\Entities\Depense;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
+use Modules\Depenses\Entities\Depense;
 
 class Transaction extends Model
 {

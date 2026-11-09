@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class AddPrixUnitaireToCategorieDepensesTable extends Migration
 {
@@ -26,7 +26,7 @@ class AddPrixUnitaireToCategorieDepensesTable extends Migration
     public function down()
     {
         Schema::table('categorie_depenses', function (Blueprint $table) {
-             $table->dropColumn('prix_unitaire');
+            $table->dropColumn('prix_unitaire');
         });
     }
 }

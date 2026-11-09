@@ -32,20 +32,18 @@ class AgentAccess
         'get-form-bande',
         'bande.search',
         'nettoyage.index',
-        'seanceVaccination.index'
+        'seanceVaccination.index',
     ];
 
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
      * @return mixed
      */
     public function handle(Request $request, Closure $next)
     {
         // Vérifier si l'utilisateur est connecté
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 
@@ -78,5 +76,3 @@ class AgentAccess
         return redirect()->route('home')->with('error', 'Accès non autorisé.');
     }
 }
-
-

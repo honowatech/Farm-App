@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
-use App\Models\Unite;
+use App\Models\Food_Setting;
+use App\Models\FoodSettingVersion;
+use App\Models\Matiere_premiere;
 use App\Models\Setting;
 use App\Models\Type_animal;
+use App\Models\Unite;
 use Illuminate\Http\Request;
-use App\Models\Matiere_premiere;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\MessageBag;
-use Illuminate\Support\Facades\Validator;
-use App\Models\Food_Setting; // Utilise le nouveau modèle parent
-use App\Models\FoodSettingVersion; // Utilise le nouveau modèle de version
+use Illuminate\Support\Facades\Validator; // Utilise le nouveau modèle parent
+use Illuminate\Support\MessageBag; // Utilise le nouveau modèle de version
 
 class Foods_settingController extends Controller
 {
@@ -24,15 +23,16 @@ class Foods_settingController extends Controller
     {
         $search = $request->input('recherche');
         $types_annimals = Type_animal::where(function ($query) use ($search) {
-                if ($search) {
-                    $query->where('nom', 'like', '%' . $search . '%')
-                          ->orWhere('type_reproduction', 'like', '%' . $search . '%');
-                }
-            })
+            if ($search) {
+                $query->where('nom', 'like', '%'.$search.'%')
+                    ->orWhere('type_reproduction', 'like', '%'.$search.'%');
+            }
+        })
             ->orderBy('updated_at', 'desc')
             ->paginate(20);
 
         session()->flash('search', $request->input('recherche'));
+
         return view('admin.pages.setting.foods-setting.index', compact('types_annimals'));
     }
 
@@ -44,6 +44,7 @@ class Foods_settingController extends Controller
         $types = Type_animal::select('id', 'nom')->get();
         $unites = Unite::select('id', 'abrege')->get();
         $aliments = Matiere_premiere::select('id', 'nom_produit', 'statut')->get();
+
         return view('admin.pages.setting.foods-setting.create', compact('types', 'unites', 'aliments'));
     }
 
@@ -102,15 +103,15 @@ class Foods_settingController extends Controller
                 // Étape B : Créer la première version pour chaque ligne du formulaire
                 foreach ($invoices as $invoice) {
                     FoodSettingVersion::create([
-                        'food_setting_id'  => $foodSettingParent->id,
-                        'age_min'          => $invoice['age_min'],
-                        'age_max'          => $invoice['age_max'],
+                        'food_setting_id' => $foodSettingParent->id,
+                        'age_min' => $invoice['age_min'],
+                        'age_max' => $invoice['age_max'],
                         'quantite_aliment' => $invoice['qte'],
-                        'id_unite'         => $invoice['unite'],
-                        'frequency'        => $invoice['frequency'],
-                        'period'           => $invoice['period'],
-                        'activated_at'     => now(), // La version est active immédiatement
-                        'ended_at'         => null,  // Et n'a pas de date de fin
+                        'id_unite' => $invoice['unite'],
+                        'frequency' => $invoice['frequency'],
+                        'period' => $invoice['period'],
+                        'activated_at' => now(), // La version est active immédiatement
+                        'ended_at' => null,  // Et n'a pas de date de fin
                     ]);
                 }
             });
@@ -119,7 +120,8 @@ class Foods_settingController extends Controller
         }
 
         $animal_name = Type_animal::findOrFail($type)->nom;
-        $message = 'Le planning de nutrition pour ' . $animal_name . ' a été créé avec succès.';
+        $message = 'Le planning de nutrition pour '.$animal_name.' a été créé avec succès.';
+
         return redirect()->route('foods-setting.index')->with('message', $message);
     }
 
@@ -139,7 +141,7 @@ class Foods_settingController extends Controller
 
         // Renommer la relation pour la vue pour qu'elle corresponde à l'ancienne logique
         // Cela évite de devoir modifier la vue `show` immédiatement
-        $nutritions->each(function($item) {
+        $nutritions->each(function ($item) {
             $item->planning = $item->foodSetting->animalType;
             $item->alimentName = $item->foodSetting->alimentName;
         });
@@ -152,7 +154,6 @@ class Foods_settingController extends Controller
      * pour un type d'animal donné.
      * Utilisé par AJAX pour la modale de sélection de planning à éditer.
      *
-     * @param string $id_type_animal
      * @return \Illuminate\Http\JsonResponse
      */
     public function getFoodsForAnimalType(string $id_type_animal)
@@ -175,6 +176,7 @@ class Foods_settingController extends Controller
                         'nom_produit' => $planning->alimentName->nom_produit,
                     ];
                 }
+
                 // Sinon, on retourne null pour cet élément.
                 return null;
             })
@@ -263,8 +265,8 @@ class Foods_settingController extends Controller
                 if ($invoiceA['age_min'] <= $invoiceB['age_max'] && $invoiceA['age_max'] >= $invoiceB['age_min']) {
                     $errorMessage = "La tranche d'âge [{$invoiceA['age_min']} - {$invoiceA['age_max']}] est en conflit avec la tranche [{$invoiceB['age_min']} - {$invoiceB['age_max']}] dans votre soumission.";
                     // On ajoute l'erreur aux deux champs pour qu'ils soient bien visibles
-                    $errors->add('invoice.' . $i . '.age_min', $errorMessage);
-                    $errors->add('invoice.' . $j . '.age_min', $errorMessage);
+                    $errors->add('invoice.'.$i.'.age_min', $errorMessage);
+                    $errors->add('invoice.'.$j.'.age_min', $errorMessage);
                 }
             }
         }
@@ -273,15 +275,14 @@ class Foods_settingController extends Controller
             return redirect()->back()->withErrors($errors)->withInput();
         }
 
-
         // 3. Exécution de la mise à jour dans une transaction sécurisée
         try {
             DB::transaction(function () use ($invoices, $id_type_animal, $id_aliment) {
                 // Étape A : Trouver le planning "parent". firstOrFail() lèvera une exception
                 // si le parent n'existe pas, ce qui annulera automatiquement la transaction.
                 $parent = Food_Setting::where('id_type_animal', $id_type_animal)
-                                     ->where('aliment', $id_aliment)
-                                     ->firstOrFail();
+                    ->where('aliment', $id_aliment)
+                    ->firstOrFail();
 
                 // Étape B : "Fermer" (archiver) TOUTES les versions actuellement actives pour ce planning.
                 // On met simplement à jour leur champ `ended_at` à la date et heure actuelles.
@@ -291,15 +292,15 @@ class Foods_settingController extends Controller
                 // Chaque ligne du formulaire devient une nouvelle ligne dans la table des versions.
                 foreach ($invoices as $invoice) {
                     FoodSettingVersion::create([
-                        'food_setting_id'  => $parent->id,
-                        'age_min'          => $invoice['age_min'],
-                        'age_max'          => $invoice['age_max'],
+                        'food_setting_id' => $parent->id,
+                        'age_min' => $invoice['age_min'],
+                        'age_max' => $invoice['age_max'],
                         'quantite_aliment' => $invoice['qte'],
-                        'id_unite'         => $invoice['unite'],
-                        'frequency'        => $invoice['frequency'],
-                        'period'           => $invoice['period'],
-                        'activated_at'     => now(), // La nouvelle version devient active maintenant
-                        'ended_at'         => null,  // Elle n'a pas de date de fin, c'est la version "actuelle"
+                        'id_unite' => $invoice['unite'],
+                        'frequency' => $invoice['frequency'],
+                        'period' => $invoice['period'],
+                        'activated_at' => now(), // La nouvelle version devient active maintenant
+                        'ended_at' => null,  // Elle n'a pas de date de fin, c'est la version "actuelle"
                     ]);
                 }
 
@@ -310,7 +311,8 @@ class Foods_settingController extends Controller
         } catch (\Exception $e) {
             // En cas d'erreur (ex: le parent n'est pas trouvé, ou erreur DB),
             // la transaction est annulée et on redirige avec une erreur.
-            \Log::error("Erreur de mise à jour du planning de nutrition: " . $e->getMessage()); // Pensez à logger l'erreur pour le débogage
+            \Log::error('Erreur de mise à jour du planning de nutrition: '.$e->getMessage()); // Pensez à logger l'erreur pour le débogage
+
             return redirect()->back()
                 ->withErrors(['database' => 'Une erreur inattendue est survenue lors de la mise à jour. Veuillez contacter le support.'])
                 ->withInput();
@@ -319,7 +321,7 @@ class Foods_settingController extends Controller
         // 4. Redirection avec un message de succès
         $animal_name = Type_animal::findOrFail($id_type_animal)->nom;
         $aliment_name = Matiere_premiere::findOrFail($id_aliment)->nom_produit;
-        $message = 'Le planning de nutrition pour ' . $animal_name . ' (' . $aliment_name . ') a été mis à jour avec succès.';
+        $message = 'Le planning de nutrition pour '.$animal_name.' ('.$aliment_name.') a été mis à jour avec succès.';
 
         return redirect()->route('foods-setting.index')->with('message', $message);
     }
@@ -335,6 +337,7 @@ class Foods_settingController extends Controller
         Food_Setting::where('id_type_animal', $id_type_animal)->delete();
 
         $message = 'Tous les plannings alimentaires pour ce type d\'animal ont été supprimés.';
+
         return redirect()->route('foods-setting.index')->with('message', $message);
     }
 }

@@ -2,8 +2,9 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Batiment;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Batiment>
  */
@@ -15,6 +16,7 @@ class BatimentFactory extends Factory
      * @return array<string, mixed>
      */
     protected $model = Batiment::class;
+
     public function definition(): array
     {
         return [

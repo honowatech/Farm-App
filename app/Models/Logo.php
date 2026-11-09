@@ -9,13 +9,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Logo extends Model
 {
     use HasFactory;
+
     protected $table = 'logo';
+
     public $timestamps = true;
 
     use SoftDeletes;
 
     protected $dates = ['deleted_at'];
-    protected $fillable = array('path');
-    protected $visible = array('path');
 
+    protected $fillable = ['path'];
+
+    protected $visible = ['path'];
 }

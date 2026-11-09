@@ -1,9 +1,10 @@
-<?php 
-return[
+<?php
+
+return [
     'Liste des types de dépense' => 'Liste des types de dépense',
-    'Acceuil'=> 'Acceuil',
-    'Nom'=> 'Nom',
-    'Actions'=> 'Actions',
+    'Acceuil' => 'Acceuil',
+    'Nom' => 'Nom',
+    'Actions' => 'Actions',
 
     'Nouveau type de dépense' => 'Nouveau type de dépense',
     'Acceuil' => 'Acceuil',
@@ -12,12 +13,12 @@ return[
     'Libellé' => 'Label',
     'Montant dépense' => 'Montant dépense',
     'Fréquence' => 'Fréquence',
-    'Choisir une fréquence'=>  'Choisir une fréquence',
+    'Choisir une fréquence' => 'Choisir une fréquence',
     'Description' => 'Description',
     'Effacer' => 'Effacer',
     'Enregistrer' => 'Enregistrer',
 
-   'Liste des Dépenses' => 'Liste des Dépenses',
+    'Liste des Dépenses' => 'Liste des Dépenses',
     'Acceuil' => 'Acceuil',
     'Catégorie' => 'Catégorie',
     'Fournisseur' => 'Fournisseur',

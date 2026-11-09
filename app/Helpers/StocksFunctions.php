@@ -1,6 +1,8 @@
 <?php
-if (!function_exists('StockProduit')) {
-    function Stockproduit($produit) {
+
+if (! function_exists('StockProduit')) {
+    function Stockproduit($produit)
+    {
         $statut_stock = '';
 
         $deriveIds = $produit->derives()->pluck('id');
@@ -15,14 +17,16 @@ if (!function_exists('StockProduit')) {
             $valeur_en_stock = 0;
             $statut_stock = 'Stock Épuisé';
         }
+
         return [
             'valeur_en_stock' => $valeur_en_stock,
-            'statut_stock' => $statut_stock
+            'statut_stock' => $statut_stock,
         ];
     }
 }
-if (!function_exists('StockDerive')) {
-    function StockDerive($derive) {
+if (! function_exists('StockDerive')) {
+    function StockDerive($derive)
+    {
         $statut_stock = '';
 
         $valeur_en_stock = (float) \App\Models\Stock_produit::where('id_derive_produit', $derive->id)
@@ -35,14 +39,16 @@ if (!function_exists('StockDerive')) {
             $valeur_en_stock = 0;
             $statut_stock = 'Stock Épuisé';
         }
+
         return [
             'valeur_en_stock' => $valeur_en_stock,
-            'statut_stock' => $statut_stock
+            'statut_stock' => $statut_stock,
         ];
     }
 }
-if (!function_exists('StockMatierepremiere')) {
-    function StockMatierepremiere($matierePremiere) {
+if (! function_exists('StockMatierepremiere')) {
+    function StockMatierepremiere($matierePremiere)
+    {
         $statut_stock = '';
 
         $valeur_en_stock = (float) \App\Models\Stock_matiere_premiere::where('id_matiere_premiere', $matierePremiere->id)
@@ -55,14 +61,16 @@ if (!function_exists('StockMatierepremiere')) {
             $valeur_en_stock = 0;
             $statut_stock = 'Stock Épuisé';
         }
+
         return [
             'valeur_en_stock' => $valeur_en_stock,
-            'statut_stock' => $statut_stock
+            'statut_stock' => $statut_stock,
         ];
     }
 }
-if (!function_exists('Matierepremiere')) {
-    function Matierepremiere($matierePremieres) {
+if (! function_exists('Matierepremiere')) {
+    function Matierepremiere($matierePremieres)
+    {
         $pas_en_stock = 0;
         $ids_pas_en_stock = '';
         $en_stock = 0;
@@ -74,20 +82,21 @@ if (!function_exists('Matierepremiere')) {
         foreach ($matierePremieres as $matierePremiere) {
             $valeur_en_stock = StockMatierepremiere($matierePremiere)['valeur_en_stock'];
             if ($valeur_en_stock == 0) {
-                $pas_en_stock ++;
+                $pas_en_stock++;
                 $ids_pas_en_stock .= $matierePremiere->id.',';
             } else {
-                $en_stock ++;
+                $en_stock++;
                 $ids_en_stock .= $matierePremiere->id.',';
             }
             if ($matierePremiere->statut == 1) {
-                $active ++;
+                $active++;
                 $ids_active .= $matierePremiere->id.',';
             } else {
-                $desactive ++;
+                $desactive++;
                 $ids_desactive .= $matierePremiere->id.',';
             }
         }
+
         return [
             'pas_en_stock' => $pas_en_stock,
             'en_stock' => $en_stock,
@@ -96,8 +105,7 @@ if (!function_exists('Matierepremiere')) {
             'ids_pas_en_stock' => $ids_pas_en_stock,
             'ids_en_stock' => $ids_en_stock,
             'ids_active' => $ids_active,
-            'ids_desactive' => $ids_desactive
+            'ids_desactive' => $ids_desactive,
         ];
     }
 }
-?>

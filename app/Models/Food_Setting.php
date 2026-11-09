@@ -2,16 +2,15 @@
 
 namespace App\Models;
 
-use App\Models\FoodSettingVersion;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Food_Setting extends Model
 {
     use HasFactory;
+
     protected $table = 'foods_setting'; // Spécifie le nom de la table
-    
+
     // Uniquement les colonnes qui restent dans la table principale
     protected $fillable = ['id_type_animal', 'aliment'];
 

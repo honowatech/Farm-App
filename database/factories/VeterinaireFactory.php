@@ -2,8 +2,9 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Veterinaire;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Veterinaire>
  */
@@ -14,7 +15,8 @@ class VeterinaireFactory extends Factory
      *
      * @return array<string, mixed>
      */
-     protected $model = Veterinaire::class;
+    protected $model = Veterinaire::class;
+
     public function definition(): array
     {
         return [

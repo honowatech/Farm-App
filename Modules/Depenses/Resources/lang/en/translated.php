@@ -1,10 +1,11 @@
-<?php 
+<?php
+
 return [
     'Liste des types de dépense' => 'List of expense types',
-    'Liste des types de dépense'=> 'List of expense types',
-    'Acceuil'=> 'Home',
-    'Nom'=> 'Name',
-    'Actions'=> 'Actions',
+    'Liste des types de dépense' => 'List of expense types',
+    'Acceuil' => 'Home',
+    'Nom' => 'Name',
+    'Actions' => 'Actions',
 
     'Nouveau type de dépense' => 'New expense type',
     'Acceuil' => 'Home',
@@ -13,12 +14,12 @@ return [
     'Libellé' => 'Label',
     'Montant dépense' => 'Expense Amount',
     'Fréquence' => 'Frequency',
-    'Choisir une fréquence'=>  'Choose a frequency',
+    'Choisir une fréquence' => 'Choose a frequency',
     'Description' => 'Description',
     'Effacer' => 'Clear',
     'Enregistrer' => 'Save',
 
-   'Liste des Dépenses' => 'List of Expenses',
+    'Liste des Dépenses' => 'List of Expenses',
     'Acceuil' => 'Home',
     'Catégorie' => 'Category',
     'Fournisseur' => 'Supplier',
@@ -46,7 +47,7 @@ return [
     'Aucun type trouvé' => 'No types found',
     'Entrer du texte ici' => 'Enter text here',
     'Date d\'enregistrement' => 'recording dates',
-     'Liste des types de dépense' => 'List of Expense Types',
+    'Liste des types de dépense' => 'List of Expense Types',
     'Acceuil' => 'Home',
     'Nom' => 'Name',
     'Actions' => 'Actions',

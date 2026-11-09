@@ -2,8 +2,9 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Seance_de_vaccination;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Seance_de_vaccination>
  */
@@ -15,9 +16,10 @@ class Seance_de_vaccinationFactory extends Factory
      * @return array<string, mixed>
      */
     protected $model = Seance_de_vaccination::class;
+
     public function definition(): array
     {
-         return [
+        return [
             'id_veterinaire' => \App\Models\Veterinaire::factory(),
             'vaccin_attribuer' => $this->faker->word,
             'verification' => $this->faker->boolean,

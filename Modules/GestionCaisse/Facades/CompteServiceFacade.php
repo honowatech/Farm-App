@@ -1,10 +1,11 @@
 <?php
+
 namespace Modules\GestionCaisse\Facades;
-use Modules\GestionCaisse\Entities\Transaction;
+
 use Illuminate\Support\Facades\Facade;
 use Modules\GestionCaisse\Entities\Compte;
 use Modules\GestionCaisse\Entities\Devise;
-
+use Modules\GestionCaisse\Entities\Transaction;
 use Modules\GestionCaisse\Entities\Transfert;
 
 class CompteServiceFacade extends Facade
@@ -12,7 +13,7 @@ class CompteServiceFacade extends Facade
     /**
      * Liste des comptes avec pagination.
      *
-     * @param int $pagination Le nombre d'éléments à afficher par page (par défaut 20).
+     * @param  int  $pagination  Le nombre d'éléments à afficher par page (par défaut 20).
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator La collection paginée des comptes.
      */
     public static function listComptes($pagination = 20)
@@ -23,7 +24,7 @@ class CompteServiceFacade extends Facade
     /**
      * Création d'un compte.
      *
-     * @param array $data Les données pour créer le compte (type_account, nom_caisse, nom_banque, etc.).
+     * @param  array  $data  Les données pour créer le compte (type_account, nom_caisse, nom_banque, etc.).
      * @return \Modules\GestionCaisse\Entities\Compte L'instance du compte créé.
      */
     public static function createCompte(array $data)
@@ -34,27 +35,29 @@ class CompteServiceFacade extends Facade
         $data['nom_banque'] = $data['type_account'] === 'banque' ? $data['nom_banque'] : null;
         // Initialisation du solde du compte à 0
         $data['initial_balance'] = 0;
+
         return Compte::create($data);  // Création et retour du compte
     }
 
     /**
      * Mise à jour d'un compte.
      *
-     * @param int $id L'ID du compte à mettre à jour.
-     * @param array $data Les nouvelles données à appliquer au compte.
+     * @param  int  $id  L'ID du compte à mettre à jour.
+     * @param  array  $data  Les nouvelles données à appliquer au compte.
      * @return \Modules\GestionCaisse\Entities\Compte L'instance du compte mis à jour.
      */
     public static function updateCompte($id, array $data)
     {
         $compte = Compte::findOrFail($id);  // Recherche du compte par ID
         $compte->update($data);  // Mise à jour des données du compte
+
         return $compte;  // Retour du compte mis à jour
     }
 
     /**
      * Suppression d'un compte.
      *
-     * @param int $id L'ID du compte à supprimer.
+     * @param  int  $id  L'ID du compte à supprimer.
      * @return void Aucun retour (la suppression est effectuée sans retour explicite).
      */
     public static function deleteCompte($id)
@@ -66,7 +69,7 @@ class CompteServiceFacade extends Facade
     /**
      * Liste des devises avec pagination.
      *
-     * @param int $pagination Le nombre d'éléments à afficher par page (par défaut 20).
+     * @param  int  $pagination  Le nombre d'éléments à afficher par page (par défaut 20).
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator La collection paginée des devises.
      */
     public static function listDevises($pagination = 20)
@@ -77,21 +80,22 @@ class CompteServiceFacade extends Facade
     /**
      * Création d'une devise.
      *
-     * @param array $data Les données pour créer la devise (code, nom, etc.).
+     * @param  array  $data  Les données pour créer la devise (code, nom, etc.).
      * @return \Modules\GestionCaisse\Entities\Devise L'instance de la devise créée.
      */
     public static function createDevise(array $data)
     {
         // Normalisation du code de la devise en majuscules
         $data['code'] = strtoupper($data['code']);
+
         return Devise::create($data);  // Création et retour de la devise
     }
 
     /**
      * Mise à jour d'une devise.
      *
-     * @param int $id L'ID de la devise à mettre à jour.
-     * @param array $data Les nouvelles données à appliquer à la devise.
+     * @param  int  $id  L'ID de la devise à mettre à jour.
+     * @param  array  $data  Les nouvelles données à appliquer à la devise.
      * @return \Modules\GestionCaisse\Entities\Devise L'instance de la devise mise à jour.
      */
     public static function updateDevise($id, array $data)
@@ -111,7 +115,7 @@ class CompteServiceFacade extends Facade
     /**
      * Suppression d'une devise.
      *
-     * @param int $id L'ID de la devise à supprimer.
+     * @param  int  $id  L'ID de la devise à supprimer.
      * @return void Aucun retour (la suppression est effectuée sans retour explicite).
      */
     public static function deleteDevise($id)
@@ -126,7 +130,7 @@ class CompteServiceFacade extends Facade
     /**
      * Liste des transferts avec pagination.
      *
-     * @param int $pagination Le nombre d'éléments à afficher par page (par défaut 20).
+     * @param  int  $pagination  Le nombre d'éléments à afficher par page (par défaut 20).
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator La collection paginée des transferts.
      */
     public static function listTransferts($pagination = 20)
@@ -137,8 +141,9 @@ class CompteServiceFacade extends Facade
     /**
      * Création d'un transfert.
      *
-     * @param array $data Les données pour créer un transfert (caisse_source, destination_caisse, montant, etc.).
+     * @param  array  $data  Les données pour créer un transfert (caisse_source, destination_caisse, montant, etc.).
      * @return void Aucun retour explicite, la transaction est effectuée dans la base de données.
+     *
      * @throws \Exception Si le solde du compte source est insuffisant.
      */
     public static function createTransfert(array $data)
@@ -174,7 +179,7 @@ class CompteServiceFacade extends Facade
     /**
      * Suppression d'un transfert.
      *
-     * @param int $id L'ID du transfert à supprimer.
+     * @param  int  $id  L'ID du transfert à supprimer.
      * @return void Aucun retour explicite, la transaction est effectuée dans la base de données.
      */
     public static function deleteTransfert($id)
@@ -200,8 +205,8 @@ class CompteServiceFacade extends Facade
     /**
      * Vérifie si le solde d'une caisse est suffisant pour une dépense.
      *
-     * @param int $compteId L'ID du compte à vérifier.
-     * @param float $montant Le montant de la dépense à effectuer.
+     * @param  int  $compteId  L'ID du compte à vérifier.
+     * @param  float  $montant  Le montant de la dépense à effectuer.
      * @return bool True si le solde est suffisant, false sinon.
      */
     public static function verifierSoldeSuffisant($compteId, $montant, $id_depense)
@@ -228,5 +233,4 @@ class CompteServiceFacade extends Facade
 
         return true;
     }
-
 }

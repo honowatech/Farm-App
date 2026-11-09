@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Stock_matiere_premiere;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Stock_matiere_premiere>
@@ -15,8 +15,8 @@ class Stock_matiere_premiereFactory extends Factory
      *
      * @return array<string, mixed>
      */
-
     protected $model = Stock_matiere_premiere::class;
+
     public function definition(): array
     {
         return [
@@ -27,7 +27,7 @@ class Stock_matiere_premiereFactory extends Factory
             'nouveau_stock' => $this->faker->randomFloat(2, 10, 1000), // Nouveau stock entre 10 et 1000
             'date_entree' => $this->faker->optional()->dateTimeThisYear(),
             'date_sortie' => $this->faker->optional()->dateTimeThisYear(),
-            'motif' => $this->faker->sentence
+            'motif' => $this->faker->sentence,
         ];
     }
 }

@@ -2,28 +2,31 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Client extends Model 
+class Client extends Model
 {
-
     protected $table = 'clients';
+
     public $timestamps = true;
 
-    use SoftDeletes, HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $dates = ['deleted_at'];
-    protected $fillable = array('nom', 'telephone', 'adresse', 'email', 'id_user');
-    protected $visible = array('nom', 'telephone', 'adresse', 'email', 'id_user');
+
+    protected $fillable = ['nom', 'telephone', 'adresse', 'email', 'id_user'];
+
+    protected $visible = ['nom', 'telephone', 'adresse', 'email', 'id_user'];
 
     public function user()
     {
         return $this->belongsTo('App\Models\User', 'id_user');
     }
-    public function client_facture(){
-         return $this->hasMany('App\Models\Facture', 'id');
-    }
 
+    public function client_facture()
+    {
+        return $this->hasMany('App\Models\Facture', 'id');
+    }
 }

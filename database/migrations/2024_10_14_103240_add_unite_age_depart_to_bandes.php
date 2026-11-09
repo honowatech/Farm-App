@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bandes', function (Blueprint $table) {
-             $table->enum('unite_age_depart', ['jour', 'semaine', 'mois','annee'])->default('jour'); // spécifie une autre colonne si nécessaire
+            $table->enum('unite_age_depart', ['jour', 'semaine', 'mois', 'annee'])->default('jour'); // spécifie une autre colonne si nécessaire
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('bandes', function (Blueprint $table) {
-             $table->dropColumn('unite_age_depart'); // Suppression de la colonne si rollback
+            $table->dropColumn('unite_age_depart'); // Suppression de la colonne si rollback
         });
     }
 };

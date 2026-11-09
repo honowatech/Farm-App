@@ -1,7 +1,7 @@
 <?php
 
 namespace Modules\GestionCaisse\Http\Controllers;
-use Illuminate\Contracts\Support\Renderable;
+
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\GestionCaisse\Entities\Compte;
@@ -13,12 +13,14 @@ class CompteController extends Controller
     public function index()
     {
         $comptes = CompteServiceFacade::listComptes();
+
         return view('gestioncaisse::compte.index', compact('comptes'));
     }
 
     public function create()
     {
         $devises = CompteServiceFacade::listDevises();
+
         return view('gestioncaisse::compte.create', compact('devises'));
     }
 
@@ -44,9 +46,10 @@ class CompteController extends Controller
 
         try {
             CompteServiceFacade::createCompte($request->all());
+
             return redirect()->route('compte.index')->with('message', 'Compte créé avec succès');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Erreur lors de la création du compte : ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Erreur lors de la création du compte : '.$e->getMessage());
         }
     }
 
@@ -59,6 +62,7 @@ class CompteController extends Controller
     {
         $compte = Compte::findOrFail($id);
         $devises = Devise::all();
+
         return view('gestioncaisse::compte.edit', compact('compte', 'devises'));
     }
 
@@ -74,9 +78,10 @@ class CompteController extends Controller
 
         try {
             CompteServiceFacade::updateCompte($id, $validatedData);
+
             return redirect()->route('compte.index')->with('message', 'Compte mis à jour avec succès.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Erreur lors de la mise à jour : ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Erreur lors de la mise à jour : '.$e->getMessage());
         }
     }
 
@@ -84,9 +89,10 @@ class CompteController extends Controller
     {
         try {
             CompteServiceFacade::deleteCompte($id);
+
             return redirect()->route('compte.index')->with('message', 'Compte supprimé avec succès.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Erreur lors de la suppression : ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Erreur lors de la suppression : '.$e->getMessage());
         }
     }
 }

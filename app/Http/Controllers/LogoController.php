@@ -1,9 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Logo;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class LogoController extends Controller
 {
@@ -33,12 +34,12 @@ class LogoController extends Controller
         ]);
 
         $file = $request->file('logo');
-        $fileName = Str::random(40) . '.' . $file->extension();
+        $fileName = Str::random(40).'.'.$file->extension();
 
         $file->move(public_path('app-assets/images/avatars'), $fileName);
 
         $logo = new Logo;
-        $logo->path = 'app-assets/images/avatars/' . $fileName;
+        $logo->path = 'app-assets/images/avatars/'.$fileName;
         $logo->save();
 
         session()->flash('message', 'Logo modifié avec succès');
@@ -49,10 +50,7 @@ class LogoController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-          
-    }
+    public function show(string $id) {}
 
     /**
      * Show the form for editing the specified resource.
@@ -65,10 +63,7 @@ class LogoController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
-       
-    }
+    public function update(Request $request, string $id) {}
 
     /**
      * Remove the specified resource from storage.

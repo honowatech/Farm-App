@@ -3,15 +3,15 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Nettoyage extends Model
 {
     use HasFactory;
     use SoftDeletes;
 
-     protected $table = 'nettoyages';
+    protected $table = 'nettoyages';
 
     /**
      * The attributes that are mass assignable.
@@ -19,11 +19,11 @@ class Nettoyage extends Model
      * @var array
      */
     protected $fillable = [
-        'id_agent', 
+        'id_agent',
         'id_batiment',
-        'date', 
-        'verif', 
-        'description'
+        'date',
+        'verif',
+        'description',
     ];
 
     /**
@@ -38,13 +38,12 @@ class Nettoyage extends Model
     /**
      * relation avec les differerent models
      */
-
     public function agents()
     {
         return $this->hasMany(Agent::class, 'id', 'id_agent');
     }
-    
-    Public function batiment()
+
+    public function batiment()
     {
         return $this->belongsTo(Batiment::class, 'id_batiment');
     }

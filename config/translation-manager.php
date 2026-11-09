@@ -11,17 +11,17 @@ return [
     |
     */
     'route' => [
-    'prefix' => 'translations',
-    'middleware' => [
-        'web',    // Ce middleware est nécessaire pour gérer les sessions, les cookies, etc.
-        'auth',   // Ce middleware assure que seuls les utilisateurs authentifiés accèdent à cette route.
-        'role:admin', // Restreint la gestion des traductions aux administrateurs.
+        'prefix' => 'translations',
+        'middleware' => [
+            'web',    // Ce middleware est nécessaire pour gérer les sessions, les cookies, etc.
+            'auth',   // Ce middleware assure que seuls les utilisateurs authentifiés accèdent à cette route.
+            'role:admin', // Restreint la gestion des traductions aux administrateurs.
+        ],
     ],
-],
     /**
      * Enable deletion of translations
      *
-     * @type boolean
+     * @type bool
      */
     'delete_enabled' => true,
 
@@ -49,12 +49,12 @@ return [
      *        'de',
      *    )
      */
-    'exclude_langs'  => [],
+    'exclude_langs' => [],
 
     /**
      * Export translations with keys output alphabetically.
      */
-    'sort_keys'     => false,
+    'sort_keys' => false,
 
     'trans_functions' => [
         'trans',

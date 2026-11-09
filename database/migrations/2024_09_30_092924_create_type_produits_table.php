@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::create('type_produits', function (Blueprint $table) {
             $table->increments('id');
-            $table->enum('nom',['animal','fiente','oeuf']);
+            $table->enum('nom', ['animal', 'fiente', 'oeuf']);
             $table->timestamps();
         });
         DB::table('type_produits')->insert([
             ['nom' => 'animal'],
             ['nom' => 'fiente'],
-            ['nom' => 'oeuf']
+            ['nom' => 'oeuf'],
         ]);
     }
 

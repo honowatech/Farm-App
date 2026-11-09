@@ -4,9 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\Typeusers;
 use App\Models\User;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Tests\TestCase;
 
 class AccessControlTest extends TestCase
@@ -56,7 +56,7 @@ class AccessControlTest extends TestCase
     {
         return User::create([
             'name' => ucfirst($role),
-            'email' => $role . '@example.com',
+            'email' => $role.'@example.com',
             'password' => bcrypt('password'),
             'id_type_user' => $idTypeUser ?? $this->role($role)->id,
         ]);
