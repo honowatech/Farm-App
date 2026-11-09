@@ -23,8 +23,8 @@ class AchatController extends Controller
         $achats = Achat::where('prix_unitaire', 'like', '%'.$request->input('recherche').'%')
             ->orWhere('mode_de_paiement', 'like', '%'.$request->input('recherche').'%')
             ->orderBy('updated_at', 'desc')->paginate(20);
-        $fournisseurs = Fournisseur::all();
-        $aliments = Matiere_premiere::all();
+        $fournisseurs = Fournisseur::orderBy('nom')->get();
+        $aliments = Matiere_premiere::orderBy('nom_produit')->get();
         session()->flash('search', $request->input('recherche'));
 
         return view('admin.pages.achat.index', compact('achats', 'fournisseurs', 'aliments'));

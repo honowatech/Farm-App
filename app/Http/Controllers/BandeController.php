@@ -21,7 +21,7 @@ class BandeController extends Controller
      */
     public function index(Request $request)
     {
-        $annimals = Type_animal::All();
+        $annimals = Type_animal::orderBy('nom')->get();
         $bandes = Bande::where('nom', 'like', '%'.$request->input('recherche').'%')
             ->orWhere('nbre_sujet', 'like', '%'.$request->input('recherche').'%')
             ->orWhere('age_depart', 'like', '%'.$request->input('recherche').'%')

@@ -23,7 +23,7 @@ class RamassageController extends Controller
      */
     public function index(Request $request)
     {
-        $bandes = Bande::all();
+        $bandes = Bande::orderBy('nom')->get();
         $ramassages = Ramassage::where('commentaire', 'like', '%'.$request->input('recherche').'%')
             ->orWhere('to_do_date', 'like', '%'.$request->input('recherche').'%')
             ->orderBy('updated_at', 'desc')

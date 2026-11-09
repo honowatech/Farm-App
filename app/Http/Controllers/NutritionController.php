@@ -26,7 +26,7 @@ class NutritionController extends Controller
     {
         $nutritions = Nutrition::where('date', 'like', '%'.$request->input('recherche').'%')
             ->orderBy('updated_at', 'desc')->paginate(20);
-        $bandes = Bande::all();
+        $bandes = Bande::orderBy('nom')->get();
         session()->flash('search', $request->input('recherche'));
 
         return view('admin.pages.nutrition.index', compact('nutritions', 'bandes'));

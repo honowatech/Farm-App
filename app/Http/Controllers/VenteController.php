@@ -30,8 +30,8 @@ class VenteController extends Controller
         $ventes = Vente::Where('date_vente', 'like', '%'.$request->input('recherche').'%')
             ->paginate(20);
         session()->flash('search', $request->input('recherche'));
-        $produits = Produit::all();
-        $clients = Client::all();
+        $produits = Produit::select('id', 'nom')->orderBy('nom')->get();
+        $clients = Client::select('id', 'nom')->orderBy('nom')->get();
 
         return view('admin.pages.vente.index', compact('ventes', 'produits', 'clients'));
     }
