@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreAchatRequest;
 use App\Models\Achat;
 use App\Models\Detail_fournisseur;
 use App\Models\Fournisseur;
 use App\Models\Matiere_premiere;
 use App\Models\Stock_matiere_premiere;
-use App\Http\Requests\StoreAchatRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -18,7 +18,7 @@ class AchatController extends Controller
      *
      * @return Response
      */
-    public function index(request $request)
+    public function index(Request $request)
     {
         $achats = Achat::where('prix_unitaire', 'like', '%'.$request->input('recherche').'%')
             ->orWhere('mode_de_paiement', 'like', '%'.$request->input('recherche').'%')

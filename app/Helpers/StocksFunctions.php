@@ -1,9 +1,11 @@
 <?php
 
+use App\Services\StockService;
+
 if (! function_exists('StockProduit')) {
     function Stockproduit($produit)
     {
-        $valeur_en_stock = app(\App\Services\StockService::class)->stockProduitDerives($produit->id);
+        $valeur_en_stock = app(StockService::class)->stockProduitDerives($produit->id);
 
         return [
             'valeur_en_stock' => $valeur_en_stock > 0 ? $valeur_en_stock : 0,
@@ -14,7 +16,7 @@ if (! function_exists('StockProduit')) {
 if (! function_exists('StockDerive')) {
     function StockDerive($derive)
     {
-        $valeur_en_stock = app(\App\Services\StockService::class)->stockDerive($derive->id);
+        $valeur_en_stock = app(StockService::class)->stockDerive($derive->id);
 
         return [
             'valeur_en_stock' => $valeur_en_stock > 0 ? $valeur_en_stock : 0,
@@ -25,7 +27,7 @@ if (! function_exists('StockDerive')) {
 if (! function_exists('StockMatierepremiere')) {
     function StockMatierepremiere($matierePremiere)
     {
-        $valeur_en_stock = app(\App\Services\StockService::class)->stockMatierePremiere($matierePremiere->id);
+        $valeur_en_stock = app(StockService::class)->stockMatierePremiere($matierePremiere->id);
 
         return [
             'valeur_en_stock' => $valeur_en_stock > 0 ? $valeur_en_stock : 0,

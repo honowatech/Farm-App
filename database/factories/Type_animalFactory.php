@@ -6,7 +6,7 @@ use App\Models\Type_animal;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Type_animal>
+ * @extends Factory<Type_animal>
  */
 class Type_animalFactory extends Factory
 {

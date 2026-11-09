@@ -6,7 +6,7 @@ use App\Models\Matiere_premiere;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Matiere_premiere>
+ * @extends Factory<Matiere_premiere>
  */
 class Matiere_premiereFactory extends Factory
 {

@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class VenteController extends Controller
@@ -132,7 +133,7 @@ class VenteController extends Controller
                 'message' => 'Client enregistré avec succès',
                 'user' => $client,
             ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             // Gestion des erreurs de validation, retour JSON
             return response()->json([
                 'success' => false,

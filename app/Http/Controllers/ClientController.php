@@ -60,7 +60,7 @@ class ClientController extends Controller
             'adresse' => 'bail|required|min:4',
         ]);
         // dd($nom,$email,$password,$telephone,$adresse,);
-        //on crèe son compte utilisateur
+        // on crèe son compte utilisateur
         $user = new User;
         $user->name = $nom;
         $user->email = $email;
@@ -145,7 +145,7 @@ class ClientController extends Controller
             ]);
         }
         // dd($nom,$prenom,$email,$telephone,$adresse,);
-        //on édite son compte utilisateur
+        // on édite son compte utilisateur
         $user = User::findOrFail($id_user);
         $user->name = $nom;
         $user->email = $email;

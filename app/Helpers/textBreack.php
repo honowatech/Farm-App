@@ -122,7 +122,7 @@ if (! function_exists('phone2')) {
 if (! function_exists('prochaine_date_paie')) {
     function prochaine_date_paie($type_periode, $accumulateur, $ancienne_date, $nombre_fois, $type = null)
     {
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         $dt = Carbon::parse($ancienne_date);
 
@@ -146,7 +146,7 @@ if (! function_exists('prochaine_date_paie')) {
             $prochaine_date = $dt->addYears();
         }
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // //////////////////////////////////////////////////////////////////////////////////////////////////////////
         return $prochaine_date;
     }
 }
@@ -154,7 +154,7 @@ if (! function_exists('prochaine_date_paie')) {
 if (! function_exists('montant_restant')) {
     function montant_restant($montant_global, $salaire)
     {
-        /////////////// Cette fonction retourne le montant à rembourser s'il y a une avance en cours ///////////////
+        // ///////////// Cette fonction retourne le montant à rembourser s'il y a une avance en cours ///////////////
 
         $montant_avance = intval($montant_global) % intval($salaire);
         if ($montant_avance == 0) {
@@ -165,7 +165,7 @@ if (! function_exists('montant_restant')) {
             $statut = false;
         }
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // //////////////////////////////////////////////////////////////////////////////////////////////////////////
         return [
             'montant' => $montant_restant,
             'statut' => $statut,
@@ -209,7 +209,7 @@ if (! function_exists('calculerProchaineNutrition')) {
 if (! function_exists('estAutoriseANourrir')) {
     function estAutoriseANourrir($frequence_globale, $periode, $compteur_nutrition_globale, $derniere_nutrition, $frequence_aliment, $compteur_nutrition_aliment)
     {
-        $maintenant = new DateTime();
+        $maintenant = new DateTime;
         $aujourdhuiMinuit = (clone $maintenant)->setTime(0, 0, 0);
         $finMois = (clone $maintenant)->modify('last day of this month')->setTime(23, 59, 59);
         $finSemaine = (clone $maintenant)->modify('next sunday')->setTime(23, 59, 59);

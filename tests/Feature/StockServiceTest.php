@@ -40,7 +40,7 @@ class StockServiceTest extends TestCase
             'nouveau_stock' => 100,
         ]);
 
-        $service = new StockService();
+        $service = new StockService;
 
         $this->assertEquals(100.0, $service->stockProduit(1));
     }
@@ -55,7 +55,7 @@ class StockServiceTest extends TestCase
             'nouveau_stock' => 100,
         ]);
 
-        $service = new StockService();
+        $service = new StockService;
         $mouvement = $service->sortieProduit(1, 30, now()->toDateTimeString());
 
         $this->assertEquals(70.0, $mouvement->nouveau_stock);

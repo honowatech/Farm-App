@@ -40,13 +40,13 @@ class RamassageController extends Controller
      */
     public function create(Request $request)
     {
-        //$ids_type_user = [];
-        //$typesuser = Typeusers::where(strtoupper('libelle'),strtoupper('agent'))->get();
-        //foreach ($typesuser as $typeuser) {
+        // $ids_type_user = [];
+        // $typesuser = Typeusers::where(strtoupper('libelle'),strtoupper('agent'))->get();
+        // foreach ($typesuser as $typeuser) {
         //  // code...
         //  array_push($ids_type_user,$typeuser->id);
-        //}
-        //$agents = User::whereIn('id_type_user',$ids_type_user)->get();
+        // }
+        // $agents = User::whereIn('id_type_user',$ids_type_user)->get();
         $agents = Agent::all();
         $produits = Produit::get();
         $bandes = Bande::get();
@@ -194,7 +194,7 @@ class RamassageController extends Controller
             ]);
         }
         session()->forget('id_produit');
-        //dd($id_produit,$qtes,$ids,$id_prestataire,$commentaire,$id_bande,$date);
+        // dd($id_produit,$qtes,$ids,$id_prestataire,$commentaire,$id_bande,$date);
         $ramassage = new Ramassage;
         $ramassage->id_produit = $id_produit;
         $ramassage->id_bande = $id_bande;
@@ -210,12 +210,12 @@ class RamassageController extends Controller
             if ($qtes[$index] == 0) {
                 continue;
             }
-            /////////////////////////////////////////////////////////////////////////////////////////////
+            // ///////////////////////////////////////////////////////////////////////////////////////////
             $valeur_en_stock = 0;
             $ajout = 0;
             $retire = 0;
             $derive_produit = Derive_produit::findOrFail($ids[$index]);
-            /////////////////////////////////////////////////////////////////////////////////////////////
+            // ///////////////////////////////////////////////////////////////////////////////////////////
             foreach ($derive_produit->mouvements_de_stock as $stock) {
                 if ($stock->type_mouvement == 'approvisionnement') {
                     $ajout += $stock->qte;
@@ -224,7 +224,7 @@ class RamassageController extends Controller
                 }
             }
             $valeur_en_stock = $ajout - $retire;
-            /////////////////////////////////////////////////////////////////////////////////////////////
+            // ///////////////////////////////////////////////////////////////////////////////////////////
             $stock = new Stock_produit;
             $stock->id_produit = $id_produit;
             $stock->qte = $qtes[$index];
@@ -234,7 +234,7 @@ class RamassageController extends Controller
             $stock->nouveau_stock = $valeur_en_stock + intval($qtes[$index]);
             $stock->type_mouvement = 'approvisionnement';
             $stock->save();
-            /////////////////////////////////////////////////////////////////////////////////////////////
+            // ///////////////////////////////////////////////////////////////////////////////////////////
         }
         $message = "Ramassage créé avec <b class='text-success'> Succès.</b>";
         session()->flash('message', $message);

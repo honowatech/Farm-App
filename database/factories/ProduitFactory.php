@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\Produit;
+use App\Models\Type_animal;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Produit>
+ * @extends Factory<Produit>
  */
 class ProduitFactory extends Factory
 {
@@ -20,7 +21,7 @@ class ProduitFactory extends Factory
     public function definition(): array
     {
         return [
-            'id_type_animal' => \App\Models\Type_animal::inRandomOrder()->first()->id,
+            'id_type_animal' => Type_animal::inRandomOrder()->first()->id,
             'prix_unitaire' => $this->faker->randomFloat(2, 10, 100),
             'nom' => $this->faker->unique()->word,
             'description' => $this->faker->text,

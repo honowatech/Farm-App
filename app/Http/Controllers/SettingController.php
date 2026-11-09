@@ -14,7 +14,7 @@ class SettingController extends Controller
      */
     public function index()
     {
-        $data = new Setting();
+        $data = new Setting;
         $settings = $data->get();
 
         return view('admin.pages.setting.layout', compact('settings'));

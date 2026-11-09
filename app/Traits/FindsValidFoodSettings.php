@@ -4,6 +4,7 @@ namespace App\Traits;
 
 use App\Models\FoodSettingVersion;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 
 trait FindsValidFoodSettings
 {
@@ -12,7 +13,7 @@ trait FindsValidFoodSettings
      * un âge et une date donnés.
      *
      * @param  Carbon|string  $date
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Collection
      */
     protected function getValidFoodSettings(int $id_type_animal, int $ageInDays, $date)
     {

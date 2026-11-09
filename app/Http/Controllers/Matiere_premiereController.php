@@ -12,7 +12,7 @@ class Matiere_premiereController extends Controller
      *
      * @return Response
      */
-    public function index(request $request)
+    public function index(Request $request)
     {
         $table_data = $request->input('table_data');
         if ($table_data != null) {
@@ -103,7 +103,7 @@ class Matiere_premiereController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function update($id, request $request)
+    public function update($id, Request $request)
     {
         $nom = $request->input('nom');
         $description = $request->input('description');

@@ -119,14 +119,14 @@ Route::group(['middleware' => ['auth', 'web']], function () {
 
 Route::group(['middleware' => ['auth', 'web', 'agent_access']], function () {
     Route::resource('nutrition', 'App\Http\Controllers\NutritionController');
-    Route::get('/check', [App\Http\Controllers\NutritionController::class, 'checkNutrition'])->name('nutrition.check');
-    Route::get('/search-nutruition', [App\Http\Controllers\NutritionController::class, 'search'])->name('nutrition.search');
-    Route::get('/get-form', [App\Http\Controllers\NutritionController::class, 'take_form'])->name('load_form');
+    Route::get('/check', [NutritionController::class, 'checkNutrition'])->name('nutrition.check');
+    Route::get('/search-nutruition', [NutritionController::class, 'search'])->name('nutrition.search');
+    Route::get('/get-form', [NutritionController::class, 'take_form'])->name('load_form');
 
     Route::resource('bande', 'App\Http\Controllers\BandeController');
-    Route::get('/gestion-bande/{id}', [App\Http\Controllers\BandeController::class, 'gestion_bande'])->name('gestion_bande');
-    Route::get('/gestion-bande-get-form/{id}', [App\Http\Controllers\BandeController::class, 'gestion_bande_get_form'])->name('get-form-bande');
-    Route::get('/recherche-bande', [App\Http\Controllers\BandeController::class, 'search'])->name('bande.search');
+    Route::get('/gestion-bande/{id}', [BandeController::class, 'gestion_bande'])->name('gestion_bande');
+    Route::get('/gestion-bande-get-form/{id}', [BandeController::class, 'gestion_bande_get_form'])->name('get-form-bande');
+    Route::get('/recherche-bande', [BandeController::class, 'search'])->name('bande.search');
 
     Route::resource('nettoyage', 'App\Http\Controllers\NettoyageController');
     Route::resource('seanceVaccination', 'App\Http\Controllers\SeanceVaccinationController');

@@ -2,6 +2,7 @@
 
 namespace Modules\GestionCaisse\Facades;
 
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Facade;
 use Modules\GestionCaisse\Entities\Compte;
 use Modules\GestionCaisse\Entities\Devise;
@@ -14,7 +15,7 @@ class CompteServiceFacade extends Facade
      * Liste des comptes avec pagination.
      *
      * @param  int  $pagination  Le nombre d'éléments à afficher par page (par défaut 20).
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator La collection paginée des comptes.
+     * @return LengthAwarePaginator La collection paginée des comptes.
      */
     public static function listComptes($pagination = 20)
     {
@@ -25,7 +26,7 @@ class CompteServiceFacade extends Facade
      * Création d'un compte.
      *
      * @param  array  $data  Les données pour créer le compte (type_account, nom_caisse, nom_banque, etc.).
-     * @return \Modules\GestionCaisse\Entities\Compte L'instance du compte créé.
+     * @return Compte L'instance du compte créé.
      */
     public static function createCompte(array $data)
     {
@@ -44,7 +45,7 @@ class CompteServiceFacade extends Facade
      *
      * @param  int  $id  L'ID du compte à mettre à jour.
      * @param  array  $data  Les nouvelles données à appliquer au compte.
-     * @return \Modules\GestionCaisse\Entities\Compte L'instance du compte mis à jour.
+     * @return Compte L'instance du compte mis à jour.
      */
     public static function updateCompte($id, array $data)
     {
@@ -70,7 +71,7 @@ class CompteServiceFacade extends Facade
      * Liste des devises avec pagination.
      *
      * @param  int  $pagination  Le nombre d'éléments à afficher par page (par défaut 20).
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator La collection paginée des devises.
+     * @return LengthAwarePaginator La collection paginée des devises.
      */
     public static function listDevises($pagination = 20)
     {
@@ -81,7 +82,7 @@ class CompteServiceFacade extends Facade
      * Création d'une devise.
      *
      * @param  array  $data  Les données pour créer la devise (code, nom, etc.).
-     * @return \Modules\GestionCaisse\Entities\Devise L'instance de la devise créée.
+     * @return Devise L'instance de la devise créée.
      */
     public static function createDevise(array $data)
     {
@@ -96,7 +97,7 @@ class CompteServiceFacade extends Facade
      *
      * @param  int  $id  L'ID de la devise à mettre à jour.
      * @param  array  $data  Les nouvelles données à appliquer à la devise.
-     * @return \Modules\GestionCaisse\Entities\Devise L'instance de la devise mise à jour.
+     * @return Devise L'instance de la devise mise à jour.
      */
     public static function updateDevise($id, array $data)
     {
@@ -131,7 +132,7 @@ class CompteServiceFacade extends Facade
      * Liste des transferts avec pagination.
      *
      * @param  int  $pagination  Le nombre d'éléments à afficher par page (par défaut 20).
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator La collection paginée des transferts.
+     * @return LengthAwarePaginator La collection paginée des transferts.
      */
     public static function listTransferts($pagination = 20)
     {

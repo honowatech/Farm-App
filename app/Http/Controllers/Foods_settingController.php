@@ -5,13 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Food_Setting;
 use App\Models\FoodSettingVersion;
 use App\Models\Matiere_premiere;
-use App\Models\Setting;
 use App\Models\Type_animal;
 use App\Models\Unite;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator; // Utilise le nouveau modèle parent
-use Illuminate\Support\MessageBag; // Utilise le nouveau modèle de version
+use Illuminate\Support\Facades\DB; // Utilise le nouveau modèle parent
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\MessageBag;
+
+ // Utilise le nouveau modèle de version
 
 class Foods_settingController extends Controller
 {
@@ -154,7 +156,7 @@ class Foods_settingController extends Controller
      * pour un type d'animal donné.
      * Utilisé par AJAX pour la modale de sélection de planning à éditer.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function getFoodsForAnimalType(string $id_type_animal)
     {
@@ -255,7 +257,7 @@ class Foods_settingController extends Controller
         $invoices = $request->input('invoice');
 
         // 2. Vérification des chevauchements DANS les données soumises elles-mêmes
-        $errors = new MessageBag();
+        $errors = new MessageBag;
         for ($i = 0; $i < count($invoices); $i++) {
             for ($j = $i + 1; $j < count($invoices); $j++) {
                 $invoiceA = $invoices[$i];

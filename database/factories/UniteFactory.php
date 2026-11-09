@@ -6,7 +6,7 @@ use App\Models\Unite;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Unite>
+ * @extends Factory<Unite>
  */
 class UniteFactory extends Factory
 {

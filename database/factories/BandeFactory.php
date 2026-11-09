@@ -3,10 +3,12 @@
 namespace Database\Factories;
 
 use App\Models\Bande;
+use App\Models\Batiment;
+use App\Models\Type_animal;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Bande>
+ * @extends Factory<Bande>
  */
 class BandeFactory extends Factory
 {
@@ -26,8 +28,8 @@ class BandeFactory extends Factory
             'nbre_sujet' => $this->faker->numberBetween(1, 100),
             'age_depart' => $this->faker->numberBetween(1, 10),
             'statut_bande' => $this->faker->randomElement(['encours', 'terminee']),
-            'id_type_animal' => \App\Models\Type_animal::inRandomOrder()->first()->id,
-            'id_batiment' => \App\Models\Batiment::factory(),
+            'id_type_animal' => Type_animal::inRandomOrder()->first()->id,
+            'id_batiment' => Batiment::factory(),
             'prix_acquisition' => $this->faker->randomFloat(2, 1000, 5000),
         ];
     }

@@ -16,16 +16,13 @@ class VenteService
      */
     const TAUX_TVA = 0.0;
 
-    public function __construct(private StockService $stock)
-    {
-    }
+    public function __construct(private StockService $stock) {}
 
     /**
      * Enregistre une vente (facture, vente, mouvements de stock et lignes)
      * de façon transactionnelle. Les prix sont recalculés côté serveur.
      *
      * @param  array<int, array<string, mixed>>  $lignes
-     * @return \App\Models\Facture
      */
     public function creerVente(array $lignes, Collection $produits): Facture
     {

@@ -6,7 +6,7 @@ use App\Models\Typeusers;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Typeusers>
+ * @extends Factory<Typeusers>
  */
 class TypeusersFactory extends Factory
 {

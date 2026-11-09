@@ -2,11 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Matiere_premiere;
 use App\Models\Stock_matiere_premiere;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Stock_matiere_premiere>
+ * @extends Factory<Stock_matiere_premiere>
  */
 class Stock_matiere_premiereFactory extends Factory
 {
@@ -20,7 +21,7 @@ class Stock_matiere_premiereFactory extends Factory
     public function definition(): array
     {
         return [
-            'id_matiere_premiere' => \App\Models\Matiere_premiere::inRandomOrder()->first()->id,
+            'id_matiere_premiere' => Matiere_premiere::inRandomOrder()->first()->id,
             'type_mouvement' => $this->faker->randomElement(['approvisionnement', 'destockage']),
             'quantite' => $this->faker->randomFloat(2, 10, 1000), // Quantité entre 10 et 1000
             'dernier_stock' => $this->faker->randomFloat(2, 0, 1000), // Dernier stock entre 0 et 1000

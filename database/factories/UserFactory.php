@@ -2,11 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Typeusers;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
+ * @extends Factory<User>
  */
 class UserFactory extends Factory
 {
@@ -30,7 +31,7 @@ class UserFactory extends Factory
             'email_verified_at' => $this->faker->optional()->dateTime(),
             'password' => bcrypt('password'), // Utilise bcrypt pour un mot de passe haché
             'remember_token' => \Str::random(10),
-            'id_type_user' => \App\Models\Typeusers::factory(), // Associe un type d'utilisateur
+            'id_type_user' => Typeusers::factory(), // Associe un type d'utilisateur
             'statut' => $this->faker->boolean, // 0 ou 1
         ];
     }

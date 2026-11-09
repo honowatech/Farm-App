@@ -51,7 +51,7 @@ class CategorieController extends Controller
         ]);
 
         // Création de la nouvelle catégorie
-        $categorie = new Categorie();
+        $categorie = new Categorie;
         $categorie->type = $request->id_type_depense;
         $categorie->frequence = $request->frequence;
         $categorie->prix_unitaire = $request->prix_unitaire;

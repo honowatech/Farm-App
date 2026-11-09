@@ -104,9 +104,9 @@ class SalarieController extends Controller
             'adresse' => 'bail|required|min:4',
             'cni' => 'bail|required|min:9',
             'date_debut_contrat' => 'bail|required|date',
-            //'accumulateur' => 'bail|required|numeric|min:1',
+            // 'accumulateur' => 'bail|required|numeric|min:1',
             'salaire' => 'bail|required|numeric|min:25',
-            //'type_periode' => 'bail|required',
+            // 'type_periode' => 'bail|required',
         ]);
         if ($telephone_secondaire != null) {
             $validated = $request->validate([
@@ -217,7 +217,7 @@ class SalarieController extends Controller
             $validated = $request->validate([
                 'telephone' => 'bail|regex:/^[6,2][0-9]{8}$/',
             ]);
-            if (salaries::where('telephone_secondaire', $telephone_secondaire)->whereNotIn('id', [$id])->exists()) {
+            if (Salaries::where('telephone_secondaire', $telephone_secondaire)->whereNotIn('id', [$id])->exists()) {
                 $validated = $request->validate([
                     'telephone_secondaire' => 'unique:salaries',
                 ]);
@@ -225,14 +225,14 @@ class SalarieController extends Controller
         } else {
             $telephone_secondaire = null;
         }
-        if (salaries::where('telephone', $telephone)->whereNotIn('id', [$id])->exists()) {
+        if (Salaries::where('telephone', $telephone)->whereNotIn('id', [$id])->exists()) {
             $validated = $request->validate([
                 'telephone' => 'unique:salaries',
             ]);
         }
         // dd($nom,$telephone,$telephone_secondaire,$salaire,$accumulateur,$type_periode,$date_debut_contrat,$cni);
         // On enregistre le salaries
-        $salaries = salaries::findOrFail($id);
+        $salaries = Salaries::findOrFail($id);
         $salaries->nom = $nom;
         $salaries->telephone_secondaire = $telephone_secondaire;
         $salaries->telephone = $telephone;

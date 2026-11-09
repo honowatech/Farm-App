@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
+use App\Models\Typeusers;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -20,18 +22,18 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
-        \App\Models\Typeusers::create([
+        Typeusers::create([
             'libelle' => 'admin',
         ]);
-        \App\Models\Typeusers::create([
+        Typeusers::create([
             'libelle' => 'agent',
         ]);
 
-        \App\Models\Typeusers::create([
+        Typeusers::create([
             'libelle' => 'client',
         ]);
 
-        \App\Models\User::create([
+        User::create([
             'id_type_user' => '1',
             'name' => 'Admin Farm-App',
             'password' => Hash::make('11111111'),

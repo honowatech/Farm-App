@@ -1,5 +1,7 @@
 <?php
 
+use Modules\Salarie\Http\Controllers\SalarieController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -14,7 +16,7 @@
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::resource('/salarie', 'Modules\Salarie\Http\Controllers\SalarieController');
     Route::resource('paiement_salaire', 'Modules\Salarie\Http\Controllers\PaiementSalariesController');
-    Route::post('/salarie_ajax', [Modules\Salarie\Http\Controllers\SalarieController::class, 'ajax'])->name('ajax_recap_salarie');
-    Route::post('/salarie_ajax_edit', [Modules\Salarie\Http\Controllers\SalarieController::class, 'ajax_edit'])->name('ajax_recap_salarie_edit');
-    Route::get('/salarie-search/{id}', [Modules\Salarie\Http\Controllers\SalarieController::class, 'search'])->name('salarie.search');
+    Route::post('/salarie_ajax', [SalarieController::class, 'ajax'])->name('ajax_recap_salarie');
+    Route::post('/salarie_ajax_edit', [SalarieController::class, 'ajax_edit'])->name('ajax_recap_salarie_edit');
+    Route::get('/salarie-search/{id}', [SalarieController::class, 'search'])->name('salarie.search');
 });

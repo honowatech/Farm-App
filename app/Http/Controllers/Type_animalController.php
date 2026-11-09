@@ -61,7 +61,7 @@ class Type_animalController extends Controller
             'nom' => 'bail|required|unique:type_animals|max:255|min:2',
             'description' => 'bail|required|max:255|min:5',
         ]);
-        $type_animal = new type_animal;
+        $type_animal = new Type_animal;
         $type_animal->type_reproduction = $type_reproduction;
         $type_animal->nom = $nom;
         $type_animal->description = $description;
