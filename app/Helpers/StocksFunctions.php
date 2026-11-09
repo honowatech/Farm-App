@@ -3,68 +3,33 @@
 if (! function_exists('StockProduit')) {
     function Stockproduit($produit)
     {
-        $statut_stock = '';
-
-        $deriveIds = $produit->derives()->pluck('id');
-
-        $valeur_en_stock = (float) \App\Models\Stock_produit::whereIn('id_derive_produit', $deriveIds)
-            ->selectRaw("COALESCE(SUM(CASE WHEN type_mouvement = 'approvisionnement' THEN qte ELSE -qte END), 0) as total")
-            ->value('total');
-
-        if ($valeur_en_stock > 0) {
-            $statut_stock = '';
-        } else {
-            $valeur_en_stock = 0;
-            $statut_stock = 'Stock Épuisé';
-        }
+        $valeur_en_stock = app(\App\Services\StockService::class)->stockProduitDerives($produit->id);
 
         return [
-            'valeur_en_stock' => $valeur_en_stock,
-            'statut_stock' => $statut_stock,
+            'valeur_en_stock' => $valeur_en_stock > 0 ? $valeur_en_stock : 0,
+            'statut_stock' => $valeur_en_stock > 0 ? '' : 'Stock Épuisé',
         ];
     }
 }
 if (! function_exists('StockDerive')) {
     function StockDerive($derive)
     {
-        $statut_stock = '';
-
-        $valeur_en_stock = (float) \App\Models\Stock_produit::where('id_derive_produit', $derive->id)
-            ->selectRaw("COALESCE(SUM(CASE WHEN type_mouvement = 'approvisionnement' THEN qte ELSE -qte END), 0) as total")
-            ->value('total');
-
-        if ($valeur_en_stock > 0) {
-            $statut_stock = '';
-        } else {
-            $valeur_en_stock = 0;
-            $statut_stock = 'Stock Épuisé';
-        }
+        $valeur_en_stock = app(\App\Services\StockService::class)->stockDerive($derive->id);
 
         return [
-            'valeur_en_stock' => $valeur_en_stock,
-            'statut_stock' => $statut_stock,
+            'valeur_en_stock' => $valeur_en_stock > 0 ? $valeur_en_stock : 0,
+            'statut_stock' => $valeur_en_stock > 0 ? '' : 'Stock Épuisé',
         ];
     }
 }
 if (! function_exists('StockMatierepremiere')) {
     function StockMatierepremiere($matierePremiere)
     {
-        $statut_stock = '';
-
-        $valeur_en_stock = (float) \App\Models\Stock_matiere_premiere::where('id_matiere_premiere', $matierePremiere->id)
-            ->selectRaw("COALESCE(SUM(CASE WHEN type_mouvement = 'approvisionnement' THEN quantite ELSE -quantite END), 0) as total")
-            ->value('total');
-
-        if ($valeur_en_stock > 0) {
-            $statut_stock = '';
-        } else {
-            $valeur_en_stock = 0;
-            $statut_stock = 'Stock Épuisé';
-        }
+        $valeur_en_stock = app(\App\Services\StockService::class)->stockMatierePremiere($matierePremiere->id);
 
         return [
-            'valeur_en_stock' => $valeur_en_stock,
-            'statut_stock' => $statut_stock,
+            'valeur_en_stock' => $valeur_en_stock > 0 ? $valeur_en_stock : 0,
+            'statut_stock' => $valeur_en_stock > 0 ? '' : 'Stock Épuisé',
         ];
     }
 }
