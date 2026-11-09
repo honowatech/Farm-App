@@ -2,22 +2,12 @@
 <html class="loading" lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-textdirection="ltr">
 <!-- BEGIN: Head-->
 <head>
-    <style>
-        .nav-item .active{
-            box-shadow:0 0 5px 1px #000000 !important;
-        }
-        .menu-light .navigation .active a {
-            background : #fd5555 !important;
-            font-weight: bolder;
-        }
-        .badge{
-            padding: 0.3rem 1rem !important
-        }
-    </style>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
     <title>@yield('title')</title>
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <link rel="apple-touch-icon" href="{{ logo() }}">
     <link rel="shortcut icon" type="image/x-icon" href="{{ logo() }}">
@@ -61,26 +51,6 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('app-assets/css/plugins/extensions/ext-component-toastr.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('app-assets/css/pages/app-user.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('app-assets/css/pages/app-calendar.css') }}">
-    <style type="text/css">
-        .btn span ,.main-menu.menu-light .navigation .active a,.main-menu.menu-light .navigation .active a span,.badge{
-            color: #ffffff !important;
-        }
-        label .btn{
-            margin-bottom :initial !important;
-        }
-        .btn{
-            margin-bottom :1rem !important;
-        }
-        #ouverture_modal{
-            opacity: 0;
-        }
-        .main-menu.menu-light .navigation > li.open:not(.menu-item-closing) > a, .main-menu.menu-light .navigation > li.sidebar-group-active > a {
-            margin-bottom: 1rem;
-            background: #82868B35 !important;
-            font-weight: bolder;
-        }
-
-    </style>
     @yield('css')
 </head>
 <!-- END: Head-->

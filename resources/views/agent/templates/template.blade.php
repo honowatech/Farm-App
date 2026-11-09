@@ -2,18 +2,6 @@
 <html class="loading" lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-textdirection="ltr">
 <!-- BEGIN: Head-->
 <head>
-    <style>
-        .nav-item .active{
-            box-shadow:0 0 5px 1px #000000 !important;
-        }
-        .menu-light .navigation .active a {
-            background : #fd5555 !important;
-            font-weight: bolder;
-        }
-        .badge{
-            padding: 0.3rem 1rem !important
-        }
-    </style>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
@@ -23,6 +11,8 @@
     <title>@yield('title', 'Agent Dashboard')</title>
     <link rel="apple-touch-icon" href="{{logo()}}">
     <link rel="shortcut icon" type="image/x-icon" href="{{logo()}}">
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- BEGIN: Vendor CSS-->
     <link rel="stylesheet" type="text/css" href="{{ asset('app-assets/vendors/css/vendors.min.css') }}">
