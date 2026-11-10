@@ -33,5 +33,11 @@ return [
         'bande.search',
         'nettoyage.index',
         'seanceVaccination.index',
+        'mortalite.index',
+        'mortalite.create',
+        'mortalite.store',
+        'mortalite.edit',
+        'mortalite.update',
+        'mortalite.destroy',
     ],
 ];

@@ -36,6 +36,11 @@
                         </a>
                     </div>
                     <div class="col-6 col-md-3 mb-1">
+                        <a href="{{ route('mortalite.create') }}" class="btn btn-danger btn-lg btn-block">
+                            <i data-feather="alert-triangle"></i> Mortalité
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3 mb-1">
                         <a href="{{ route('bande.index') }}" class="btn btn-success btn-lg btn-block">
                             <i data-feather="columns"></i> Bandes
                         </a>

@@ -67,6 +67,16 @@
                     <li id="SeanceVaccinationListe"><a class="d-flex align-items-center" href="{{ route('seanceVaccination.index') }}"><i data-feather="circle"></i><span class="menu-item">{{ __('message.Liste') }}</span></a></li>
                 </ul>
             </li>
+            <li class="nav-item has-sub">
+                <a class="d-flex align-items-center" href="#">
+                    <i data-feather="alert-triangle"></i>
+                    <span class="menu-title text-truncate">Mortalité</span>
+                </a>
+                <ul class="menu-content">
+                    <li id="MortaliteListe"><a class="d-flex align-items-center" href="{{ route('mortalite.index') }}"><i data-feather="circle"></i><span class="menu-item">Liste</span></a></li>
+                    <li id="MortaliteAjouter"><a class="d-flex align-items-center" href="{{ route('mortalite.create') }}"><i data-feather="circle"></i><span class="menu-item">Ajouter</span></a></li>
+                </ul>
+            </li>
 
         </ul>
     </div>

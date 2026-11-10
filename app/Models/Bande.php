@@ -49,6 +49,11 @@ class Bande extends Model
         return $this->hasMany('App\Models\Animal', 'id_bande');
     }
 
+    public function mortalites()
+    {
+        return $this->hasMany(Mortalite::class, 'id_bande');
+    }
+
     // --- Fonctions de calcul d'âge ---
 
     /**
@@ -188,5 +193,29 @@ class Bande extends Model
             ->logAll()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+
+    /**
+     * ACCESSEUR : Effectif vivant (initial - mortalité cumulée).
+     */
+    public function getEffectifVivantAttribute(): int
+    {
+        $morts = (int) $this->mortalites()->sum('nombre_morts');
+
+        return max(0, $this->nbre_sujet - $morts);
+    }
+
+    /**
+     * ACCESSEUR : Taux de mortalité en pourcentage.
+     */
+    public function getTauxMortaliteAttribute(): float
+    {
+        if ($this->nbre_sujet <= 0) {
+            return 0.0;
+        }
+
+        $morts = (int) $this->mortalites()->sum('nombre_morts');
+
+        return round(($morts / $this->nbre_sujet) * 100, 2);
     }
 }

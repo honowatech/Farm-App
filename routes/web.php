@@ -17,6 +17,7 @@ use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\Ligne_factureController;
 use App\Http\Controllers\LogoController;
 use App\Http\Controllers\Matiere_premiereController;
+use App\Http\Controllers\MortaliteController;
 use App\Http\Controllers\NutritionController;
 use App\Http\Controllers\ProduitController;
 use App\Http\Controllers\RamassageController;
@@ -74,6 +75,7 @@ Route::group(['middleware' => ['auth', 'web']], function () {
             'logo' => LogoController::class,
             'veterinaire' => VeterinaireController::class,
             'agent' => AgentController::class,
+            'mortalite' => MortaliteController::class,
         ]);
     });
 
