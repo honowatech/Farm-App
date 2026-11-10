@@ -67,7 +67,7 @@ class Bande extends Model
         // Si aucune date n'est fournie, on utilise la date et l'heure actuelles
         $targetDate = $date ? $date->copy()->startOfDay() : now()->startOfDay();
 
-        return $this->date_lancement_bande->diffInDays($targetDate) + $this->age_depart;
+        return (int) $this->date_lancement_bande->diffInDays($targetDate) + (int) $this->age_depart;
     }
 
     /**
