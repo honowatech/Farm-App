@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Vente extends Model
 {
@@ -11,6 +13,7 @@ class Vente extends Model
 
     public $timestamps = true;
 
+    use LogsActivity;
     use SoftDeletes;
 
     protected $fillable = ['id_facture', 'id_saver', 'date_vente'];
@@ -30,5 +33,13 @@ class Vente extends Model
     public function factures()
     {
         return $this->hasMany('App\Models\Facture', 'id');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

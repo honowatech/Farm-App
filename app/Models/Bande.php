@@ -9,10 +9,12 @@ use Carbon\CarbonInterval;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Bande extends Model
 {
-    use FindsValidFoodSettings, HasFactory, SoftDeletes; // On inclut le Trait ici !
+    use FindsValidFoodSettings, HasFactory, LogsActivity, SoftDeletes; // On inclut le Trait ici !
 
     protected $table = 'bandes';
 
@@ -178,5 +180,13 @@ class Bande extends Model
         }
 
         return $passages_faits_hier >= $frequence_attendue_hier ? 'Complet' : 'Incomplet';
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

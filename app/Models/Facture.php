@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Facture extends Model
 {
@@ -11,6 +13,7 @@ class Facture extends Model
 
     public $timestamps = true;
 
+    use LogsActivity;
     use SoftDeletes;
 
     protected $fillable = ['date_facturation', 'total_ht', 'id_client', 'tva', 'total_ttc', 'matricule'];
@@ -30,5 +33,13 @@ class Facture extends Model
     public function vente_facture()
     {
         return $this->belongsTo('App\Models\Vente', 'id_vente');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

@@ -211,6 +211,12 @@
                     <li id="UserAjouter"><a class="d-flex align-items-center" href="{{ route('user.create') }}"><i data-feather="circle"></i><span class="menu-item">{{ __('message.Ajouter') }}</span></a></li>
                 </ul>
             </li>
+            <li class="nav-item" id="AuditListe">
+                <a class="d-flex align-items-center" href="{{ route('audit.index') }}">
+                    <i data-feather="clock"></i>
+                    <span class="menu-title text-truncate">Historique</span>
+                </a>
+            </li>
             <li class="nav-item has-sub">
                 <a class="d-flex align-items-center" href="#">
                     <i data-feather="user"></i>

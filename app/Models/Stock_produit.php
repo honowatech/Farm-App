@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Stock_produit extends Model
 {
@@ -11,6 +13,7 @@ class Stock_produit extends Model
 
     public $timestamps = true;
 
+    use LogsActivity;
     use SoftDeletes;
 
     protected $fillable = ['id_produit', 'id_derive_produit', 'type_mouvement', 'qte', 'dernier_stock', 'nouveau_stock', 'date_entree', 'date_sortie'];
@@ -25,5 +28,13 @@ class Stock_produit extends Model
     public function derive_produit()
     {
         return $this->belongsTo('App\Models\Produit', 'id_derive_produit');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

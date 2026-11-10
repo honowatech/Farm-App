@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Produit extends Model
 {
@@ -12,7 +14,7 @@ class Produit extends Model
 
     public $timestamps = true;
 
-    use HasFactory, SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = ['id_type_animal', 'prix_unitaire', 'nom', 'description', 'statut', 'id_type_produit'];
 
@@ -41,5 +43,13 @@ class Produit extends Model
     public function produit_type()
     {
         return $this->BelongsTo('App\Models\type_produit', 'id_type_produit');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

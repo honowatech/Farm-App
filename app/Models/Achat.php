@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Achat extends Model
 {
@@ -12,7 +14,7 @@ class Achat extends Model
 
     public $timestamps = true;
 
-    use HasFactory, SoftDeletes;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = ['id_stock_matiere_premiere', 'unite_achat', 'id_matiere_premiere', 'prix_unitaire', 'qte', 'prix_total', 'mode_de_paiement', 'id_fournisseur', 'date'];
 
@@ -31,5 +33,13 @@ class Achat extends Model
     public function fournisseur()
     {
         return $this->belongsTo('App\Models\Fournisseur', 'id_fournisseur');
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }
