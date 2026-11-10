@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Bande;
 use App\Models\Batiment;
+use App\Models\Facture;
 use App\Models\Matiere_premiere;
 use App\Models\Nettoyage;
 use App\Models\Nutrition;
 use App\Models\Seance_de_vaccination;
+use App\Models\Vente;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Support\Facades\Auth;
 
@@ -67,7 +69,32 @@ class HomeController extends Controller
             $matiere_premieres = Matiere_premiere::get();
             $batiments = Batiment::get();
 
-            return view('admin.pages.home.home', compact('bandes_en_cours', 'matiere_premieres', 'batiments'));
+            // KPIs : chiffre d'affaires et ventes du mois en cours
+            $ca_du_mois = Facture::whereMonth('date_facturation', now()->month)
+                ->whereYear('date_facturation', now()->year)
+                ->sum('total_ttc');
+
+            $ventes_du_mois = Vente::whereMonth('date_vente', now()->month)
+                ->whereYear('date_vente', now()->year)
+                ->count();
+
+            // Effectif total des bandes en cours (sujets encore en élevage)
+            $sujets_en_elevage = $bandes_en_cours->sum('nbre_sujet');
+
+            // Alertes : bandes dont la nutrition du jour est absente ou incomplète
+            $bandes_nutrition_alerte = $bandes_en_cours->filter(function (Bande $bande) {
+                return in_array($bande->statut_nutrition_aujourdhui, ['Aucune', 'Incomplet'], true);
+            });
+
+            return view('admin.pages.home.home', compact(
+                'bandes_en_cours',
+                'matiere_premieres',
+                'batiments',
+                'ca_du_mois',
+                'ventes_du_mois',
+                'sujets_en_elevage',
+                'bandes_nutrition_alerte'
+            ));
         }
 
         abort(403, 'Accès non autorisé.');
