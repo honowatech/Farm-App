@@ -94,6 +94,16 @@ Route::group(['middleware' => ['auth', 'web']], function () {
         Route::get('/vente-export', [VenteController::class, 'export'])->name('vente.export');
         Route::get('/vente-export-pdf', [VenteController::class, 'exportPdf'])->name('vente.export.pdf');
         Route::get('/facture-pdf/{id}', [VenteController::class, 'downloadPdf'])->name('vente.facture.pdf');
+
+        // Exports CSV / PDF
+        Route::get('/achat-export', [AchatController::class, 'export'])->name('achat.export');
+        Route::get('/achat-export-pdf', [AchatController::class, 'exportPdf'])->name('achat.export.pdf');
+        Route::get('/client-export', [ClientController::class, 'export'])->name('client.export');
+        Route::get('/client-export-pdf', [ClientController::class, 'exportPdf'])->name('client.export.pdf');
+        Route::get('/fournisseur-export', [FournisseurController::class, 'export'])->name('fournisseur.export');
+        Route::get('/fournisseur-export-pdf', [FournisseurController::class, 'exportPdf'])->name('fournisseur.export.pdf');
+        Route::get('/produit-export', [ProduitController::class, 'export'])->name('produit.export');
+        Route::get('/produit-export-pdf', [ProduitController::class, 'exportPdf'])->name('produit.export.pdf');
         Route::get('/ajout de client', [VenteController::class, 'get_formulaire'])->name('formulaire');
         Route::get('/selection-client', [VenteController::class, 'get_client'])->name('client');
         Route::get('/achat_ajax_result', [VenteController::class, 'get_prix'])->name('ajax_result_prix');

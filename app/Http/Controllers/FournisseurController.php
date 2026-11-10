@@ -27,6 +27,34 @@ class FournisseurController extends Controller
     }
 
     /**
+     * Exporte les fournisseurs au format CSV.
+     */
+    public function export(Request $request)
+    {
+        $fournisseurs = Fournisseur::orderBy('nom')->get();
+
+        $rows = $fournisseurs->map(fn ($f) => [
+            $f->nom,
+            $f->telephone,
+            $f->telephone_secondaire,
+            $f->adresse,
+            $f->statut == 1 ? 'Actif' : 'Inactif',
+        ])->toArray();
+
+        return $this->downloadCsv(['Nom', 'Téléphone', 'Téléphone secondaire', 'Adresse', 'Statut'], $rows, 'fournisseurs_'.now()->format('Y-m-d'));
+    }
+
+    /**
+     * Exporte les fournisseurs au format PDF.
+     */
+    public function exportPdf(Request $request)
+    {
+        $fournisseurs = Fournisseur::orderBy('nom')->get();
+
+        return $this->downloadPdfView('admin.pages.fournisseur.liste_pdf', compact('fournisseurs'), 'fournisseurs_'.now()->format('Y-m-d'), 'landscape');
+    }
+
+    /**
      * Show the form for creating a new resource.
      *
      * @return Response

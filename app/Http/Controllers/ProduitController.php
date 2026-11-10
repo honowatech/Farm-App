@@ -26,6 +26,33 @@ class ProduitController extends Controller
     }
 
     /**
+     * Exporte les produits au format CSV.
+     */
+    public function export(Request $request)
+    {
+        $produits = Produit::orderBy('nom')->get();
+
+        $rows = $produits->map(fn ($p) => [
+            $p->nom,
+            $p->prix_unitaire,
+            $p->description,
+            $p->statut == 1 ? 'Actif' : 'Inactif',
+        ])->toArray();
+
+        return $this->downloadCsv(['Nom', 'Prix unitaire (FCFA)', 'Description', 'Statut'], $rows, 'produits_'.now()->format('Y-m-d'));
+    }
+
+    /**
+     * Exporte les produits au format PDF.
+     */
+    public function exportPdf(Request $request)
+    {
+        $produits = Produit::orderBy('nom')->get();
+
+        return $this->downloadPdfView('admin.pages.produit.liste_pdf', compact('produits'), 'produits_'.now()->format('Y-m-d'), 'landscape');
+    }
+
+    /**
      * Show the form for creating a new resource.
      *
      * @return Response

@@ -22,6 +22,39 @@
         </div>
         <div class="content-body">
 <div class="row match-height">
+    <!-- Actions rapides -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Actions rapides</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 col-md-3 mb-1">
+                        <a href="{{ route('nutrition.index') }}" class="btn btn-primary btn-lg btn-block">
+                            <i data-feather="activity"></i> Nutrition
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3 mb-1">
+                        <a href="{{ route('bande.index') }}" class="btn btn-success btn-lg btn-block">
+                            <i data-feather="columns"></i> Bandes
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3 mb-1">
+                        <a href="{{ route('nettoyage.index') }}" class="btn btn-info btn-lg btn-block">
+                            <i data-feather="droplet"></i> Nettoyage
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-3 mb-1">
+                        <a href="{{ route('seanceVaccination.index') }}" class="btn btn-warning btn-lg btn-block">
+                            <img src="{{ asset('app-assets/images/feather/vaccination.png') }}" style="height: 1.25rem; width: 1.25rem;"> Vaccination
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Statistiques Principales -->
     <div class="col-xl-12 col-md-12 col-12">
         <div class="card card-statistics">

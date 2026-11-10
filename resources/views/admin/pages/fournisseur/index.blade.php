@@ -32,6 +32,12 @@
                     <a class="m-1 btn btn-secondary btn-gradient-secondary" href="{{route('fournisseur.create')}}">
                         <i data-feather='plus' style="width: 20px;height: 20px;"></i> Nouveau fournisseur
                     </a>
+                    <a class="m-1 btn btn-success btn-gradient-success" href="{{ route('fournisseur.export') }}">
+                        <i class="fa-solid fa-file-excel mr-50"></i> Exporter CSV
+                    </a>
+                    <a class="m-1 btn btn-danger btn-gradient-danger" href="{{ route('fournisseur.export.pdf') }}">
+                        <i class="fa-solid fa-file-pdf mr-50"></i> Exporter PDF
+                    </a>
                         <form action="{{ route('fournisseur.index') }}" class="mt-1 col-lg-3" id="search" method="GET">
                             @csrf
                             <div class="form-group">

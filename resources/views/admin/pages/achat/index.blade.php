@@ -31,6 +31,12 @@
                     <a class="m-1 btn btn-secondary btn-gradient-secondary" href="{{route('achat.create')}}">
                         <i data-feather='plus' style="width: 20px;height: 20px;"></i> Nouvel achat
                     </a>
+                    <a class="m-1 btn btn-success btn-gradient-success" href="{{ route('achat.export') }}">
+                        <i class="fa-solid fa-file-excel mr-50"></i> Exporter CSV
+                    </a>
+                    <a class="m-1 btn btn-danger btn-gradient-danger" href="{{ route('achat.export.pdf') }}">
+                        <i class="fa-solid fa-file-pdf mr-50"></i> Exporter PDF
+                    </a>
                         <form class="mt-1 col-12" id="search" method="GET">
                             @csrf
                             <div class="mx-auto row">

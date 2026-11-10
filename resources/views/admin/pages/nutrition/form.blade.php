@@ -62,7 +62,7 @@
             <div class="form-group">
                 <label for="qte">Quantité donnée<span class="text-danger">*</span></label>
                 <div class="input-group">
-                    <input type="number" step="0.01" class="form-control @error('qte') is-invalid @enderror"
+                    <input type="number" step="0.01" inputmode="decimal" class="form-control @error('qte') is-invalid @enderror"
                            id="qte" name="qte" value="{{ old('qte') }}" placeholder="Ex: 50.5" min="0.01" required>
                     <div class="input-group-append">
                         <span class="input-group-text" id="unite-label">Unité</span>

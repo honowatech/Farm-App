@@ -28,7 +28,40 @@ class AchatController extends Controller
         session()->flash('search', $request->input('recherche'));
 
         return view('admin.pages.achat.index', compact('achats', 'fournisseurs', 'aliments'));
+    }
 
+    /**
+     * Exporte les achats au format CSV.
+     */
+    public function export(Request $request)
+    {
+        $achats = Achat::with(['fournisseur', 'matiere_premiere'])->orderBy('date', 'desc')->get();
+
+        $rows = $achats->map(fn ($a) => [
+            $a->date,
+            $a->fournisseur?->nom ?? '',
+            $a->matiere_premiere?->nom_produit ?? '',
+            $a->qte,
+            $a->prix_unitaire,
+            $a->prix_total,
+            $a->mode_de_paiement,
+        ])->toArray();
+
+        return $this->downloadCsv(
+            ['Date', 'Fournisseur', 'Matière première', 'Quantité', 'Prix unitaire (FCFA)', 'Prix total (FCFA)', 'Mode de paiement'],
+            $rows,
+            'achats_'.now()->format('Y-m-d')
+        );
+    }
+
+    /**
+     * Exporte les achats au format PDF.
+     */
+    public function exportPdf(Request $request)
+    {
+        $achats = Achat::with(['fournisseur', 'matiere_premiere'])->orderBy('date', 'desc')->get();
+
+        return $this->downloadPdfView('admin.pages.achat.liste_pdf', compact('achats'), 'achats_'.now()->format('Y-m-d'), 'landscape');
     }
 
     /**

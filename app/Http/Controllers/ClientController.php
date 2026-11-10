@@ -28,6 +28,33 @@ class ClientController extends Controller
     }
 
     /**
+     * Exporte les clients au format CSV.
+     */
+    public function export(Request $request)
+    {
+        $clients = Client::orderBy('nom')->get();
+
+        $rows = $clients->map(fn ($c) => [
+            $c->nom,
+            $c->telephone,
+            $c->adresse,
+            $c->email,
+        ])->toArray();
+
+        return $this->downloadCsv(['Nom', 'Téléphone', 'Adresse', 'Email'], $rows, 'clients_'.now()->format('Y-m-d'));
+    }
+
+    /**
+     * Exporte les clients au format PDF.
+     */
+    public function exportPdf(Request $request)
+    {
+        $clients = Client::orderBy('nom')->get();
+
+        return $this->downloadPdfView('admin.pages.client.liste_pdf', compact('clients'), 'clients_'.now()->format('Y-m-d'), 'landscape');
+    }
+
+    /**
      * Show the form for creating a new resource.
      *
      * @return Response
