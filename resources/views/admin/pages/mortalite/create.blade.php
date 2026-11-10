@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Nouvelle mortalité')
+@section('title')
+{{'Nouvelle Mortalité'}}
+@endsection
 
 @section('contenu')
 <div class="content app-content">
@@ -8,69 +10,142 @@
     <div class="header-navbar-shadow"></div>
     <div class="content-wrapper">
         <div class="content-header row">
-            <div class="content-header-left col-md-9 col-12 mb-2">
+            <div class="mb-2 content-header-left col-md-12 col-12">
                 <div class="row breadcrumbs-top">
                     <div class="col-12">
-                        <h2 class="content-header-title float-left mb-0">Nouvelle mortalité</h2>
+                        <h2 class="float-left mb-0 content-header-title">Nouvelle Mortalité</h2>
+                        <div class="breadcrumb-wrapper">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{{ route('home') }}">Accueil</a></li>
+                                <li class="breadcrumb-item"><a href="{{ route('mortalite.index') }}">Mortalité</a></li>
+                                <li class="breadcrumb-item active">Ajouter</li>
+                            </ol>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="content-body">
-            <div class="card">
-                <div class="card-body">
-                    <form method="POST" action="{{ route('mortalite.store') }}">
-                        @csrf
-
-                        <div class="row">
-                            <div class="col-12 col-md-6 form-group">
-                                <label for="id_bande">Bande <span class="text-danger">*</span></label>
-                                <select name="id_bande" id="id_bande" class="form-control @error('id_bande') is-invalid @enderror" required>
-                                    <option value="" disabled selected>Choisir une bande</option>
-                                    @foreach($bandes as $bande)
-                                        <option value="{{ $bande->id }}" {{ old('id_bande') == $bande->id ? 'selected' : '' }}>{{ $bande->nom }}</option>
-                                    @endforeach
-                                </select>
-                                @error('id_bande')<small class="text-danger">{{ $message }}</small>@enderror
+            <section id="multiple-column-form">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Formulaire de création</h3>
                             </div>
-
-                            <div class="col-12 col-md-6 form-group">
-                                <label for="date">Date <span class="text-danger">*</span></label>
-                                <input type="date" name="date" id="date" class="form-control @error('date') is-invalid @enderror" value="{{ old('date', now()->format('Y-m-d')) }}" required>
-                                @error('date')<small class="text-danger">{{ $message }}</small>@enderror
-                            </div>
-
-                            <div class="col-12 col-md-6 form-group">
-                                <label for="nombre_morts">Nombre de morts <span class="text-danger">*</span></label>
-                                <input type="number" inputmode="numeric" name="nombre_morts" id="nombre_morts" class="form-control @error('nombre_morts') is-invalid @enderror" value="{{ old('nombre_morts') }}" min="0" placeholder="Ex: 5" required>
-                                @error('nombre_morts')<small class="text-danger">{{ $message }}</small>@enderror
-                            </div>
-
-                            <div class="col-12 col-md-6 form-group">
-                                <label for="id_cause">Cause</label>
-                                <select name="id_cause" id="id_cause" class="form-control">
-                                    <option value="">— Choisir une cause —</option>
-                                    @foreach($causes as $cause)
-                                        <option value="{{ $cause->id }}" {{ old('id_cause') == $cause->id ? 'selected' : '' }}>{{ $cause->libelle }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="col-12 form-group">
-                                <label for="observation">Observation</label>
-                                <textarea name="observation" id="observation" rows="2" class="form-control">{{ old('observation') }}</textarea>
+                            <div class="card-body">
+                                <form class="form" action="{{ route('mortalite.store') }}" method="POST">
+                                    @csrf
+                                    <div class="mx-auto row col-lg-10">
+                                        <div class="mx-auto col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="id_bande">Bande</label>
+                                                <span class="cursor-pointer text-danger" title="Obligatoire">*</span>
+                                                <div class="form-group">
+                                                    <select class="select2 form-control @error('id_bande') is-invalid @enderror" id="id_bande" name="id_bande" required>
+                                                        <option value="">Choisir une bande</option>
+                                                        @foreach($bandes as $bande)
+                                                            <option value="{{ $bande->id }}" {{ old('id_bande') == $bande->id ? 'selected' : '' }}>{{ $bande->nom }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                    @error('id_bande')
+                                                    <small class="alert alert-danger">{{ $message }}</small>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mx-auto col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="date">Date</label>
+                                                <span class="cursor-pointer text-danger" title="Obligatoire">*</span>
+                                                <div class="form-group">
+                                                    <div class="input-group input-group-merge @error('date') is-invalid @enderror">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text"><i data-feather="calendar"></i></span>
+                                                        </div>
+                                                        <input type="date" id="date" class="form-control @error('date') is-invalid @enderror" name="date" value="{{ old('date', now()->format('Y-m-d')) }}" required>
+                                                    </div>
+                                                    @error('date')
+                                                    <small class="alert alert-danger">{{ $message }}</small>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mx-auto col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="nombre_morts">Nombre de morts</label>
+                                                <span class="cursor-pointer text-danger" title="Obligatoire">*</span>
+                                                <div class="form-group">
+                                                    <div class="input-group input-group-merge @error('nombre_morts') is-invalid @enderror">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text"><i data-feather="alert-triangle"></i></span>
+                                                        </div>
+                                                        <input type="number" inputmode="numeric" id="nombre_morts" class="form-control @error('nombre_morts') is-invalid @enderror" name="nombre_morts" placeholder="Ex : 5" value="{{ old('nombre_morts') }}" min="0" required>
+                                                    </div>
+                                                    @error('nombre_morts')
+                                                    <small class="alert alert-danger">{{ $message }}</small>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mx-auto col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="id_cause">Cause</label>
+                                                <span class="cursor-pointer text-info" title="Optionnel">Optionnel</span>
+                                                <div class="form-group">
+                                                    <select class="select2 form-control" id="id_cause" name="id_cause">
+                                                        <option value="">Choisir une cause</option>
+                                                        @foreach($causes as $cause)
+                                                            <option value="{{ $cause->id }}" {{ old('id_cause') == $cause->id ? 'selected' : '' }}>{{ $cause->libelle }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mx-auto col-md-8 col-12">
+                                            <div class="form-group">
+                                                <label for="observation">Observation</label>
+                                                <span class="cursor-pointer text-info" title="Optionnel">Optionnel</span>
+                                                <div class="form-group">
+                                                    <textarea class="form-control @error('observation') is-invalid @enderror" id="observation" placeholder="Observation" name="observation" rows="3">{{ old('observation') }}</textarea>
+                                                    @error('observation')
+                                                    <small class="alert alert-danger">{{ $message }}</small>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row col-12">
+                                        <div class="mx-auto text-center d-none d-md-block col-lg-8 col-md-12 col-12">
+                                            <a href="{{ route('mortalite.index') }}" class="mt-1 btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-danger mt-md-2 mr-md-4">
+                                                <i class="mr-1" data-feather="x"></i> Annuler
+                                            </a>
+                                            <button type="submit" class="mt-1 btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-success mt-md-2">
+                                                <i class="mr-1" data-feather="save"></i> Enregistrer
+                                            </button>
+                                        </div>
+                                        <div class="mx-auto text-center d-block d-md-none col-lg-8 col-md-12 col-12">
+                                            <button type="submit" class="mt-1 btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-success mt-md-2 mr-md-2">
+                                                <i class="mr-1" data-feather="save"></i> Enregistrer
+                                            </button>
+                                            <a href="{{ route('mortalite.index') }}" class="mt-1 btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-danger mt-md-2">
+                                                <i class="mr-1" data-feather="x"></i> Annuler
+                                            </a>
+                                        </div>
+                                    </div>
+                                </form>
                             </div>
                         </div>
-
-                        <div class="row">
-                            <div class="col-12">
-                                <button type="submit" class="btn btn-primary btn-lg btn-block">Enregistrer</button>
-                            </div>
-                        </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+            </section>
         </div>
     </div>
 </div>
+@endsection
+
+@section('javascript')
+<script type="text/javascript">
+    document.querySelector('#MortaliteAjouter').classList.add('active');
+</script>
 @endsection
