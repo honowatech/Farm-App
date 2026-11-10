@@ -44,6 +44,16 @@ return array (
   'Désactivé' => 'Disabled',
   'Désactiver' => 'Disabled',
   'Aliment' => 'Food',
-  ''
-
+  'Gérer' => 'Manage',
+  'Calendrier' => 'Calendar',
+  'Réglages' => 'Settings',
+  'Élevage' => 'Livestock',
+  'Production' => 'Production',
+  'Commerce' => 'Commerce',
+  'Finances' => 'Finances',
+  'Caisse' => 'Cash register',
+  'Liste des caisses' => 'Cash registers',
+  'Devise' => 'Currency',
+  'Transaction' => 'Transaction',
+  'Transfert' => 'Transfer',
 );
