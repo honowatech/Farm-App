@@ -1,8 +1,4 @@
-@extends('admin/templates/template')
-
-@section('menu')
-    @include('admin.menu.menu')
-@endsection
+@extends('layouts.app')
 
 @section('title')
 {{'Nouveau type de dépense'}}

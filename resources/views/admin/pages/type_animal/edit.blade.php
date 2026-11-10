@@ -1,13 +1,8 @@
-@extends('admin/templates/template')
+@extends('layouts.app')
 
 @section('title')
 {{'Editer '}} {{$type_animal->nom}}
 @endsection
-@if(auth()->user()->type_user->libelle === 'admin')
-    @include('admin/menu/menu')
-@elseif(auth()->user()->type_user->libelle === 'agent')
-    @include('agent/menu/menu')
-@endif
 @section('contenu')
 
 <div class="content app-content">

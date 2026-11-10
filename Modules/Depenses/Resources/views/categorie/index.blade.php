@@ -1,8 +1,4 @@
-@extends('admin/templates/template')
-
-@section('menu')
-    @include('admin.menu.menu')
-@endsection
+@extends('layouts.app')
 
 @section('title')
 {{'Liste des types de dépense'}}

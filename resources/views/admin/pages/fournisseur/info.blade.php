@@ -1,13 +1,7 @@
-@extends('admin/templates/template')
+@extends('layouts.app')
 
 @section('title')
 {{'Détails sur '}} {{name($fournisseur->nom)}}
-@endsection
-@section('menu')
-    @php
-        $role = auth()->user()->type_user->libelle;
-    @endphp
-    @include($role.'.menu.menu')
 @endsection
 @section('contenu')
 
@@ -248,11 +242,6 @@
 </div>
     <!-- END: Content-->
 @endsection
-@if(auth()->user()->type_user->libelle === 'admin')
-    @include('admin/menu/menu')
-@elseif(auth()->user()->type_user->libelle === 'agent')
-    @include('agent/menu/menu')
-@endif
 @section('javascript')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 	<script type="text/javascript">
@@ -284,8 +273,3 @@
             document.querySelector('#FournisseurListe').classList.add('active');
 	</script>
 @endsection
-@if(auth()->user()->type_user->libelle === 'admin')
-    @include('admin/menu/menu')
-@elseif(auth()->user()->type_user->libelle === 'agent')
-    @include('agent/menu/menu')
-@endif

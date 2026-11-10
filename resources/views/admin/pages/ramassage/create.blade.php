@@ -1,13 +1,7 @@
-@extends('admin/templates/template')
+@extends('layouts.app')
 
 @section('title')
 {{'New Ramassage'}}
-@endsection
-@section('menu')
-    @php
-        $role = auth()->user()->type_user->libelle;
-    @endphp
-    @include($role.'.menu.menu')
 @endsection
 @section('contenu')
 

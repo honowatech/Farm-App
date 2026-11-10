@@ -1,13 +1,8 @@
-@extends('admin/templates/template')
+@extends('layouts.app')
 
 @section('title')
 {{'Liste des Salariés '}}
 @endsection
-@if(auth()->user()->type_user->libelle === 'admin')
-    @include('admin/menu/menu')
-@elseif(auth()->user()->type_user->libelle === 'agent')
-    @include('agent/menu/menu')
-@endif
 @section('contenu')
 <div class="content app-content">
     <div class="content-overlay"></div>

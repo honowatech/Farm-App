@@ -1,15 +1,9 @@
-@extends('admin/templates/template')
+@extends('layouts.app')
 @section('css')
     <link rel="stylesheet" type="text/css" href="{{asset('app-assets/css/pages/dashboard-ecommerce.css')}}">
 @endsection
 @section('title')
     {{'Farm App Home'}}
-@endsection
-@section('menu')
-    @php
-        $role = auth()->user()->type_user->libelle;
-    @endphp
-    @include($role.'.menu.menu')
 @endsection
 @section('contenu')
     <!-- BEGIN: Content-->

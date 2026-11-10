@@ -121,7 +121,7 @@
         </div>
     </nav>
     <!-- END: Header-->
-    @yield('menu')
+    @include(auth()->user()->type_user?->libelle . '.menu.menu')
     <!-- BEGIN: Content-->
     @yield('contenu')
     <!-- END: Content-->

@@ -1,13 +1,8 @@
-@extends('admin/templates/template')
+@extends('layouts.app')
 
 @section('title')
 Infos sur {{ucfirst($derive_produit->nom)}}
 @endsection
-@if(auth()->user()->type_user->libelle === 'admin')
-    @include('admin/menu/menu')
-@elseif(auth()->user()->type_user->libelle === 'agent')
-    @include('agent/menu/menu')
-@endif
 @section('contenu')
 <div class="content app-content">
     <div class="content-overlay"></div>
@@ -183,11 +178,6 @@ Infos sur {{ucfirst($derive_produit->nom)}}
 </div>
 
 @endsection
-@if(auth()->user()->type_user->libelle === 'admin')
-    @include('admin/menu/menu')
-@elseif(auth()->user()->type_user->libelle === 'agent')
-    @include('agent/menu/menu')
-@endif
 @section('javascript')
     <script src="{{asset('app-assets/vendors/js/ui/jquery.sticky.js')}}"></script>
     <script src="{{asset('app-assets/vendors/js/forms/spinner/jquery.bootstrap-touchspin.js')}}"></script>
@@ -204,8 +194,3 @@ Infos sur {{ucfirst($derive_produit->nom)}}
         document.querySelector('#ProduitListe').classList.add('active');
     </script>
 @endsection
-@if(auth()->user()->type_user->libelle === 'admin')
-    @include('admin/menu/menu')
-@elseif(auth()->user()->type_user->libelle === 'agent')
-    @include('agent/menu/menu')
-@endif

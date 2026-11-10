@@ -1,4 +1,4 @@
-@extends('admin/templates/template')
+@extends('layouts.app')
 @section('css')
 <style type="text/css">
 .reset-flex {
@@ -26,13 +26,6 @@
 @section('title')
  Nutrition
 @endsection
-@section('menu')
-    @php
-        $role = auth()->user()->type_user->libelle;
-    @endphp
-    @include($role.'.menu.menu')
-@endsection
-
 @section('contenu')
     <div class="app-content content">
         <div class="content-overlay"></div>

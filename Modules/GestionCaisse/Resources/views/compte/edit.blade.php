@@ -1,9 +1,6 @@
-@extends('gestioncaisse::template.layout')
+@extends('layouts.app')
 @section('title')
 {{'Edition du compte'}}
-@endsection
-@section('menu')
-    @include('admin.menu.menu')
 @endsection
 @section('contenu')
 <div class="content app-content">

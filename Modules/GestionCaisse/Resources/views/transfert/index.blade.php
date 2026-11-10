@@ -1,9 +1,6 @@
-@extends('admin.templates.template')
+@extends('layouts.app')
 @section('title')
 {{'Tous les Transferts'}}
-@endsection
-@section('menu')
-    @include('admin.menu.menu')
 @endsection
 @section('contenu')
 <div class="content app-content">

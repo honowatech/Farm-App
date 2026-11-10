@@ -1,13 +1,8 @@
-@extends('admin/templates/template')
+@extends('layouts.app')
 
 @section('title')
 {{'Editer '}} {{$derive_produit->nom}}
 @endsection
-@if(auth()->user()->type_user->libelle === 'admin')
-    @include('admin/menu/menu')
-@elseif(auth()->user()->type_user->libelle === 'agent')
-    @include('agent/menu/menu')
-@endif
 @section('contenu')
 
 <div class="content app-content">
@@ -161,20 +156,9 @@
 </div>
 
 @endsection
-@if(auth()->user()->type_user->libelle === 'admin')
-    @include('admin/menu/menu')
-@elseif(auth()->user()->type_user->libelle === 'agent')
-    @include('agent/menu/menu')
-@endif
-
 @section('javascript')
 	<script type="text/javascript">
         document.querySelector('#ProduitListe').classList.add('active');
         format_montant('prix_unitaire');
 	</script>
 @endsection
-@if(auth()->user()->type_user->libelle === 'admin')
-    @include('admin/menu/menu')
-@elseif(auth()->user()->type_user->libelle === 'agent')
-    @include('agent/menu/menu')
-@endif

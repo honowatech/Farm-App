@@ -1,12 +1,6 @@
-@extends('admin/templates/template')
+@extends('layouts.app')
 @section('title')
 Calendrier de Nutrition
-@endsection
-@section('menu')
-    @php
-        $role = auth()->user()->type_user->libelle;
-    @endphp
-    @include($role.'.menu.menu')
 @endsection
 @section('contenu')
 <!-- BEGIN: Content-->

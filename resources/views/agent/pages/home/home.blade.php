@@ -1,13 +1,26 @@
-@extends('admin.templates.template')
+@extends('layouts.app')
 
 @section('title', __('Dashboard Agent'))
-@section('header', __('Tableau de Bord'))
 
-@push('styles')
+@section('css')
 <link rel="stylesheet" type="text/css" href="{{ asset('app-assets/css/pages/dashboard-ecommerce.css') }}">
-@endpush
+@endsection
 
-@section('content')
+@section('contenu')
+<div class="content app-content">
+    <div class="content-overlay"></div>
+    <div class="header-navbar-shadow"></div>
+    <div class="content-wrapper">
+        <div class="content-header row">
+            <div class="content-header-left col-md-9 col-12 mb-2">
+                <div class="row breadcrumbs-top">
+                    <div class="col-12">
+                        <h2 class="content-header-title float-left mb-0">{{ __('Tableau de Bord') }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="content-body">
 <div class="row match-height">
     <!-- Statistiques Principales -->
     <div class="col-xl-12 col-md-12 col-12">
@@ -178,8 +191,11 @@
         </div>
     </div>
 </div>
+        </div>
+    </div>
+</div>
 @endsection
 
-@push('scripts')
+@section('javascript')
 <script src="{{ asset('app-assets/js/scripts/pages/dashboard-ecommerce.js') }}"></script>
-@endpush
+@endsection
