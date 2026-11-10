@@ -26,6 +26,12 @@
                     <span class="menu-title text-truncate">{{ __('message.Tableau de bord') }}</span>
                 </a>
             </li>
+            <li class="nav-item" id="AlerteListe">
+                <a class="d-flex align-items-center" href="{{ route('alerte.index') }}">
+                    <i data-feather="bell"></i>
+                    <span class="menu-title text-truncate">Alertes</span>
+                </a>
+            </li>
 
             {{-- Élevage --}}
             <li class="navigation-header"><span>{{ __('message.Élevage') }}</span><i data-feather="more-horizontal"></i></li>

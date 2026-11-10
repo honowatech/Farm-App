@@ -65,6 +65,15 @@
                 </ul>
             </div>
             <ul class="nav navbar-nav align-items-center ml-auto">
+                <li class="nav-item pr-1">
+                    @php $alertesCount = app(\App\Services\AlerteService::class)->count(); @endphp
+                    <a class="nav-link" href="{{ route('alerte.index') }}" title="Alertes" aria-label="Alertes">
+                        <i data-feather="bell"></i>
+                        @if($alertesCount > 0)
+                            <span class="badge badge-danger badge-pill ml-25">{{ $alertesCount }}</span>
+                        @endif
+                    </a>
+                </li>
                 <li class="nav-item dropdown dropdown-user pr-1">
                     <a class="nav-link dropdown-toggle dropdown-user-link" id="dropdown-user" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div class="user-nav d-sm-flex d-none">

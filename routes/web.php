@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AchatController;
 use App\Http\Controllers\AgentController;
+use App\Http\Controllers\AlerteController;
 use App\Http\Controllers\AnimalController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\BandeController;
@@ -110,6 +111,9 @@ Route::group(['middleware' => ['auth', 'web']], function () {
 
         // Journal d'audit
         Route::get('/audit', [AuditLogController::class, 'index'])->name('audit.index');
+
+        // Alertes
+        Route::get('/alertes', [AlerteController::class, 'index'])->name('alerte.index');
         Route::get('/ajout de client', [VenteController::class, 'get_formulaire'])->name('formulaire');
         Route::get('/selection-client', [VenteController::class, 'get_client'])->name('client');
         Route::get('/achat_ajax_result', [VenteController::class, 'get_prix'])->name('ajax_result_prix');
