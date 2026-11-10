@@ -111,8 +111,8 @@
                         <tbody>
                             @forelse($bandes_en_cours ?? [] as $bande)
                             <tr>
-                                <td>{{ $bande->nom_bande }}</td>
-                                <td>{{ $bande->type_bande }}</td>
+                                <td>{{ $bande->nom }}</td>
+                                <td>{{ $bande->animal?->nom ?? '—' }}</td>
                                 <td>{{ Carbon\Carbon::parse($bande->date_lancement_bande)->format('d/m/Y') }}</td>
                                 <td>
                                     <a href="{{ route('gestion_bande', ['id' => $bande->id]) }}" class="btn btn-sm btn-primary">
