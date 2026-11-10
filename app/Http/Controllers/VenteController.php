@@ -6,12 +6,14 @@ use App\Http\Requests\StoreVenteRequest;
 use App\Models\Client;
 use App\Models\Facture;
 use App\Models\Ligne_facture;
+use App\Models\Logo;
 use App\Models\Produit;
 use App\Models\Type_produit;
 use App\Models\Typeusers;
 use App\Models\User;
 use App\Models\Vente;
 use App\Services\VenteService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -188,6 +190,32 @@ class VenteController extends Controller
 
     public function get_facture(Request $request, $id)
     {
+        $data = $this->getFactureData($id);
+        $data['vente_id'] = $id;
+
+        return view('admin.pages.vente.facture', $data);
+    }
+
+    /**
+     * Télécharge la facture au format PDF.
+     */
+    public function downloadPdf($id)
+    {
+        $data = $this->getFactureData($id);
+
+        $logo = Logo::latest()->first();
+        $data['logoPath'] = $logo ? public_path($logo->path) : null;
+
+        $pdf = Pdf::loadView('admin.pages.vente.facture_pdf', $data);
+
+        return $pdf->download('facture-'.($data['facture']->matricule ?: $data['facture']->id).'.pdf');
+    }
+
+    /**
+     * Charge les données communes d'une facture (HTML et PDF).
+     */
+    private function getFactureData($id)
+    {
         $id_facture = Vente::where('id', $id)->value('id_facture');
         $id_vendeur = Vente::where('id', $id)->value('id_saver');
         $vendeur = User::findOrFail($id_vendeur);
@@ -195,7 +223,7 @@ class VenteController extends Controller
         $date = Carbon::now()->format('d/m/Y');
         $lignes = Ligne_facture::where('id_facture', $id_facture)->get();
 
-        return view('admin.pages.vente.facture', compact('facture', 'date', 'vendeur', 'lignes'));
+        return compact('facture', 'date', 'vendeur', 'lignes');
     }
 
     public function get_animal(Request $request)

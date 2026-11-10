@@ -87,9 +87,12 @@
     		<div class="col-4 mx-auto">
     			<button class="btn btn-primary my-3 print-btn" onclick="window.print()">Imprimer la Facture</button>
     		</div>
-    		<div class="col-4 mx-auto">
-    			<a class="btn btn-primary my-3" href="{{route('vente.index')}}">retour</a>
-    		</div>
+		<div class="col-4 mx-auto">
+			<a class="btn btn-success my-3" href="{{ route('vente.facture.pdf', $vente_id) }}">Télécharger PDF</a>
+		</div>
+		<div class="col-4 mx-auto">
+			<a class="btn btn-primary my-3" href="{{route('vente.index')}}">retour</a>
+		</div>
     	</div>
 
         <div class="invoice">
