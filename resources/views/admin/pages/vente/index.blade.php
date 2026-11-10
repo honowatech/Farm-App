@@ -29,9 +29,12 @@
             <div class="content-body">
                 <div class="row bg-light-secondary">
                     <div class="col-12">
-                        <a class="m-1 btn btn-secondary btn-gradient-secondary" href="{{route('vente.create')}}">
-                            <i data-feather='plus' style="width: 20px;height: 20px;"></i>
+                        <a class="m-1 btn btn-secondary btn-gradient-secondary" href="{{route('vente.create')}}" aria-label="Ajouter une vente">
+                            <i data-feather='plus' style="width: 20px;height: 20px;"></i> Nouvelle vente
                         </a>
+                        <button type="button" class="m-1 btn btn-outline-primary" onclick="exporter()">
+                            <i data-feather='download' style="width: 18px;height: 18px;"></i> Exporter CSV
+                        </button>
                     </div>
 
                     <form  class="mt-1 col-12" id="search" method="GET">
@@ -317,6 +320,19 @@
         function mettre(number_page){
            document.querySelector('#page').value = number_page;
            document.querySelector('#search').submit()
+        }
+
+        function exporter() {
+            var params = new URLSearchParams(window.location.search);
+            var date_debut = document.querySelector('#date_debut');
+            var date_fin = document.querySelector('#date_fin');
+            var produit = document.querySelector('#produit');
+            var client = document.querySelector('#client');
+            if (date_debut && date_debut.value) params.set('date_debut', date_debut.value);
+            if (date_fin && date_fin.value) params.set('date_fin', date_fin.value);
+            if (produit && produit.value) params.set('id_produit', produit.value);
+            if (client && client.value) params.set('id_client', client.value);
+            window.location.href = "{{ route('vente.export') }}?" + params.toString();
         }
 
     $(document).ready(function() {

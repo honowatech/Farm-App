@@ -91,6 +91,7 @@ Route::group(['middleware' => ['auth', 'web']], function () {
 
         // Vente
         Route::get('/vente-search', [VenteController::class, 'search'])->name('vente.search');
+        Route::get('/vente-export', [VenteController::class, 'export'])->name('vente.export');
         Route::get('/ajout de client', [VenteController::class, 'get_formulaire'])->name('formulaire');
         Route::get('/selection-client', [VenteController::class, 'get_client'])->name('client');
         Route::get('/achat_ajax_result', [VenteController::class, 'get_prix'])->name('ajax_result_prix');

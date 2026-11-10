@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Models\Vente;
 use App\Services\VenteService;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -244,9 +245,34 @@ class VenteController extends Controller
 
     public function search(Request $request)
     {
-        $query = Vente::query();
+        $ventes = $this->applyVenteFilters($request, Vente::query())->paginate(30);
 
-        // Filtrage par dates
+        return view('admin.pages.vente.result_ajax', compact('ventes'))->render();
+    }
+
+    /**
+     * Exporte les ventes filtrées au format CSV (sans dépendance tierce).
+     */
+    public function export(Request $request)
+    {
+        $ventes = $this->applyVenteFilters($request, Vente::query())
+            ->with(['facture.client_facture', 'facture.lignes_facture.produit'])
+            ->orderBy('date_vente', 'desc')
+            ->get();
+
+        $csv = $this->buildVentesCsv($ventes);
+
+        return response("\xEF\xBB\xBF".$csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="ventes_'.now()->format('Y-m-d').'.csv"',
+        ]);
+    }
+
+    /**
+     * Applique les filtres communs (dates, produit, client) à la requête de ventes.
+     */
+    private function applyVenteFilters(Request $request, Builder $query): Builder
+    {
         if ($request->filled('date_debut')) {
             $query->where('date_vente', '>=', $request->input('date_debut'));
         }
@@ -255,7 +281,6 @@ class VenteController extends Controller
             $query->where('date_vente', '<=', $request->input('date_fin'));
         }
 
-        // Filtrage par produit
         if ($request->filled('id_produit')) {
             $id_produit = $request->input('id_produit');
             $query->whereHas('facture.lignes_facture.produit', function ($q) use ($id_produit) {
@@ -263,7 +288,6 @@ class VenteController extends Controller
             });
         }
 
-        // Filtrage par clients
         if ($request->filled('id_client')) {
             $id_client = $request->input('id_client');
             $query->whereHas('facture.client_facture', function ($q) use ($id_client) {
@@ -271,11 +295,39 @@ class VenteController extends Controller
             });
         }
 
-        // Exécution de la requête et récupération des résultats
-        $ventes = $query->paginate(30);
+        return $query;
+    }
 
-        return view('admin.pages.vente.result_ajax', compact('ventes'))->render();
+    /**
+     * Construit le contenu CSV à partir d'une collection de ventes.
+     */
+    private function buildVentesCsv($ventes)
+    {
+        $handle = fopen('php://temp', 'r+');
+        fputcsv($handle, ['Matricule', 'Client', 'Date', 'Produits', 'Total HT (FCFA)', 'Total TTC (FCFA)']);
 
+        foreach ($ventes as $vente) {
+            $facture = $vente->facture;
+            $client = $facture ? $facture->client_facture : null;
+            $produits = $facture
+                ? $facture->lignes_facture->map(fn ($ligne) => $ligne->produit?->nom)->filter()->unique()->implode('; ')
+                : '';
+
+            fputcsv($handle, [
+                $facture ? $facture->matricule : '',
+                $client ? $client->nom : '',
+                $vente->date_vente,
+                $produits,
+                $facture ? $facture->total_ht : '',
+                $facture ? $facture->total_ttc : '',
+            ]);
+        }
+
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        fclose($handle);
+
+        return $csv;
     }
 
     /**

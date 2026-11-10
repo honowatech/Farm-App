@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1, minimal-ui">
     <title>@yield('title')</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -61,7 +61,7 @@
         <div class="navbar-container d-flex content">
             <div class="bookmark-wrapper d-flex align-items-center">
                 <ul class="nav navbar-nav d-xl-none">
-                    <li class="nav-item"><a class="nav-link menu-toggle" href="javascript:void(0);"><i class="ficon" data-feather="menu"></i></a></li>
+                    <li class="nav-item"><a class="nav-link menu-toggle" href="javascript:void(0);" aria-label="Ouvrir le menu"><i class="ficon" data-feather="menu"></i></a></li>
                 </ul>
             </div>
             <ul class="nav navbar-nav align-items-center ml-auto">
@@ -144,7 +144,7 @@
             </span>
         </p>
     </footer>
-    <button class="btn btn-primary btn-icon scroll-top" type="button"><i data-feather="arrow-up"></i></button>
+    <button class="btn btn-primary btn-icon scroll-top" type="button" aria-label="Retour en haut"><i data-feather="arrow-up"></i></button>
     <!-- END: Footer-->
     <!-- BEGIN: Vendor JS-->
     <script src="{{ asset('app-assets/vendors/js/vendors.min.js') }}"></script>
@@ -326,28 +326,36 @@
                     height: 14
                 });
             }
-            @if(session()->has('message'))
-                toastr['success'](
-                    "{!!session()->get('message')!!}",
-                    'Succès',
-                    {
-                        closeButton: true,
-                        tapToDismiss: true
-                    }
-                );
+            @if (session('message'))
+                toastr.success(@json(session('message')), 'Succès', { closeButton: true, tapToDismiss: true });
             @endif
-
-
+            @if (session('error'))
+                toastr.error(@json(session('error')), 'Erreur', { closeButton: true, tapToDismiss: true });
+            @endif
+            @if (session('warning'))
+                toastr.warning(@json(session('warning')), 'Attention', { closeButton: true, tapToDismiss: true });
+            @endif
+            @if (session('info'))
+                toastr.info(@json(session('info')), 'Info', { closeButton: true, tapToDismiss: true });
+            @endif
+            @if ($errors->any())
+                toastr.error(@json($errors->first()), 'Erreur de validation', { closeButton: true, tapToDismiss: true });
+            @endif
         })
-        function confirmation(message = 'Confirmer ?',id_form = undefined) {
+        function escapeHtml(text) {
+            return String(text).replace(/[&<>"']/g, function (m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+            });
+        }
+        function confirmation(message = 'Confirmer ?', id_form = undefined, confirmText = 'Oui, confirmer', cancelText = 'Annuler') {
             Swal.fire({
                 icon: 'warning',
-                html: '<h4 class="text-center my-1">'+message+'<h4>',
+                html: '<h4 class="text-center my-1">' + message + '</h4>',
                 showCloseButton: true,
                 showCancelButton: true,
-                focusConfirm: true, // Don't autofocus the confirm button
-                confirmButtonText: feather.icons['check'].toSvg({ class: 'font-medium-2' }),
-                cancelButtonText: feather.icons['x'].toSvg({ class: 'font-medium-2' }),
+                focusConfirm: false, // Ne pas déclencher l'action destructive via la touche Entrée
+                confirmButtonText: feather.icons['check'].toSvg({ class: 'font-medium-2 mr-50' }) + '<span>' + confirmText + '</span>',
+                cancelButtonText: feather.icons['x'].toSvg({ class: 'font-medium-2 mr-50' }) + '<span>' + cancelText + '</span>',
                 allowOutsideClick: true,
                 customClass: {
                     confirmButton: 'btn btn-success mx-auto my-1',
@@ -357,26 +365,22 @@
                     popup: 'animate__animated animate__bounceIn'
                 },
                 buttonsStyling: false,
-                preConfirm: (result) => {
-                    return result.isConfirmed;
-                }
+                preConfirm: () => true
             })
             .then((result) => {
                 if (result.isConfirmed) {
                     if (id_form != undefined) {
-                        $('#'+id_form).submit();
+                        $('#' + id_form).submit();
                     }
                 }
             });
         }
         function deconnecter(){
-            message = 'Vous <strong> Déconnecter </strong> ?';
-            id_form = 'log_out';
-            confirmation(message , id_form);
+            confirmation('Vous <strong>Déconnecter</strong> ?', 'log_out');
         }
-        function actions(id_form,action,nom_cible = ''){
-            message = 'Vous voulez <strong> ' + action + ' ' + nom_cible + ' </strong> ?';
-            confirmation(message , id_form);
+        function actions(id_form, action, nom_cible = ''){
+            var message = 'Vous voulez <strong>' + escapeHtml(action) + ' ' + escapeHtml(nom_cible) + '</strong> ?';
+            confirmation(message, id_form);
         }
         function insertView(view,id_modalMessage) {
             $('.'+id_modalMessage).each(function(){
@@ -484,15 +488,6 @@
     }
 
     </script>
-    @if(session()->has('error'))
-        <script>
-            toastr.error("{{ session('error') }}", 'Erreur', {
-                closeButton: true,
-                tapToDismiss: true
-            });
-        </script>
-    @endif
-
     <script src="{{asset('app-assets/vendors/js/ui/jquery.sticky.js')}}"></script>
     <script src="{{asset('app-assets/vendors/js/forms/repeater/jquery.repeater.min.js')}}"></script>
     <script src="{{asset('app-assets/js/scripts/forms/form-repeater.js')}}"></script>

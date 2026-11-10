@@ -95,16 +95,19 @@
         <div class="invoice">
             <!-- Facture Header -->
             <div class="invoice-header">
+                @if(logo())
+                    <img src="{{ logo() }}" alt="Logo" style="max-height: 70px; margin-bottom: 10px;">
+                @endif
                 <div class="invoice-title">FACTURE</div>
-                <div class="invoice-number">n° {{ $facture->matricule}}</div>
-                <div class="invoice-date">{{$date}}</div>
+                <div class="invoice-number">n° {{ $facture->matricule }}</div>
+                <div class="invoice-date">{{ $date }}</div>
             </div>
 
             <!-- Facture Information -->
             <div class="row invoice-info">
                 <div class="col-md-6">
-                    <h4>{{$vendeur->name}}</h4>
-                    <p class="address">123-456-7890<br>{{$vendeur->email}}<br>farmapp.ctn.com</p>
+                    <h4>{{ $vendeur->name }}</h4>
+                    <p class="address">{{ $vendeur->email }}</p>
                 </div>
                 <div class="col-md-6 text-end">
                     <h4>À L’ATTENTION DE</h4>
@@ -126,14 +129,14 @@
                 	@foreach($lignes as $ligne)
                     <tr>
                         <td class="description">{{$ligne->produit->nom}}</td>
-                        <td>{{$ligne->prix_unitaire}} FCFA</td>
+                        <td>{{ number_format($ligne->prix_unitaire, 0, ',', ' ') }} FCFA</td>
                         <td>{{$ligne->qte}}</td>
-                        <td>{{$ligne->total_ligne}} FCFA</td>
+                        <td>{{ number_format($ligne->total_ligne, 0, ',', ' ') }} FCFA</td>
                     </tr>
                     @endforeach
                     <tr class="total-row">
                         <td colspan="3">Sous total :</td>
-                        <td>{{$facture->total_ht}} FCFA</td>
+                        <td>{{ number_format($facture->total_ht, 0, ',', ' ') }} FCFA</td>
                     </tr>
                     <!--
 	                    <tr class="total-row">
@@ -143,7 +146,7 @@
                 	-->
                     <tr class="total-row">
                         <td colspan="3"><strong>TOTAL :</strong></td>
-                        <td><strong>{{$facture->total_ttc}} FCFA</strong></td>
+                        <td><strong>{{ number_format($facture->total_ttc, 0, ',', ' ') }} FCFA</strong></td>
                     </tr>
                 </tbody>
             </table>
@@ -151,8 +154,7 @@
             <!-- Payment Information -->
             <div class="row">
                 <div class="col-md-6 payment-info">
-                    <strong>Paiement à l’ordre de {{$facture->client_facture->nom}}</strong><br>
-                    N° de compte 0123 4567 8901 2345
+                    <strong>Paiement à l’ordre de {{ $facture->client_facture->nom }}</strong>
                 </div>
                 <div class="col-md-6 text-end payment-conditions">
                     <strong>Conditions de paiement</strong><br>

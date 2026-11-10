@@ -162,18 +162,6 @@
         @if (old('bande') && $errors->any())
             const bandeId = '{{ old('bande') }}';
             getNutritionForm(bandeId);
-
-            // Afficher les erreurs de validation avec Toastr
-            @foreach ($errors->all() as $error)
-                toastr.error('{{ $error }}', 'Erreur de validation');
-            @endforeach
-        @endif
-
-        // Afficher les messages de succès ou d'erreur de la session avec Toastr
-        @if (session('message'))
-            toastr.success('{{ session('message') }}', 'Succès');
-        @elseif (session('error'))
-            toastr.error('{{ session('error') }}', 'Erreur');
         @endif
     });
 </script>
