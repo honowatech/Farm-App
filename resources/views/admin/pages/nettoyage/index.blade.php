@@ -29,7 +29,7 @@
 
             <div class="content-body">
                 <div class="row justify-content-between bg-light-secondary" >
-                    <a class="btn btn-secondary btn-gradient-secondary m-1" href="{{route('nettoyage.create')}}"><i data-feather='plus' style="width: 20px;height: 20px;"></i></a>
+                    <a class="btn btn-secondary btn-gradient-secondary m-1" href="{{route('nettoyage.create')}}"><i data-feather='plus' style="width: 20px;height: 20px;"></i> Nouveau nettoyage</a>
                         <form action="{{ route('nettoyage.index') }}" class="col-lg-3 mt-1" id="search" method="GET">
                             @csrf
                             <div class="form-group">

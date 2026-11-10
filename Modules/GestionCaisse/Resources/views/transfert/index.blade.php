@@ -28,7 +28,7 @@
                     <div class="row bg-light-secondary">
                         <div class="col-12">
                             <a class="btn btn-secondary btn-gradient-secondary m-1" href="{{ route('transfert.create') }}">
-                                <i data-feather='plus' class="text-success" style="width: 20px;height: 20px;"></i>
+                                <i data-feather='plus' class="text-success" style="width: 20px;height: 20px;"></i> Nouveau transfert
                             </a>
                         </div>
                         {{-- <form class="col-12 mt-1" id="search" method="GET">

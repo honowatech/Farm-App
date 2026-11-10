@@ -29,7 +29,7 @@
                     <div class="row bg-light-secondary">
                         <div class="col-12">
                             <a class="btn btn-secondary btn-gradient-secondary m-1" href="{{ route('depenses.create') }}">
-                                <i data-feather='plus' style="width: 20px;height: 20px;"></i>
+                                <i data-feather='plus' style="width: 20px;height: 20px;"></i> Nouvelle dépense
                             </a>
                         </div>
 

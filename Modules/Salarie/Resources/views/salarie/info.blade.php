@@ -66,8 +66,8 @@
                                                                     @method('DELETE')
                                                                 </form>
                                                             </button>
-                                                            <button class="ml-1 btn btn-sm btn-outline-danger" onclick="actions('form_delete_{{$salarie->id}}', 'Supprimer' ,'{{$salarie->nom}}')">
-                                                                    <i data-feather='trash'></i>
+                                                            <button class="ml-1 btn btn-sm btn-danger btn-gradient-danger" onclick="actions('form_delete_{{$salarie->id}}', 'Supprimer' ,'{{$salarie->nom}}')">
+                                                                    <i data-feather='trash'></i> Supprimer
                                                                 <form id="form_delete_{{$salarie->id}}" action="{{route('salarie.destroy',$salarie->id)}}" method="POST">
                                                                     @csrf
                                                                     @method('DELETE')

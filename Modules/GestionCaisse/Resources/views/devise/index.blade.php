@@ -28,7 +28,7 @@
                     <div class="row bg-light-success">
                         <div class="col-12">
                             <a class="btn btn-success btn-gradient-success m-1" href="{{ route('devise.create') }}">
-                                <i data-feather='plus'  style="width: 20px;height: 20px;"></i>
+                                <i data-feather='plus'  style="width: 20px;height: 20px;"></i> Nouvelle devise
                             </a>
                         </div>
                         {{-- <form class="col-12 mt-1" id="search" method="GET">

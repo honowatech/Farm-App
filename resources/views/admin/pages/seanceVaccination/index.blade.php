@@ -29,7 +29,7 @@
 
             <div class="content-body">
                 <div class="row justify-content-between bg-light-secondary" >
-                    <a class="m-1 btn btn-secondary btn-gradient-secondary" href="{{route('seanceVaccination.create')}}"><i data-feather='plus' style="width: 20px;height: 20px;"></i></a>
+                    <a class="m-1 btn btn-secondary btn-gradient-secondary" href="{{route('seanceVaccination.create')}}"><i data-feather='plus' style="width: 20px;height: 20px;"></i> Nouvelle vaccination</a>
                         <form action="{{ route('seanceVaccination.index') }}" class="mt-1 col-lg-3" id="search" method="GET">
                             @csrf
                             <div class="form-group">

@@ -30,7 +30,7 @@
             <div class="content-body">
                 <div class="row justify-content-between bg-light-secondary" >
                     <a class="btn btn-secondary btn-gradient-secondary m-1" href="{{route('agent.create')}}">
-                        <i data-feather='plus' style="width: 20px;height: 20px;"></i>
+                        <i data-feather='plus' style="width: 20px;height: 20px;"></i> Nouvel agent
                     </a>
                         <form action="{{ route('agent.index') }}" class="col-lg-3 mt-1" id="search" method="GET">
                             @csrf

@@ -30,7 +30,7 @@
             <div class="content-body">
                 <div class="row justify-content-between bg-light-secondary" >
                     <a class="m-1 btn btn-secondary btn-gradient-secondary" href="{{route('client.create')}}">
-                        <i data-feather='plus' style="width: 20px;height: 20px;"></i>
+                        <i data-feather='plus' style="width: 20px;height: 20px;"></i> Nouveau client
                     </a>
                     <form action="{{ route('client.index') }}" class="mt-1 col-lg-3" id="search" method="GET">
                         @csrf
