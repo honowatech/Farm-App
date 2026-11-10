@@ -297,6 +297,22 @@ class VenteController extends Controller
     }
 
     /**
+     * Exporte les ventes filtrées au format PDF (paysage A4).
+     */
+    public function exportPdf(Request $request)
+    {
+        $ventes = $this->applyVenteFilters($request, Vente::query())
+            ->with(['facture.client_facture', 'facture.lignes_facture.produit'])
+            ->orderBy('date_vente', 'desc')
+            ->get();
+
+        $pdf = Pdf::loadView('admin.pages.vente.liste_pdf', compact('ventes'))
+            ->setPaper('a4', 'landscape');
+
+        return $pdf->download('ventes_'.now()->format('Y-m-d').'.pdf');
+    }
+
+    /**
      * Applique les filtres communs (dates, produit, client) à la requête de ventes.
      */
     private function applyVenteFilters(Request $request, Builder $query): Builder

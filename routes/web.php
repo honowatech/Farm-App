@@ -92,6 +92,7 @@ Route::group(['middleware' => ['auth', 'web']], function () {
         // Vente
         Route::get('/vente-search', [VenteController::class, 'search'])->name('vente.search');
         Route::get('/vente-export', [VenteController::class, 'export'])->name('vente.export');
+        Route::get('/vente-export-pdf', [VenteController::class, 'exportPdf'])->name('vente.export.pdf');
         Route::get('/facture-pdf/{id}', [VenteController::class, 'downloadPdf'])->name('vente.facture.pdf');
         Route::get('/ajout de client', [VenteController::class, 'get_formulaire'])->name('formulaire');
         Route::get('/selection-client', [VenteController::class, 'get_client'])->name('client');

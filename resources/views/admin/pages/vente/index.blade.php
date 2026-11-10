@@ -32,8 +32,11 @@
                         <a class="m-1 btn btn-secondary btn-gradient-secondary" href="{{route('vente.create')}}" aria-label="Ajouter une vente">
                             <i data-feather='plus' style="width: 20px;height: 20px;"></i> Nouvelle vente
                         </a>
-                        <button type="button" class="m-1 btn btn-outline-primary" onclick="exporter()">
-                            <i data-feather='download' style="width: 18px;height: 18px;"></i> Exporter CSV
+                        <button type="button" class="m-1 btn btn-success btn-gradient-success" onclick="exporter()">
+                            <i class="fa-solid fa-file-excel mr-50"></i> Exporter CSV
+                        </button>
+                        <button type="button" class="m-1 btn btn-danger btn-gradient-danger" onclick="exporterPdf()">
+                            <i class="fa-solid fa-file-pdf mr-50"></i> Exporter PDF
                         </button>
                     </div>
 
@@ -322,7 +325,7 @@
            document.querySelector('#search').submit()
         }
 
-        function exporter() {
+        function filtresActifs() {
             var params = new URLSearchParams(window.location.search);
             var date_debut = document.querySelector('#date_debut');
             var date_fin = document.querySelector('#date_fin');
@@ -332,7 +335,15 @@
             if (date_fin && date_fin.value) params.set('date_fin', date_fin.value);
             if (produit && produit.value) params.set('id_produit', produit.value);
             if (client && client.value) params.set('id_client', client.value);
-            window.location.href = "{{ route('vente.export') }}?" + params.toString();
+            return params.toString();
+        }
+
+        function exporter() {
+            window.location.href = "{{ route('vente.export') }}?" + filtresActifs();
+        }
+
+        function exporterPdf() {
+            window.location.href = "{{ route('vente.export.pdf') }}?" + filtresActifs();
         }
 
     $(document).ready(function() {
