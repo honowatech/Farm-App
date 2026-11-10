@@ -177,6 +177,12 @@
 
             {{-- Finances --}}
             <li class="navigation-header"><span>{{ __('message.Finances') }}</span><i data-feather="more-horizontal"></i></li>
+            <li class="nav-item" id="RentabiliteListe">
+                <a class="d-flex align-items-center" href="{{ route('rentabilite.index') }}">
+                    <i data-feather="trending-up"></i>
+                    <span class="menu-title text-truncate">Rentabilité</span>
+                </a>
+            </li>
             <li class="nav-item has-sub">
                 <a class="d-flex align-items-center" href="#">
                     <i class="fa fa-university" aria-hidden="true"></i>

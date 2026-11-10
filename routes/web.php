@@ -22,6 +22,7 @@ use App\Http\Controllers\MortaliteController;
 use App\Http\Controllers\NutritionController;
 use App\Http\Controllers\ProduitController;
 use App\Http\Controllers\RamassageController;
+use App\Http\Controllers\RentabiliteController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\Stock_matiere_premiereController;
 use App\Http\Controllers\Stock_produitController;
@@ -114,6 +115,9 @@ Route::group(['middleware' => ['auth', 'web']], function () {
 
         // Alertes
         Route::get('/alertes', [AlerteController::class, 'index'])->name('alerte.index');
+
+        // Rentabilité
+        Route::get('/rentabilite', [RentabiliteController::class, 'index'])->name('rentabilite.index');
         Route::get('/ajout de client', [VenteController::class, 'get_formulaire'])->name('formulaire');
         Route::get('/selection-client', [VenteController::class, 'get_client'])->name('client');
         Route::get('/achat_ajax_result', [VenteController::class, 'get_prix'])->name('ajax_result_prix');
