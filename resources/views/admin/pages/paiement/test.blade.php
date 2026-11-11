@@ -40,6 +40,7 @@
                                     </div>
                                     <input type="tel" inputmode="tel" id="phone_number" class="form-control" placeholder="Ex : 237690000000 ou 690000000" required>
                                 </div>
+                                <small class="text-muted">MTN ou Orange Money (le numéro doit commencer par 6 ou 69).</small>
                             </div>
                             <div class="form-group">
                                 <label for="amount">Montant (FCFA)</label>
@@ -62,10 +63,7 @@
                             </button>
 
                             <div id="resultat" class="mt-1" style="display: none;">
-                                <div id="statut" class="text-center">
-                                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
-                                    <p class="mt-1">Paiement en attente de validation sur le téléphone…</p>
-                                </div>
+                                <div id="statut" class="text-center"></div>
                             </div>
                         </div>
                     </div>
@@ -80,34 +78,40 @@
 <script type="text/javascript">
     var pollingTimer = null;
 
+    var ETATS = {
+        'pending':   { icon: 'fa-spinner fa-spin', color: 'primary', titre: 'En attente de validation', detail: 'Le client doit valider sur son téléphone…' },
+        'successful': { icon: 'fa-check-circle', color: 'success', titre: 'Paiement réussi', detail: 'Le client a validé et le paiement est confirmé.' },
+        'failed':    { icon: 'fa-times-circle', color: 'danger', titre: 'Paiement échoué', detail: 'Le client a validé mais l\'opération a échoué.' },
+        'cancelled': { icon: 'fa-ban', color: 'warning', titre: 'Paiement annulé', detail: 'Le client a annulé l\'opération.' },
+        'expired':   { icon: 'fa-clock', color: 'warning', titre: 'Paiement expiré', detail: 'Le délai de validation est dépassé.' },
+    };
+
+    function afficherEtat(statut, extra) {
+        var etat = ETATS[statut] || { icon: 'fa-question-circle', color: 'secondary', titre: 'Statut inconnu', detail: statut };
+        var html = '<div class="text-' + etat.color + '">'
+            + '<i class="fas ' + etat.icon + ' fa-3x"></i>'
+            + '<h4 class="mt-1 mb-0">' + etat.titre + '</h4>'
+            + '<p class="mb-0">' + etat.detail + '</p>'
+            + (extra ? '<p class="small text-muted mt-50">' + extra + '</p>' : '')
+            + '</div>';
+        $('#statut').html(html);
+    }
+
     function demarrerPolling(transactionId) {
         pollingTimer = setInterval(function () {
             $.post('{{ url("/paiement/statut") }}/' + transactionId, { _token: '{{ csrf_token() }}' }, function (res) {
                 if (res.final) {
                     clearInterval(pollingTimer);
-                    afficherResultatFinal(res);
+                    var extra = 'Réf. ' + (res.external_reference || '') + (res.provider_slug ? ' · ' + res.provider_slug : '');
+                    if (res.payment_status === 'successful' && res.receipt_url) {
+                        extra += ' · <a href="' + res.receipt_url + '" target="_blank">Voir le reçu</a>';
+                    }
+                    afficherEtat(res.payment_status, extra);
+                } else {
+                    afficherEtat('pending');
                 }
             });
         }, 4000);
-    }
-
-    function afficherResultatFinal(res) {
-        var statut = res.payment_status;
-        var html = '';
-
-        if (statut === 'successful') {
-            html = '<div class="text-center text-success"><i class="fas fa-check-circle fa-3x"></i><h4 class="mt-1">Paiement réussi</h4>';
-            if (res.receipt_url) {
-                html += '<a href="' + res.receipt_url + '" target="_blank" class="btn btn-sm btn-primary">Voir le reçu</a>';
-            }
-            html += '</div>';
-        } else if (statut === 'failed' || statut === 'cancelled' || statut === 'expired') {
-            html = '<div class="text-center text-danger"><i class="fas fa-times-circle fa-3x"></i><h4 class="mt-1">Paiement ' + statut + '</h4></div>';
-        } else {
-            html = '<div class="text-center text-warning"><h4>Statut : ' + statut + '</h4></div>';
-        }
-
-        $('#statut').html(html);
     }
 
     $(document).ready(function () {
@@ -119,6 +123,11 @@
             if (!phone || !amount) {
                 toastr.error('Veuillez renseigner le numéro et le montant.', 'Champs requis');
                 return;
+            }
+
+            if (pollingTimer) {
+                clearInterval(pollingTimer);
+                pollingTimer = null;
             }
 
             var btn = $(this);
@@ -136,10 +145,11 @@
                 btn.prop('disabled', false);
 
                 if (res.ok && res.transaction_id) {
-                    $('#statut').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i><p class="mt-1">Prompt USSD envoyé. Validez sur le téléphone…</p></div>');
+                    var extra = 'Réf. ' + res.external_reference + (res.provider_slug ? ' · ' + res.provider_slug : '');
+                    $('#statut').html('<div class="text-center text-primary"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-1 mb-0">Prompt USSD envoyé, validez sur le téléphone…</p><p class="small text-muted">' + extra + '</p></div>');
                     demarrerPolling(res.transaction_id);
                 } else {
-                    $('#statut').html('<div class="text-center text-danger"><i class="fas fa-exclamation-triangle fa-2x"></i><p class="mt-1">' + (res.message || 'Erreur lors de l\'initiation.') + '</p></div>');
+                    afficherEtat('failed', res.message || 'Erreur lors de l\'initiation.');
                 }
             }).fail(function (xhr) {
                 btn.prop('disabled', false);

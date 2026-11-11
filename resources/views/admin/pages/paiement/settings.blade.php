@@ -194,10 +194,16 @@
                                                 <label for="channel">Canal</label>
                                                 <span class="cursor-pointer text-danger" title="Obligatoire">*</span>
                                                 <div class="form-group">
-                                                    <select class="select2 form-control" id="channel" name="channel" required>
-                                                        <option value="SELLER_DIRECT" {{ old('channel', $config['channel']) === 'SELLER_DIRECT' ? 'selected' : '' }}>SELLER_DIRECT</option>
-                                                        <option value="COLLECTION" {{ old('channel', $config['channel']) === 'COLLECTION' ? 'selected' : '' }}>COLLECTION</option>
-                                                    </select>
+                                                    <div class="input-group input-group-merge @error('channel') is-invalid @enderror">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text"><i data-feather="git-branch"></i></span>
+                                                        </div>
+                                                        <input type="text" id="channel" class="form-control @error('channel') is-invalid @enderror" name="channel" value="{{ old('channel', $config['channel']) }}" placeholder="Ex : SELLER_DIRECT" required>
+                                                    </div>
+                                                    <small class="text-muted">Le canal dépend du fournisseur. Ex. : <code>SELLER_DIRECT</code> pour MTN MoMo ; renseignez le canal Orange fourni par MaMoNi pour Orange Money.</small>
+                                                    @error('channel')
+                                                    <small class="alert alert-danger">{{ $message }}</small>
+                                                    @enderror
                                                 </div>
                                             </div>
                                         </div>

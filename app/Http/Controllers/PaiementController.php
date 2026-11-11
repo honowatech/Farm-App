@@ -127,6 +127,8 @@ class PaiementController extends Controller
             'ok' => $result['ok'],
             'transaction_id' => $transaction->id,
             'gateway_reference' => $transaction->gateway_reference,
+            'provider_slug' => $transaction->provider_slug,
+            'external_reference' => $transaction->external_reference,
             'status' => $transaction->status,
             'message' => $result['message'] ?? null,
         ], $result['ok'] ? 200 : 422);
@@ -155,6 +157,8 @@ class PaiementController extends Controller
             'final' => $result['final'],
             'payment_status' => $result['final'] ? ($result['payment_status'] ?? 'failed') : 'pending',
             'receipt_url' => $transaction->receipt_url,
+            'provider_slug' => $transaction->provider_slug,
+            'external_reference' => $transaction->external_reference,
         ]);
     }
 
