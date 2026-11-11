@@ -524,6 +524,11 @@
     <div id="offline-badge" style="display:none; position:fixed; top:0; left:0; right:0; background:#ea5455; color:#fff; text-align:center; padding:8px; z-index:9999; font-weight:600;">
         📡 Vous êtes hors-ligne
     </div>
+    <div id="offline-queue-badge" style="display:none; position:fixed; bottom:24px; left:24px; z-index:1050;">
+        <button type="button" id="btn-sync" class="btn btn-warning" style="border-radius:50px; box-shadow:0 4px 12px rgba(0,0,0,0.2); font-weight:600;">
+            <i class="fas fa-sync-alt mr-50"></i> <span id="queue-count">0</span> en attente
+        </button>
+    </div>
     <script>
         function updateOnlineStatus() {
             var offline = !navigator.onLine;
@@ -532,9 +537,82 @@
                 badge.style.display = offline ? 'block' : 'none';
             }
         }
-        window.addEventListener('online', updateOnlineStatus);
+
+        // ===== File d'attente hors-ligne (localStorage) =====
+        var OfflineQueue = {
+            KEY: 'farmapp_offline_queue',
+            getAll: function () {
+                try { return JSON.parse(localStorage.getItem(this.KEY) || '[]'); } catch (e) { return []; }
+            },
+            save: function (queue) {
+                localStorage.setItem(this.KEY, JSON.stringify(queue));
+                this.updateBadge();
+            },
+            add: function (item) {
+                var q = this.getAll(); q.push(item); this.save(q);
+            },
+            count: function () { return this.getAll().length; },
+            updateBadge: function () {
+                var count = this.count();
+                var badge = document.getElementById('offline-queue-badge');
+                var countEl = document.getElementById('queue-count');
+                if (badge) badge.style.display = count > 0 ? 'block' : 'none';
+                if (countEl) countEl.textContent = count;
+            },
+            sync: function () {
+                var queue = this.getAll();
+                if (queue.length === 0) { toastr.info('Aucune saisie en attente.', 'Synchronisation'); return; }
+                var btn = document.getElementById('btn-sync');
+                if (btn) btn.disabled = true;
+                var remaining = queue.slice();
+                var index = 0;
+                function processNext() {
+                    if (index >= remaining.length) {
+                        OfflineQueue.save([]);
+                        toastr.success('Toutes les saisies ont été synchronisées.', 'Synchronisation');
+                        if (btn) btn.disabled = false;
+                        return;
+                    }
+                    var item = remaining[index];
+                    $.ajax({
+                        url: item.url, type: item.method || 'POST', data: item.data,
+                        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                        success: function () { index++; processNext(); },
+                        error: function () {
+                            OfflineQueue.save(remaining.slice(index));
+                            toastr.error('Synchronisation interrompue. Réessayez.', 'Synchronisation');
+                            if (btn) btn.disabled = false;
+                        }
+                    });
+                }
+                processNext();
+            }
+        };
+
+        // Intercepte les formulaires de saisie terrain hors-ligne.
+        $(document).on('submit', 'form[data-offline-queue="1"]', function (e) {
+            if (navigator.onLine) return;
+            e.preventDefault();
+            var form = $(this);
+            OfflineQueue.add({ url: form.attr('action'), method: form.attr('method') || 'POST', data: form.serialize() });
+            toastr.info('Saisie enregistrée hors-ligne. Elle sera synchronisée automatiquement.', 'Mode hors-ligne');
+            var redirect = form.data('redirect');
+            if (redirect) window.location.href = redirect;
+        });
+
+        window.addEventListener('online', function () {
+            updateOnlineStatus();
+            if (OfflineQueue.count() > 0) {
+                toastr.info('Connexion rétablie. Synchronisation en cours…', 'Mode hors-ligne');
+                OfflineQueue.sync();
+            }
+        });
         window.addEventListener('offline', updateOnlineStatus);
         updateOnlineStatus();
+
+        $(document).on('click', '#btn-sync', function () { OfflineQueue.sync(); });
+
+        OfflineQueue.updateBadge();
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function () {

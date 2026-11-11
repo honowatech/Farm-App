@@ -30,7 +30,7 @@
                         <div class="card">
                             <div class="card-body">
                                 {{-- La route de l'action est déplacée sur le formulaire principal --}}
-                                <form class="form" action="{{route('nutrition.store')}}" method="POST">
+                                <form class="form" action="{{route('nutrition.store')}}" method="POST" data-offline-queue="1" data-redirect="{{ route('nutrition.index') }}">
                                     @csrf
                                     <div class="mx-auto row col-lg-10">
                                         <div class="col-12 col-md-6">
