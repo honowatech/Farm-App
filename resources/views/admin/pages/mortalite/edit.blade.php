@@ -147,6 +147,5 @@
 
 @section('javascript')
 <script type="text/javascript">
-    document.querySelector('#MortaliteListe').classList.add('active');
 </script>
 @endsection

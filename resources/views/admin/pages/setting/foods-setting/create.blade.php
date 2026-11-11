@@ -305,8 +305,6 @@
 @section('javascript')
 <script type="text/javascript">
 document.addEventListener('DOMContentLoaded', function () {
-    const menu = document.querySelector('#Settings');
-    if(menu) menu.classList.add('active');
 
     const isEditMode = {{ isset($nutritions) ? 'true' : 'false' }};
 

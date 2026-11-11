@@ -155,6 +155,5 @@
 
 @section('javascript')
 	<script type="text/javascript">
-		document.querySelector('#NettoyageAjouter').classList.add('active');
 	</script>
 @endsection

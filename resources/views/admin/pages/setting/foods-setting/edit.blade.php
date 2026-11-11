@@ -196,7 +196,6 @@
 @section('javascript')
 <script type="text/javascript">
 //activation du menu setting
-document.querySelector('#Settings').classList.add('active');
 $(document).ready(function() {
     let updating = false; // Drapeau pour éviter la récursion infinie
         setTimeout(function() {

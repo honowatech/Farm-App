@@ -157,7 +157,6 @@
 @endsection
 @section('javascript')
     <script type="text/javascript">
-        document.querySelector('#FournisseurListe').classList.add('active');
         phone('telephone_secondaire');
         phone('telephone');
     </script>

@@ -276,6 +276,5 @@
            document.querySelector('#page').value = number_page;
            document.querySelector('#search').submit()
         }
-		document.querySelector('#SalarieListe').classList.add('active');
 	</script>
 @endsection

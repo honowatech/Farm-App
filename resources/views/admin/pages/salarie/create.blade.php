@@ -288,7 +288,6 @@
                 response_ajax('recapitulatif',datas,'{{route('ajax_recap_salarie')}}','POST')
             }
         }
-		document.querySelector('#SalarieAjouter').classList.add('active');
         phone('telephone_secondaire');
         phone('telephone');
         $(window).on('load', function() {

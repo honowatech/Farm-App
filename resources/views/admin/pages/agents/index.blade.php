@@ -253,6 +253,5 @@
            document.querySelector('#page').value = number_page;
            document.querySelector('#search').submit()
         }
-        document.querySelector('#AgentListe').classList.add('active');
     </script>
 @endsection

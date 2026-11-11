@@ -90,6 +90,5 @@
 
 @section('javascript')
 	<script type="text/javascript">
-		$('#DeviseListe').addClass('active');
     </script>
 @endsection

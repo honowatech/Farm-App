@@ -163,6 +163,5 @@
         @error('id_details')
             document.querySelector('#add_matiere').click()
         @enderror
-            document.querySelector('#VeterinaireListe').classList.add('active');
 	</script>
 @endsection

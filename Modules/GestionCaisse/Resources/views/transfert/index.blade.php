@@ -310,6 +310,5 @@
            document.querySelector('#page').value = number_page;
            document.querySelector('#search').submit()
         }
-    document.getElementById('TransfertListe').classList.add('active');
     </script>
 @endsection

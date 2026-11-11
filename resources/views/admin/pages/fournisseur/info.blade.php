@@ -270,6 +270,5 @@
         @error('id_details')
             document.querySelector('#add_matiere').click()
         @enderror
-            document.querySelector('#FournisseurListe').classList.add('active');
 	</script>
 @endsection

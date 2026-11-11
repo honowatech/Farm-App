@@ -57,7 +57,7 @@
 </head>
 <!-- END: Head-->
 <!-- BEGIN: Body-->
-<body class="vertical-layout vertical-menu-modern bordered-layout footer-sticky pace-done footer-fixed footer-static" data-open="click" data-menu="vertical-menu-modern" data-col="">
+<body class="vertical-layout vertical-menu-modern bordered-layout footer-sticky pace-done footer-fixed footer-static" data-open="click" data-menu="vertical-menu-modern" data-col="" data-current-route="{{ Route::currentRouteName() }}">
     <!-- BEGIN: Header-->
     <nav class="header-navbar navbar navbar-expand-lg align-items-center floating-nav navbar-light navbar-shadow shadow">
         <div class="navbar-container d-flex content">
@@ -719,6 +719,24 @@
                 window.addEventListener('load', function () {
                     setTimeout(function () { show(true); }, 1200);
                 });
+            }
+        })();
+    </script>
+    <script>
+        // Activation automatique de l'item de menu selon la route courante.
+        // Chaque <li> du menu porte un attribut data-route listant les routes qui l'activent.
+        (function () {
+            var current = document.body.getAttribute('data-current-route') || '';
+            if (!current) { return; }
+            var items = document.querySelectorAll('.main-menu-content li[data-route]');
+            for (var i = 0; i < items.length; i++) {
+                var routes = (items[i].getAttribute('data-route') || '').split(',');
+                for (var j = 0; j < routes.length; j++) {
+                    if (routes[j].trim() === current) {
+                        items[i].classList.add('active');
+                        return;
+                    }
+                }
             }
         })();
     </script>

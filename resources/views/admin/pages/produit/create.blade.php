@@ -146,6 +146,5 @@
 
 @section('javascript')
 	<script type="text/javascript">
-		document.querySelector('#ProduitAjouter').classList.add('active');
 	</script>
 @endsection

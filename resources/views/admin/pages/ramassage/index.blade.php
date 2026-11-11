@@ -334,7 +334,6 @@
            document.querySelector('#page').value = number_page;
            document.querySelector('#search').submit()
         }
-		document.querySelector('#RamassageListe').classList.add('active');
         function fetchTransactions() {
             var formData = $('#search').serialize();
             $.ajax({

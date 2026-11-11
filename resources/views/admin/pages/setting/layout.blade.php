@@ -102,7 +102,6 @@
 @endsection
 @section('javascript')
     <script type="text/javascript">
-        document.querySelector('#Settings').classList.add('active');
         tableau_class = [
             'modal-sm',
             'modal-md',

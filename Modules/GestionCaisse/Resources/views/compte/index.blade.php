@@ -324,6 +324,5 @@
            document.querySelector('#page').value = number_page;
            document.querySelector('#search').submit()
         }
-    document.getElementById('CaisseListe').classList.add('active');
     </script>
 @endsection

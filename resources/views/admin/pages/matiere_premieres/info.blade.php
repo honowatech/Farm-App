@@ -117,6 +117,5 @@ Infos sur {{ucfirst($matierePremiere->nom_produit)}}
            document.querySelector('#page').value = number_page;
            document.querySelector('#search').submit()
         }
-        document.querySelector('#matierePremieresListe').classList.add('active');
     </script>
 @endsection

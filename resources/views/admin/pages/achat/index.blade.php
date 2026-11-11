@@ -347,7 +347,6 @@
            document.querySelector('#page').value = number_page;
            document.querySelector('#search').submit()
         }
-    document.getElementById('AchatListe').classList.add('active');
     $(document).ready(function() {
     function fetchTransactions() {
         var formData = $('#search').serialize();

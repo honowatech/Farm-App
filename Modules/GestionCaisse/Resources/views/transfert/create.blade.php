@@ -123,6 +123,5 @@
 
 @section('javascript')
 	<script type="text/javascript">
-		$('#TransfertListe').addClass('active');
     </script>
 @endsection

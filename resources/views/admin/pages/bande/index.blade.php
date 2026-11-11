@@ -316,7 +316,6 @@
            document.querySelector('#page').value = number_page;
            document.querySelector('#search').submit()
         }
-		document.querySelector('#BandeListe').classList.add('active');
        $('#no').on('click', function () {
             response_ajax('info_description1', ['{{ $bande->id }}'], '{{ route('gestion_bande', $bande->id) }}', 'GET');
         });

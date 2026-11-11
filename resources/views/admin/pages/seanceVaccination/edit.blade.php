@@ -123,6 +123,5 @@
 @endsection
 @section('javascript')
     <script type="text/javascript">
-        document.querySelector('#SeanceVaccinationListe').classList.add('active');
     </script>
 @endsection

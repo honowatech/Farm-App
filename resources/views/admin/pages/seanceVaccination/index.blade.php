@@ -272,6 +272,5 @@
            document.querySelector('#page').value = number_page;
            document.querySelector('#search').submit()
         }
-		document.querySelector('#SeanceVaccinationListe').classList.add('active');
 	</script>
 @endsection

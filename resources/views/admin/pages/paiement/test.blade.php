@@ -76,7 +76,6 @@
 
 @section('javascript')
 <script type="text/javascript">
-    document.querySelector('#PaiementTest').classList.add('active');
 
     var pollingTimer = null;
 

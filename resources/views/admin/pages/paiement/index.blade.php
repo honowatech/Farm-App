@@ -80,6 +80,5 @@
 
 @section('javascript')
 <script type="text/javascript">
-    document.querySelector('#PaiementIndex').classList.add('active');
 </script>
 @endsection

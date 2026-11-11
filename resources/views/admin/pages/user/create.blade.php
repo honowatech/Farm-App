@@ -143,6 +143,5 @@
 @endsection
 @section('javascript')
 	<script type="text/javascript">
-		document.querySelector('#UserAjouter').classList.add('active');
 	</script>
 @endsection

@@ -274,7 +274,6 @@
 @endsection
 @section('javascript')
 	<script type="text/javascript">
-		document.querySelector('#venteAjouter').classList.add('active');
 
         function calculateTotal(input_qte,input_prix_unitaire,input_total) {
             var input_qte = document.querySelector('#'+input_qte).value,

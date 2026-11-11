@@ -48,6 +48,5 @@
 
 @section('javascript')
 <script type="text/javascript">
-    document.querySelector('#AlerteListe').classList.add('active');
 </script>
 @endsection

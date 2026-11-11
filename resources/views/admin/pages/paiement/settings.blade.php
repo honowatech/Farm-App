@@ -270,7 +270,6 @@
 
 @section('javascript')
 <script type="text/javascript">
-    document.querySelector('#PaiementConfig').classList.add('active');
 
     $('#btn-test-connexion').on('click', function () {
         $('#panel-test-connexion').toggle();

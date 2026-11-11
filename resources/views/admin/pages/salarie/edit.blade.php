@@ -276,7 +276,6 @@
                 response_ajax('recapitulatif',datas,'{{route('ajax_recap_salarie_edit')}}','POST')
             }
         }
-        document.querySelector('#SalarieAjouter').classList.add('active');
         phone('telephone_secondaire');
         phone('telephone');
         format_montant('salaire')

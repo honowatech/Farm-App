@@ -261,6 +261,5 @@
            document.querySelector('#page').value = number_page;
            document.querySelector('#search').submit()
         }
-		document.querySelector('#FournisseurListe').classList.add('active');
 	</script>
 @endsection

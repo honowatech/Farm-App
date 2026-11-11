@@ -241,9 +241,7 @@
 @section('javascript')
 	<script type="text/javascript">
         @if(session()->get('info')[0] =='client')
-            document.querySelector('#ClientListe').classList.add('active');
         @else
-            document.querySelector('#UserListe').classList.add('active');
         @endif
 	</script>
 @endsection

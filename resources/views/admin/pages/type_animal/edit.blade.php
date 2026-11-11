@@ -131,6 +131,5 @@
 
 @section('javascript')
 	<script type="text/javascript">
-		document.querySelector('#Type_animalListe').classList.add('active');
 	</script>
 @endsection

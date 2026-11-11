@@ -158,7 +158,6 @@
 
 @section('javascript')
     <script type="text/javascript">
-        document.querySelector('#VeterinaireListe').classList.add('active');
         phone('telephone_secondaire');
         phone('telephone');
     </script>

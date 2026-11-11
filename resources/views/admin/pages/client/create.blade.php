@@ -164,7 +164,6 @@
 @endsection
 @section('javascript')
 	<script type="text/javascript">
-		document.querySelector('#ClientAjouter').classList.add('active');
         phone('telephone');
 	</script>
 @endsection

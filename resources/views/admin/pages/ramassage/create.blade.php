@@ -289,6 +289,5 @@
         window.addEventListener('load', function() {
             document.querySelector('#heure').value = "{{old('heure')}}";
         });
-		document.querySelector('#RamassageAjouter').classList.add('active');
 	</script>
 @endsection

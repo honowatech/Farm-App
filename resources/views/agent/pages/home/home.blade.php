@@ -237,6 +237,5 @@
 @section('javascript')
 <script src="{{ asset('app-assets/js/scripts/pages/dashboard-ecommerce.js') }}"></script>
 <script type="text/javascript">
-    document.querySelector('#AcceuilAgent').classList.add('active');
 </script>
 @endsection

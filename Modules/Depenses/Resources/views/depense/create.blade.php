@@ -156,7 +156,6 @@
 
 @section('javascript')
 <script type="text/javascript">
-    document.querySelector('#DepenseAjouter').classList.add('active');
 
          $('form').on('submit', function(e) {
                 e.preventDefault(); // Empêche la soumission du formulaire par défaut

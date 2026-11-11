@@ -586,7 +586,6 @@
                     return  true;
                 }
             }
-            document.querySelector('#SalarieListe').classList.add('active');
             function calculate(id_input_mois,id_place_mois,salaire,id_place_salaire){
                 var input_mois = document.querySelector('#'+id_input_mois),
                     place_mois = document.querySelector('#'+id_place_mois),

@@ -213,6 +213,5 @@
 @section('javascript')
 <script type="text/javascript">
     // On s'assure que le bon menu est actif
-    document.querySelector('#BandeListe').classList.add('active');
 </script>
 @endsection

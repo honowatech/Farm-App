@@ -182,6 +182,5 @@
            document.querySelector('#page').value = number_page;
            document.querySelector('#search').submit()
         }
-		document.querySelector('#Type_animalListe').classList.add('active');
 	</script>
 @endsection

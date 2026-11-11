@@ -91,7 +91,6 @@
 
 @section('javascript')
 <script type="text/javascript">
-    document.querySelector('#NutritionAjouter').classList.add('active');
 
     // Fonction pour charger le formulaire de nutrition via AJAX
     function getNutritionForm(bandeId) {

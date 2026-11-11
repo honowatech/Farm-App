@@ -116,7 +116,6 @@
 @section('javascript')
 	<script type="text/javascript">
         format_montant('prix_unitaire');
-		document.querySelector('#matierePremieresListe').classList.add('active');
 	</script>
 @endsection
 

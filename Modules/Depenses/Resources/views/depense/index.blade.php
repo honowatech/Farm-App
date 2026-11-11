@@ -337,6 +337,5 @@
         });
     });
 
-    document.getElementById('DepenseListe').classList.add('active');
     </script>
 @endsection

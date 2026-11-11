@@ -111,7 +111,6 @@
 @endsection
 @section('javascript')
 	<script type="text/javascript">
-		document.querySelector('#matierePremieresAjouter').classList.add('active');
 	</script>
 @endsection
 

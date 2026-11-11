@@ -151,7 +151,6 @@
 @endsection
 @section('javascript')
 	<script type="text/javascript">
-		document.querySelector('#AgentAjouter').classList.add('active');
         phone('telephone_secondaire');
         phone('telephone');
 	</script>

@@ -191,6 +191,5 @@ Infos sur {{ucfirst($derive_produit->nom)}}
            document.querySelector('#page').value = number_page;
            document.querySelector('#search').submit() 
         }
-        document.querySelector('#ProduitListe').classList.add('active');
     </script>
 @endsection

@@ -128,7 +128,6 @@
 
 @section('javascript')
 	<script type="text/javascript">
-		$('#CaisseListe').addClass('active');
 
 
    $(document).ready(function () {

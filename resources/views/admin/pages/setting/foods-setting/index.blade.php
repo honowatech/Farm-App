@@ -293,7 +293,6 @@
            document.querySelector('#search').submit()
         }
         //activation du menu setting
-        document.querySelector('#Settings').classList.add('active');
 
         // Gérer l'ouverture de la modale de sélection d'aliment
         $(document).on('click', '.edit-food-setting', function() {

@@ -373,6 +373,5 @@
     fetchTransactions();
 });
 
-    document.getElementById('venteListe').classList.add('active');
 	</script>
 @endsection

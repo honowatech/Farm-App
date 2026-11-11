@@ -102,6 +102,5 @@
 @endsection
 @section('javascript')
 	<script type="text/javascript">
-		document.querySelector('#BatimentListe').classList.add('active');
 	</script>
 @endsection

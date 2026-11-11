@@ -251,6 +251,5 @@
            document.querySelector('#page').value = number_page;
            document.querySelector('#search').submit()
         }
-		document.querySelector('#BatimentListe').classList.add('active');
 	</script>
 @endsection

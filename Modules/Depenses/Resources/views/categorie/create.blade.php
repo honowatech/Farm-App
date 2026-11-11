@@ -139,7 +139,6 @@
 
 @section('javascript')
     <script type="text/javascript">
-        document.querySelector('#CategorieListe').classList.add('active');
          $(document).ready(function() {
         // Fonction qui s'exécute quand le type est sélectionné
         $('#type').on('change', function() {

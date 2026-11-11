@@ -246,7 +246,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // --- Activation du menu ---
-    document.querySelector('#BandeListe')?.classList.add('active');
 });
 </script>
 @endsection
