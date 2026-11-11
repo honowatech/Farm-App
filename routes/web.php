@@ -123,6 +123,7 @@ Route::group(['middleware' => ['auth', 'web']], function () {
         // Paiements MaMoNi
         Route::get('/paiement/settings', [PaiementController::class, 'settings'])->name('paiement.settings');
         Route::post('/paiement/settings', [PaiementController::class, 'updateSettings'])->name('paiement.settings.update');
+        Route::post('/paiement/settings/test-connexion', [PaiementController::class, 'testConnection'])->name('paiement.settings.test');
         Route::get('/paiement', [PaiementController::class, 'index'])->name('paiement.index');
         Route::get('/paiement/test', [PaiementController::class, 'test'])->name('paiement.test');
         Route::post('/paiement/initier', [PaiementController::class, 'initiate'])->name('paiement.initiate');

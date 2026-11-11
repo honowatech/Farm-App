@@ -50,6 +50,22 @@ class PaiementController extends Controller
     }
 
     /**
+     * Teste les identifiants MaMoNi sans les enregistrer (AJAX).
+     */
+    public function testConnection(Request $request)
+    {
+        $data = $request->validate([
+            'base_url' => 'required|url',
+            'login' => 'required|string',
+            'password' => 'nullable|string',
+        ]);
+
+        $result = $this->mamoni->testCredentials($data['base_url'], $data['login'], $data['password'] ?? '');
+
+        return response()->json($result, $result['ok'] ? 200 : 422);
+    }
+
+    /**
      * Liste des transactions de paiement.
      */
     public function index()

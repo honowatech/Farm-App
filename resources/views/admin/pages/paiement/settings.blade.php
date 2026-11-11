@@ -108,6 +108,14 @@
                                         </div>
                                     </div>
                                     <div class="row col-12">
+                                        <div class="mx-auto col-md-6 col-12 text-center">
+                                            <button type="button" id="btn-tester" class="btn btn-info btn-block">
+                                                <i data-feather="refresh-cw"></i> Tester la connexion
+                                            </button>
+                                            <div id="resultat-test" class="mt-1"></div>
+                                        </div>
+                                    </div>
+                                    <div class="row col-12">
                                         <div class="mx-auto text-center d-none d-md-block col-lg-8 col-md-12 col-12">
                                             <a href="{{ route('paiement.index') }}" class="mt-1 btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-danger mt-md-2 mr-md-4">
                                                 <i class="mr-1" data-feather="x"></i> Annuler
@@ -139,5 +147,33 @@
 @section('javascript')
 <script type="text/javascript">
     document.querySelector('#PaiementConfig').classList.add('active');
+
+    $('#btn-tester').on('click', function () {
+        var baseUrl = $('#base_url').val();
+        var login = $('#login').val();
+        var password = $('#password').val();
+
+        var btn = $(this);
+        btn.prop('disabled', true);
+        $('#resultat-test').html('<div class="text-center"><i class="fas fa-spinner fa-spin text-info"></i> Test en cours…</div>');
+
+        $.post('{{ route("paiement.settings.test") }}', {
+            _token: '{{ csrf_token() }}',
+            base_url: baseUrl,
+            login: login,
+            password: password
+        }, function (res) {
+            btn.prop('disabled', false);
+            if (res.ok) {
+                $('#resultat-test').html('<div class="text-center text-success"><i class="fas fa-check-circle"></i> ' + res.message + '</div>');
+            } else {
+                $('#resultat-test').html('<div class="text-center text-danger"><i class="fas fa-times-circle"></i> ' + res.message + '</div>');
+            }
+        }).fail(function (xhr) {
+            btn.prop('disabled', false);
+            var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Erreur.';
+            $('#resultat-test').html('<div class="text-center text-danger"><i class="fas fa-times-circle"></i> ' + msg + '</div>');
+        });
+    });
 </script>
 @endsection

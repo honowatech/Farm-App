@@ -112,4 +112,32 @@ class MamoniService
             'data' => $data,
         ];
     }
+
+    /**
+     * Teste la connexion avec des identifiants donnés (sans les enregistrer).
+     */
+    public function testCredentials(string $baseUrl, string $login, string $password): array
+    {
+        $baseUrl = rtrim($baseUrl, '/');
+
+        try {
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ])->timeout(15)->post($baseUrl.'/v1/auth/login', [
+                'login' => $login,
+                'password' => $password,
+            ]);
+        } catch (\Exception $e) {
+            return ['ok' => false, 'message' => 'Service injoignable : '.$e->getMessage()];
+        }
+
+        if ($response->successful() && $response->json('data.access_token')) {
+            return ['ok' => true, 'message' => 'Connexion réussie.'];
+        }
+
+        $message = $response->json('message') ?? 'identifiants invalides ou service indisponible';
+
+        return ['ok' => false, 'message' => 'Échec de connexion : '.$message];
+    }
 }
