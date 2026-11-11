@@ -52,6 +52,5 @@ Informations
 
     <script src="{{asset('app-assets/js/scripts/pages/app-ecommerce-details.js')}}"></script>
     <script src="{{asset('app-assets/js/scripts/forms/form-number-input.js')}}"></script>
-    <script type="text/javascript">
-    </script>
+    
 @endsection
