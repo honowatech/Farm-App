@@ -20,6 +20,7 @@ use App\Http\Controllers\LogoController;
 use App\Http\Controllers\Matiere_premiereController;
 use App\Http\Controllers\MortaliteController;
 use App\Http\Controllers\NutritionController;
+use App\Http\Controllers\PaiementController;
 use App\Http\Controllers\ProduitController;
 use App\Http\Controllers\RamassageController;
 use App\Http\Controllers\RentabiliteController;
@@ -118,6 +119,14 @@ Route::group(['middleware' => ['auth', 'web']], function () {
 
         // Rentabilité
         Route::get('/rentabilite', [RentabiliteController::class, 'index'])->name('rentabilite.index');
+
+        // Paiements MaMoNi
+        Route::get('/paiement/settings', [PaiementController::class, 'settings'])->name('paiement.settings');
+        Route::post('/paiement/settings', [PaiementController::class, 'updateSettings'])->name('paiement.settings.update');
+        Route::get('/paiement', [PaiementController::class, 'index'])->name('paiement.index');
+        Route::get('/paiement/test', [PaiementController::class, 'test'])->name('paiement.test');
+        Route::post('/paiement/initier', [PaiementController::class, 'initiate'])->name('paiement.initiate');
+        Route::post('/paiement/statut/{transaction}', [PaiementController::class, 'status'])->name('paiement.status');
         Route::get('/ajout de client', [VenteController::class, 'get_formulaire'])->name('formulaire');
         Route::get('/selection-client', [VenteController::class, 'get_client'])->name('client');
         Route::get('/achat_ajax_result', [VenteController::class, 'get_prix'])->name('ajax_result_prix');
