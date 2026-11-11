@@ -529,6 +529,33 @@
             <i class="fas fa-sync-alt mr-50"></i> <span id="queue-count">0</span> en attente
         </button>
     </div>
+
+    {{-- Popup d'installation PWA --}}
+    <style>
+        .pwa-overlay { position: fixed; inset: 0; background: rgba(34,41,47,.55); display: flex; align-items: flex-end; justify-content: center; z-index: 2000; padding: 16px; }
+        @media (min-width: 576px) { .pwa-overlay { align-items: center; } }
+        .pwa-card { background: #fff; border-radius: 18px; width: 100%; max-width: 360px; padding: 26px 20px 20px; text-align: center; box-shadow: 0 16px 40px rgba(0,0,0,.28); position: relative; animation: pwa-pop .25s ease; }
+        @keyframes pwa-pop { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .pwa-card .pwa-close { position: absolute; top: 10px; right: 12px; border: none; background: transparent; font-size: 1.6rem; line-height: 1; color: #6e6b7b; cursor: pointer; padding: 0 4px; }
+        .pwa-icon { width: 68px; height: 68px; border-radius: 16px; object-fit: contain; background: #f6f6f6; padding: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+        .pwa-title { font-size: 1.2rem; font-weight: 700; color: #333; margin: 14px 0 6px; }
+        .pwa-text { font-size: .9rem; color: #6e6b7b; margin: 0 0 18px; line-height: 1.5; }
+        .pwa-actions { display: flex; gap: 10px; }
+        .pwa-actions .btn { flex: 1; border-radius: 10px; font-weight: 600; padding: .6rem .5rem; }
+    </style>
+    <div class="pwa-overlay" id="pwa-install-overlay" style="display:none;">
+        <div class="pwa-card" role="dialog" aria-modal="true" aria-labelledby="pwa-install-title">
+            <button type="button" class="pwa-close" id="pwa-install-close" aria-label="Fermer">&times;</button>
+            <img src="{{ logo() ?: asset('favicon.ico') }}" alt="Farm-App" class="pwa-icon">
+            <h3 class="pwa-title" id="pwa-install-title">Installer Farm-App</h3>
+            <p class="pwa-text" id="pwa-install-text">Ajoutez Farm-App à votre écran d'accueil pour un accès rapide, même sans connexion.</p>
+            <div class="pwa-actions">
+                <button type="button" class="btn btn-success" id="pwa-install-btn"><i class="fas fa-download mr-50"></i> Installer</button>
+                <button type="button" class="btn btn-danger" id="pwa-install-later">Plus tard</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function updateOnlineStatus() {
             var offline = !navigator.onLine;
@@ -621,6 +648,79 @@
                 });
             });
         }
+    </script>
+    <script>
+        (function () {
+            var deferredPrompt = null;
+            var KEY = 'farmapp_pwa_dismissed_until';
+
+            function toast(msg, titre, type) {
+                if (window.toastr) { toastr[type](msg, titre); }
+            }
+            function isIos() {
+                return /iphone|ipad|ipod/i.test(navigator.userAgent);
+            }
+            function isStandalone() {
+                return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+            }
+            function canShow() {
+                var until = 0;
+                try { until = parseInt(localStorage.getItem(KEY) || '0', 10); } catch (e) {}
+                return Date.now() > until;
+            }
+            function dismissFor(days) {
+                try { localStorage.setItem(KEY, String(Date.now() + days * 86400000)); } catch (e) {}
+            }
+            function show(ios) {
+                var overlay = document.getElementById('pwa-install-overlay');
+                var text = document.getElementById('pwa-install-text');
+                var btn = document.getElementById('pwa-install-btn');
+                if (!overlay) { return; }
+                if (ios) {
+                    text.textContent = 'Sur iPhone/iPad : appuyez sur le bouton Partager (carré avec une flèche) puis « Ajouter à l\'écran d\'accueil ».';
+                    if (btn) { btn.style.display = 'none'; }
+                }
+                overlay.style.display = 'flex';
+            }
+            function hide() {
+                var overlay = document.getElementById('pwa-install-overlay');
+                if (overlay) { overlay.style.display = 'none'; }
+            }
+
+            if (isStandalone()) { return; }
+
+            document.getElementById('pwa-install-close').addEventListener('click', function () { hide(); dismissFor(3); });
+            document.getElementById('pwa-install-later').addEventListener('click', function () { hide(); dismissFor(3); });
+            document.getElementById('pwa-install-btn').addEventListener('click', function () {
+                if (!deferredPrompt) { hide(); dismissFor(3); return; }
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(function (choice) {
+                    if (choice.outcome === 'accepted') { toast('Installation lancée.', 'Farm-App', 'success'); }
+                    deferredPrompt = null;
+                    hide();
+                    dismissFor(3);
+                });
+            });
+
+            window.addEventListener('beforeinstallprompt', function (e) {
+                e.preventDefault();
+                deferredPrompt = e;
+                if (canShow()) { show(false); }
+            });
+
+            window.addEventListener('appinstalled', function () {
+                deferredPrompt = null;
+                hide();
+                dismissFor(3650);
+                toast('Application installée avec succès !', 'Farm-App', 'success');
+            });
+
+            if (isIos() && canShow()) {
+                window.addEventListener('load', function () {
+                    setTimeout(function () { show(true); }, 1200);
+                });
+            }
+        })();
     </script>
 </body>
 <!-- END: Body-->
