@@ -119,7 +119,7 @@
 
 @section('javascript')
 	<script type="text/javascript">
-		$('#CompteListe').addClass('active');
+		$('#CaisseListe').addClass('active');
 
 
    $(document).ready(function () {

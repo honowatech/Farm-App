@@ -53,3 +53,9 @@
     </div>
 </div>
 @endsection
+
+@section('javascript')
+<script type="text/javascript">
+    document.querySelector('#RentabiliteListe').classList.add('active');
+</script>
+@endsection

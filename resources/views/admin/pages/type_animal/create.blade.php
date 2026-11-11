@@ -120,6 +120,6 @@
 
 @section('javascript')
 	<script type="text/javascript">
-		document.querySelector('#type_reproductionAjouter').classList.add('active');
+		document.querySelector('#Type_animalAjouter').classList.add('active');
 	</script>
 @endsection

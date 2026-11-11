@@ -189,8 +189,8 @@
                     <span class="menu-title text-truncate">Paiements</span>
                 </a>
                 <ul class="menu-content">
-                    <li><a class="d-flex align-items-center" href="{{ route('paiement.index') }}"><i data-feather="circle"></i><span class="menu-item">Transactions</span></a></li>
-                    <li><a class="d-flex align-items-center" href="{{ route('paiement.test') }}"><i data-feather="play"></i><span class="menu-item">Tester un paiement</span></a></li>
+                    <li id="PaiementIndex"><a class="d-flex align-items-center" href="{{ route('paiement.index') }}"><i data-feather="circle"></i><span class="menu-item">Transactions</span></a></li>
+                    <li id="PaiementTest"><a class="d-flex align-items-center" href="{{ route('paiement.test') }}"><i data-feather="play"></i><span class="menu-item">Tester un paiement</span></a></li>
                     <li id="PaiementConfig"><a class="d-flex align-items-center" href="{{ route('paiement.settings') }}"><i data-feather="settings"></i><span class="menu-item">Configuration</span></a></li>
                 </ul>
             </li>

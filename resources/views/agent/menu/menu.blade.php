@@ -20,7 +20,7 @@
 
             {{-- Accueil --}}
             <li class="navigation-header"><span>{{ __('message.Accueil') }}</span><i data-feather="more-horizontal"></i></li>
-            <li class="nav-item">
+            <li class="nav-item" id="AcceuilAgent">
                 <a class="d-flex align-items-center" href="{{ route('home') }}">
                     <i data-feather="home"></i>
                     <span class="menu-title text-truncate">{{ __('message.Tableau de bord') }}</span>

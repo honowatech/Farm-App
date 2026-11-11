@@ -78,3 +78,9 @@
     </div>
 </div>
 @endsection
+
+@section('javascript')
+<script type="text/javascript">
+    document.querySelector('#AuditListe').classList.add('active');
+</script>
+@endsection
