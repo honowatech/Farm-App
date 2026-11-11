@@ -1,0 +1,25 @@
+{
+    "name": "Farm-App",
+    "short_name": "Farm-App",
+    "description": "Gestion d'élevage avicole",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#7367f0",
+    "orientation": "any",
+    "lang": "fr",
+    "icons": [
+        {
+            "src": "/app-assets/images/avatars/logo.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        },
+        {
+            "src": "/favicon.ico",
+            "sizes": "48x48",
+            "type": "image/x-icon"
+        }
+    ]
+}

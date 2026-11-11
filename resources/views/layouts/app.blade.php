@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1, minimal-ui">
+    <meta name="theme-color" content="#7367f0">
+    <link rel="manifest" href="/manifest.webmanifest">
     <title>@yield('title')</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -517,6 +519,29 @@
         }
         function valider(id){
             document.querySelector('#'+id).submit()
+        }
+    </script>
+    <div id="offline-badge" style="display:none; position:fixed; top:0; left:0; right:0; background:#ea5455; color:#fff; text-align:center; padding:8px; z-index:9999; font-weight:600;">
+        📡 Vous êtes hors-ligne
+    </div>
+    <script>
+        function updateOnlineStatus() {
+            var offline = !navigator.onLine;
+            var badge = document.getElementById('offline-badge');
+            if (badge) {
+                badge.style.display = offline ? 'block' : 'none';
+            }
+        }
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw.js').catch(function (err) {
+                    console.error('Service Worker non enregistré :', err);
+                });
+            });
         }
     </script>
 </body>
