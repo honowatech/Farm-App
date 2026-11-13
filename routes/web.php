@@ -22,6 +22,7 @@ use App\Http\Controllers\MortaliteController;
 use App\Http\Controllers\NutritionController;
 use App\Http\Controllers\PaiementController;
 use App\Http\Controllers\ProduitController;
+use App\Http\Controllers\ProgrammeVaccinationController;
 use App\Http\Controllers\RamassageController;
 use App\Http\Controllers\RentabiliteController;
 use App\Http\Controllers\SettingController;
@@ -166,6 +167,7 @@ Route::group(['middleware' => ['auth', 'web', 'agent_access']], function () {
     Route::get('/recherche-bande', [BandeController::class, 'search'])->name('bande.search');
 
     Route::resource('nettoyage', 'App\Http\Controllers\NettoyageController');
+    Route::get('/programme-vaccination', [ProgrammeVaccinationController::class, 'index'])->name('programme_vaccination.index');
     Route::resource('seanceVaccination', 'App\Http\Controllers\SeanceVaccinationController');
 });
 

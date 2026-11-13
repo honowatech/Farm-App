@@ -14,7 +14,7 @@ class UniteController extends Controller
      */
     public function index(Request $request)
     {
-        $unites = Unite::orderBy('libelle')->get();
+        $unites = Unite::orderBy('libelle')->paginate(10, ['*'], 'unite_page');
 
         return view('admin.pages.setting.unites.index', compact('unites'));
     }

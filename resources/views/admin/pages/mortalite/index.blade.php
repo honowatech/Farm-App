@@ -41,6 +41,7 @@
                         </div>
                     </form>
 
+                    <div data-ajax-table>
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
@@ -60,16 +61,23 @@
                                         <td>{{ $mortalite->nombre_morts }}</td>
                                         <td>{{ $mortalite->cause?->libelle ?? '—' }}</td>
                                         <td>
-                                            <a class="btn btn-sm btn-primary" href="{{ route('mortalite.edit', $mortalite->id) }}">
-                                                <i data-feather="edit-2"></i>
-                                            </a>
-                                            <span class="btn btn-sm btn-danger" onclick="actions('form_delete_{{ $mortalite->id }}', 'Supprimer', 'cette mortalité')">
-                                                <i data-feather="trash"></i>
-                                                <form id="form_delete_{{ $mortalite->id }}" action="{{ route('mortalite.destroy', $mortalite->id) }}" method="POST">
+                                            <div class="table-actions">
+                                                <a class="btn btn-sm btn-icon btn-outline-primary rounded-circle"
+                                                   href="{{ route('mortalite.edit', $mortalite->id) }}"
+                                                   title="Modifier" aria-label="Modifier">
+                                                    <i data-feather="edit-2"></i>
+                                                </a>
+                                                <button type="button"
+                                                        class="btn btn-sm btn-icon btn-outline-danger rounded-circle"
+                                                        title="Supprimer" aria-label="Supprimer"
+                                                        onclick="actions('form_delete_{{ $mortalite->id }}', 'Supprimer', 'cette mortalité')">
+                                                    <i data-feather="trash-2"></i>
+                                                </button>
+                                                <form id="form_delete_{{ $mortalite->id }}" action="{{ route('mortalite.destroy', $mortalite->id) }}" method="POST" class="d-none">
                                                     @csrf
                                                     @method('DELETE')
                                                 </form>
-                                            </span>
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty
@@ -81,7 +89,10 @@
                         </table>
                     </div>
 
-                    {{ $mortalites->links() }}
+                    <div class="px-1">
+                        {{ $mortalites->links() }}
+                    </div>
+                    </div>
                 </div>
             </div>
         </div>

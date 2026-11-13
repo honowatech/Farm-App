@@ -35,9 +35,15 @@ class HomeController extends Controller
         session()->forget('info');
 
         // Récupérer les bandes en cours
-        $bandes_en_cours = Bande::where('date_lancement_bande', '<', now())
+        $bandes_query = Bande::where('date_lancement_bande', '<', now())
             ->where('statut_bande', 'encours')
-            ->get();
+            ->orderBy('date_lancement_bande', 'desc');
+
+        // Collection complète pour les statistiques et les alertes.
+        $bandes_en_cours = (clone $bandes_query)->get();
+
+        // Collection paginée pour l'affichage du tableau de bord.
+        $bandes_paginees = $bandes_query->paginate(10, ['*'], 'bande_page');
 
         $role = Auth::user()->type_user?->libelle;
 
@@ -55,6 +61,7 @@ class HomeController extends Controller
 
             return view('agent.pages.home.home', compact(
                 'bandes_en_cours',
+                'bandes_paginees',
                 'nutritions_total',
                 'nettoyages_total',
                 'vaccinations_total',
@@ -64,8 +71,8 @@ class HomeController extends Controller
             ));
         }
 
-        // Pour les administrateurs, garder la vue admin existante
-        if ($role === 'admin') {
+        // Pour les administrateurs et les gestionnaires, garder la vue admin existante
+        if (in_array($role, ['admin', 'gestionnaire'], true)) {
             $matiere_premieres = Matiere_premiere::get();
             $batiments = Batiment::get();
 
@@ -88,6 +95,7 @@ class HomeController extends Controller
 
             return view('admin.pages.home.home', compact(
                 'bandes_en_cours',
+                'bandes_paginees',
                 'matiere_premieres',
                 'batiments',
                 'ca_du_mois',
@@ -97,7 +105,86 @@ class HomeController extends Controller
             ));
         }
 
-        abort(403, 'Accès non autorisé.');
+        // Profils métier (vétérinaire, magasinier, commercial, comptable,
+        // caissier, rh, client) : tableau de bord partagé et filtré.
+        $user = Auth::user();
+        $stats = [];
+
+        if ($user->hasPermission('bande.view')) {
+            $stats[] = ['label' => 'Bandes en cours', 'value' => $bandes_en_cours->count(), 'icon' => 'columns', 'color' => 'primary'];
+        }
+
+        if ($user->hasPermission('vente.view')) {
+            $stats[] = ['label' => 'Ventes (30 jours)', 'value' => Vente::where('created_at', '>=', now()->subDays(30))->count(), 'icon' => 'shopping-cart', 'color' => 'success'];
+        }
+
+        if ($user->hasPermission('facture.view')) {
+            $stats[] = ['label' => "Chiffre d'affaires (30 jours)", 'value' => number_format((float) Facture::where('date_facturation', '>=', now()->subDays(30))->sum('total_ttc'), 0, ',', ' ').' FCFA', 'icon' => 'file-text', 'color' => 'info'];
+        }
+
+        if ($user->hasPermission('depense.view')) {
+            $stats[] = ['label' => 'Dépenses (30 jours)', 'value' => number_format((float) \Modules\Depenses\Entities\Depense::where('date_depense', '>=', now()->subDays(30))->sum('montant'), 0, ',', ' ').' FCFA', 'icon' => 'dollar-sign', 'color' => 'warning'];
+        }
+
+        if ($user->hasPermission('salarie.view')) {
+            $stats[] = ['label' => 'Salariés actifs', 'value' => \Modules\Salarie\Entities\Salaries::where('statut', 1)->count(), 'icon' => 'award', 'color' => 'secondary'];
+        }
+
+        if ($user->hasPermission('caisse.view')) {
+            $solde = (float) \Modules\GestionCaisse\Entities\Compte::sum('current_balance');
+            $stats[] = ['label' => 'Solde des comptes', 'value' => number_format($solde, 0, ',', ' ').' FCFA', 'icon' => 'briefcase', 'color' => 'dark'];
+        }
+
+        if ($user->hasPermission('vaccination.view')) {
+            $stats[] = ['label' => 'Vaccinations (30 jours)', 'value' => Seance_de_vaccination::where('created_at', '>=', now()->subDays(30))->count(), 'icon' => 'shield', 'color' => 'danger'];
+        }
+
+        if ($user->hasPermission('stock_matiere_premiere.view')) {
+            $stats[] = ['label' => 'Aliments suivis', 'value' => Matiere_premiere::count(), 'icon' => 'coffee', 'color' => 'primary'];
+        }
+
+        // Raccourcis vers les modules autorisés
+        $liens = [
+            ['label' => 'Bandes', 'route' => 'bande.index', 'icon' => 'columns'],
+            ['label' => 'Nutrition', 'route' => 'nutrition.index', 'icon' => 'activity'],
+            ['label' => 'Vaccinations', 'route' => 'seanceVaccination.index', 'icon' => 'shield'],
+            ['label' => 'Nettoyages', 'route' => 'nettoyage.index', 'icon' => 'droplet'],
+            ['label' => 'Mortalité', 'route' => 'mortalite.index', 'icon' => 'alert-triangle'],
+            ['label' => 'Ramassages', 'route' => 'ramassage.index', 'icon' => 'inbox'],
+            ['label' => 'Produits', 'route' => 'produit.index', 'icon' => 'package'],
+            ['label' => 'Stock produits', 'route' => 'stock_produit.index', 'icon' => 'layers'],
+            ['label' => 'Achats', 'route' => 'achat.index', 'icon' => 'command'],
+            ['label' => 'Fournisseurs', 'route' => 'fournisseur.index', 'icon' => 'user-minus'],
+            ['label' => 'Matières premières', 'route' => 'matiere_premiere.index', 'icon' => 'coffee'],
+            ['label' => 'Stock aliments', 'route' => 'stock_matiere_premiere.index', 'icon' => 'archive'],
+            ['label' => 'Ventes', 'route' => 'vente.index', 'icon' => 'shopping-cart'],
+            ['label' => 'Clients', 'route' => 'client.index', 'icon' => 'users'],
+            ['label' => 'Paiements', 'route' => 'paiement.index', 'icon' => 'smartphone'],
+            ['label' => 'Dépenses', 'route' => 'depenses.index', 'icon' => 'dollar-sign'],
+            ['label' => 'Catégories de dépenses', 'route' => 'categorie.index', 'icon' => 'tag'],
+            ['label' => 'Caisse', 'route' => 'compte.index', 'icon' => 'briefcase'],
+            ['label' => 'Salariés', 'route' => 'salarie.index', 'icon' => 'award'],
+            ['label' => 'Paie', 'route' => 'paiement_salaire.index', 'icon' => 'credit-card'],
+            ['label' => 'Rentabilité', 'route' => 'rentabilite.index', 'icon' => 'trending-up'],
+            ['label' => 'Alertes', 'route' => 'alerte.index', 'icon' => 'bell'],
+            ['label' => 'Utilisateurs', 'route' => 'user.index', 'icon' => 'user-check'],
+        ];
+
+        $liens = array_values(array_filter($liens, function (array $lien) use ($user) {
+            return \Illuminate\Support\Facades\Route::has($lien['route'])
+                && $user->canAccessRoute($lien['route']);
+        }));
+
+        // Un client voit ses propres factures
+        $facturesClient = collect();
+        if ($role === 'client') {
+            $client = \App\Models\Client::where('id_user', $user->id)->first();
+            if ($client) {
+                $facturesClient = Facture::where('id_client', $client->id)->latest('date_facturation')->take(10)->get();
+            }
+        }
+
+        return view('shared.home', compact('role', 'stats', 'liens', 'facturesClient'));
     }
 
     /**

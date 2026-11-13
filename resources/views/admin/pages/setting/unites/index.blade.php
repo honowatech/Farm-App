@@ -1,4 +1,5 @@
 <div class="row" id="table-without-card">
+            <div class="col-12" data-ajax-table>
             <div class="table-responsive">
                 <table class="table">
                     <thead>
@@ -44,6 +45,9 @@
                         @endforeach
                 </tbody>
             </table>
+        </div>
+        <div class="px-1">
+            {{ $unites->links() }}
         </div>
     </div>
 </div>

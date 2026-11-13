@@ -56,4 +56,7 @@ return array (
   'Devise' => 'Currency',
   'Transaction' => 'Transaction',
   'Transfert' => 'Transfer',
+  'Unités' => 'Units',
+  'Salariés' => 'Employees',
+  'Vente' => 'Sale',
 );

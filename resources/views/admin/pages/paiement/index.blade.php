@@ -27,6 +27,7 @@
                     </div>
                 </div>
                 <div class="card-body">
+                    <div data-ajax-table>
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
@@ -70,7 +71,10 @@
                         </table>
                     </div>
 
-                    {{ $transactions->links() }}
+                    <div class="px-1">
+                        {{ $transactions->links() }}
+                    </div>
+                    </div>
                 </div>
             </div>
         </div>

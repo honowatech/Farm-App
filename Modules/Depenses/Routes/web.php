@@ -14,7 +14,7 @@ use Modules\Depenses\Http\Controllers\DepensesController;
 |
 */
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware(['auth', 'agent_access'])->group(function () {
     Route::prefix('depenses')->group(function () {
         Route::get('/', [DepensesController::class, 'index'])->name('depenses.index');
         Route::get('/create', [DepensesController::class, 'create'])->name('depenses.create');

@@ -53,6 +53,96 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('app-assets/css/plugins/extensions/ext-component-toastr.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('app-assets/css/pages/app-user.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('app-assets/css/pages/app-calendar.css') }}">
+
+    {{-- Styles applicatifs partagés --}}
+    <style>
+        .table-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            white-space: nowrap;
+        }
+        .table-actions .btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            padding: 0;
+        }
+        .table-actions form {
+            margin: 0;
+        }
+        .table .dropdown-toggle.hide-arrow {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            padding: 0;
+            border: 1px solid #ebe9f1;
+            border-radius: 50%;
+            background-color: #fff;
+            color: #6e6b7b;
+            transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+        }
+        .table .dropdown-toggle.hide-arrow:hover,
+        .table .dropdown-toggle.hide-arrow:focus {
+            background-color: #f3f2fe;
+            border-color: #7367f0;
+            color: #7367f0;
+        }
+        [data-ajax-table] .pagination {
+            justify-content: center;
+            margin: 1rem 0 0;
+        }
+        [data-ajax-table] .pagination .page-link {
+            min-width: 2rem;
+            margin: 0 0.15rem;
+            text-align: center;
+            border-radius: 0.35rem;
+        }
+        /* Tableaux : éviter qu'une table trop large déborde de sa carte */
+        .card,
+        .card-body {
+            min-width: 0;
+        }
+        .row > [class*='col'] {
+            min-width: 0;
+        }
+        .table-responsive {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+        .table-responsive > .table {
+            margin-bottom: 0;
+        }
+        .table-responsive > .table th,
+        .table-responsive > .table td {
+            overflow-wrap: break-word;
+        }
+        .card .table:not(.table-sm) th,
+        .card .table:not(.table-sm) td {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        @media (max-width: 991.98px) {
+            .card .table:not(.table-sm) th,
+            .card .table:not(.table-sm) td {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+        }
+        @media (max-width: 575.98px) {
+            .card .table:not(.table-sm) th,
+            .card .table:not(.table-sm) td {
+                padding-left: 0.45rem;
+                padding-right: 0.45rem;
+            }
+        }
+    </style>
+
     @yield('css')
 </head>
 <!-- END: Head-->
@@ -67,6 +157,7 @@
                 </ul>
             </div>
             <ul class="nav navbar-nav align-items-center ml-auto">
+                @canroute('alerte.index')
                 <li class="nav-item pr-1">
                     @php $alertesCount = app(\App\Services\AlerteService::class)->count(); @endphp
                     <a class="nav-link" href="{{ route('alerte.index') }}" title="Alertes" aria-label="Alertes">
@@ -76,6 +167,7 @@
                         @endif
                     </a>
                 </li>
+                @endcanroute
                 <li class="nav-item dropdown dropdown-user pr-1">
                     <a class="nav-link dropdown-toggle dropdown-user-link" id="dropdown-user" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div class="user-nav d-sm-flex d-none">
@@ -132,7 +224,7 @@
         </div>
     </nav>
     <!-- END: Header-->
-    @include(auth()->user()->type_user?->libelle . '.menu.menu')
+    @include('shared.menu')
     <!-- BEGIN: Content-->
     @yield('contenu')
     <!-- END: Content-->
@@ -520,6 +612,209 @@
         function valider(id){
             document.querySelector('#'+id).submit()
         }
+    </script>
+    {{-- Pagination AJAX : navigue entre les pages sans recharger la page --}}
+    <script type="text/javascript">
+        (function () {
+            var CONTAINER = '[data-ajax-table]';
+
+            function buildUrl(link) {
+                var url = new URL(link.getAttribute('href'), window.location.origin);
+                if (url.origin !== window.location.origin) {
+                    return null;
+                }
+
+                // Conserver les filtres actifs de la page courante.
+                var current = new URL(window.location.href);
+                current.searchParams.forEach(function (value, key) {
+                    if (key !== 'page' && !url.searchParams.has(key)) {
+                        url.searchParams.set(key, value);
+                    }
+                });
+
+                return url;
+            }
+
+            function afterReplace(container, url) {
+                if (window.feather && typeof window.feather.replace === 'function') {
+                    window.feather.replace();
+                }
+                if (window.jQuery) {
+                    window.jQuery(container).find('[data-toggle="tooltip"]').tooltip();
+                }
+
+                // Ne pas modifier l'URL quand le tableau est dans une modale
+                // (ex. liste des unités chargée en AJAX).
+                if (window.history && window.history.pushState && !container.closest('.modal')) {
+                    window.history.pushState({ ajaxTable: true }, '', url.toString());
+                }
+
+                var top = container.getBoundingClientRect().top + window.pageYOffset - 90;
+                window.scrollTo({ top: top, behavior: 'smooth' });
+            }
+
+            document.addEventListener('click', function (event) {
+                var link = event.target.closest ? event.target.closest('.pagination a[href]') : null;
+                if (!link) {
+                    return;
+                }
+
+                var container = link.closest(CONTAINER);
+                if (!container) {
+                    return;
+                }
+
+                var url = buildUrl(link);
+                if (!url) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                var containers = Array.prototype.slice.call(document.querySelectorAll(CONTAINER));
+                var index = containers.indexOf(container);
+
+                container.style.opacity = '0.55';
+                container.style.pointerEvents = 'none';
+
+                fetch(url.toString(), {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-Ajax-Pagination': '1',
+                        'Accept': 'text/html'
+                    },
+                    credentials: 'same-origin'
+                }).then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    return response.text();
+                }).then(function (html) {
+                    var doc = new DOMParser().parseFromString(html, 'text/html');
+                    var fresh = doc.querySelectorAll(CONTAINER)[index];
+                    if (!fresh) {
+                        throw new Error('Conteneur de pagination introuvable');
+                    }
+                    container.innerHTML = fresh.innerHTML;
+                    afterReplace(container, url);
+                }).catch(function () {
+                    // Repli : navigation classique si l'AJAX échoue.
+                    window.location.href = url.toString();
+                }).finally(function () {
+                    container.style.opacity = '';
+                    container.style.pointerEvents = '';
+                });
+            });
+
+            // Le bouton retour du navigateur recharge la vue paginée.
+            window.addEventListener('popstate', function (event) {
+                if (event.state && event.state.ajaxTable) {
+                    window.location.reload();
+                }
+            });
+        })();
+    </script>
+    {{-- Pagination AJAX des tableaux pilotés par la fonction mettre(page) --}}
+    <script type="text/javascript">
+        (function () {
+            var nativeSubmit = HTMLFormElement.prototype.submit;
+
+            function replaceBlocks(doc, selector) {
+                var olds = Array.prototype.slice.call(document.querySelectorAll(selector));
+                var news = doc.querySelectorAll(selector);
+
+                olds.forEach(function (old, index) {
+                    if (news[index]) {
+                        old.innerHTML = news[index].innerHTML;
+                    }
+                });
+            }
+
+            function replacePagination(doc) {
+                var olds = Array.prototype.slice.call(document.querySelectorAll('.pagination'));
+                var news = doc.querySelectorAll('.pagination');
+
+                olds.forEach(function (old, index) {
+                    var parent = old.parentElement;
+                    if (!parent) {
+                        return;
+                    }
+                    if (!news[index]) {
+                        parent.innerHTML = '';
+                        return;
+                    }
+                    parent.innerHTML = news[index].parentElement.innerHTML;
+                });
+            }
+
+            function load(url) {
+                var tables = Array.prototype.slice.call(document.querySelectorAll('.table-responsive'));
+                tables.forEach(function (table) {
+                    table.style.opacity = '0.55';
+                });
+
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-Ajax-Pagination': '1',
+                        'Accept': 'text/html'
+                    },
+                    credentials: 'same-origin'
+                }).then(function (response) {
+                    if (!response.ok) {
+                        throw new Error('HTTP ' + response.status);
+                    }
+                    return response.text();
+                }).then(function (html) {
+                    var doc = new DOMParser().parseFromString(html, 'text/html');
+                    replaceBlocks(doc, '.table-responsive');
+                    replacePagination(doc);
+
+                    if (window.feather && typeof window.feather.replace === 'function') {
+                        window.feather.replace();
+                    }
+
+                    if (window.history && window.history.pushState) {
+                        window.history.pushState({ ajaxTable: true }, '', url);
+                    }
+
+                    var firstTable = document.querySelector('.table-responsive');
+                    if (firstTable) {
+                        var top = firstTable.getBoundingClientRect().top + window.pageYOffset - 110;
+                        window.scrollTo({ top: top, behavior: 'smooth' });
+                    }
+                }).catch(function () {
+                    // Repli : navigation classique si l'AJAX échoue.
+                    window.location.href = url;
+                }).finally(function () {
+                    tables.forEach(function (table) {
+                        table.style.opacity = '';
+                    });
+                });
+            }
+
+            // mettre(page) appelle form.submit() : on l'intercepte pour rester en AJAX.
+            HTMLFormElement.prototype.submit = function () {
+                if (this.id === 'search' && this.querySelector('[name="page"]')) {
+                    var url = new URL(window.location.href);
+                    var params = new URLSearchParams();
+
+                    new FormData(this).forEach(function (value, key) {
+                        if (key === '_token' || value === '') {
+                            return;
+                        }
+                        params.set(key, value);
+                    });
+
+                    url.search = params.toString();
+                    load(url.toString());
+
+                    return;
+                }
+
+                nativeSubmit.apply(this, arguments);
+            };
+        })();
     </script>
     <div id="offline-badge" style="display:none; position:fixed; top:0; left:0; right:0; background:#ea5455; color:#fff; text-align:center; padding:8px; z-index:9999; font-weight:600;">
         📡 Vous êtes hors-ligne

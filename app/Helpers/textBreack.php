@@ -97,6 +97,10 @@ if (! function_exists('Heure2')) {
 if (! function_exists('phone')) {
     function phone($number)
     {
+        if ($number === null || trim((string) $number) === '') {
+            return '';
+        }
+
         if (strlen(trim($number)) > 9 || strlen(trim($number)) > 9) {
             $result = $number;
         } else {

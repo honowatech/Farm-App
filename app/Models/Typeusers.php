@@ -18,4 +18,9 @@ class Typeusers extends Model
     {
         return $this->hasMany('App\Models\Users', 'id_type_user');
     }
+
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'permission_type_user', 'type_user_id', 'permission_id');
+    }
 }

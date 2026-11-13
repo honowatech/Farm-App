@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\RoutePermission;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -9,43 +10,72 @@ use Illuminate\Support\Facades\Auth;
 class AgentAccess
 {
     /**
-     * Handle an incoming request.
+     * Vérifie que le rôle de l'utilisateur possède la permission requise
+     * par la route courante (ACL native).
+     *
+     * En cas de refus, l'utilisateur est renvoyé à la page précédente
+     * (ou au tableau de bord) avec un toast d'erreur, sauf pour les
+     * requêtes AJAX/JSON qui reçoivent une réponse 403.
      *
      * @return mixed
      */
     public function handle(Request $request, Closure $next)
     {
-        // Vérifier si l'utilisateur est connecté
         if (! Auth::check()) {
             return redirect()->route('login');
         }
 
         $user = Auth::user();
 
-        // Si l'utilisateur n'a pas de rôle défini, refuser l'accès
+        // Un utilisateur sans rôle est refusé par défaut.
         if (! $user->type_user) {
-            return redirect()->route('home')->with('error', 'Accès non autorisé.');
+            return $this->deny($request, 'Votre compte n\'est associé à aucun profil.');
         }
 
-        // Si l'utilisateur est un admin, autoriser tout
-        if ($user->type_user->libelle === 'admin') {
+        $routeName = $request->route()?->getName();
+
+        if (RoutePermission::isAlwaysAllowed($routeName)) {
             return $next($request);
         }
 
-        // Si l'utilisateur est un agent
-        if ($user->type_user->libelle === 'agent') {
-            $currentRouteName = $request->route()->getName();
+        $permission = RoutePermission::resolve($routeName);
 
-            // Vérifier si la route est dans la liste des routes autorisées
-            if (in_array($currentRouteName, config('agent_access.allowed_routes'))) {
-                return $next($request);
-            }
-
-            // Si la route n'est pas autorisée, rediriger ou renvoyer une erreur
-            return redirect()->route('home')->withError('Vous n\'avez pas les permissions nécessaires.');
+        // Route non cartographiée : refus par défaut (l'admin passe).
+        if (blank($permission)) {
+            return $this->deny($request, 'Accès non autorisé.');
         }
 
-        // Par défaut, rediriger vers la page d'accueil
-        return redirect()->route('home')->with('error', 'Accès non autorisé.');
+        if (! $user->hasPermission($permission)) {
+            return $this->deny($request, 'Vous n\'avez pas les permissions nécessaires.');
+        }
+
+        return $next($request);
+    }
+
+    /**
+     * Refuse l'accès : réponse JSON pour les appels AJAX, sinon redirection
+     * vers la page précédente (ou le tableau de bord) avec un toast.
+     *
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     */
+    private function deny(Request $request, string $message)
+    {
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $message], 403);
+        }
+
+        $previous = $request->headers->get('referer');
+
+        if (! $previous || parse_url($previous, PHP_URL_HOST) !== $request->getHost()) {
+            $previous = url()->previous();
+        }
+
+        $target = $previous
+            && $previous !== $request->fullUrl()
+            && parse_url($previous, PHP_URL_HOST) === $request->getHost()
+                ? $previous
+                : route('home');
+
+        return redirect()->to($target)->with('error', $message);
     }
 }

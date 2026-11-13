@@ -11,7 +11,7 @@
 |
 */
 
-Route::middleware(['web', 'auth', 'role:admin'])->prefix('gestion-caisse')->group(function () {
+Route::middleware(['web', 'auth', 'agent_access'])->prefix('gestion-caisse')->group(function () {
     Route::get('/', 'Modules\GestionCaisse\Http\Controllers\CompteController@index');
     Route::resource('compte', 'Modules\GestionCaisse\Http\Controllers\CompteController');
     Route::resource('devise', 'Modules\GestionCaisse\Http\Controllers\DeviseController');

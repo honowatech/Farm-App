@@ -224,7 +224,7 @@
             if (typeDepenseId) {
                 // Requête AJAX pour récupérer le prix unitaire correspondant
                 $.ajax({
-                    url: '{{ route("depenses.getPrixUnitaire", "") }}/' + typeDepenseId, // URL avec l'ID de dépense
+                    url: '{{ url('/depenses/get-prix-unitaire') }}/' + typeDepenseId, // URL avec l'ID de dépense
                     type: 'GET',
                     dataType: 'json',
                     success: function(data) {

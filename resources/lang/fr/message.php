@@ -55,4 +55,7 @@ return array (
   'Devise' => 'Devise',
   'Transaction' => 'Transaction',
   'Transfert' => 'Transfert',
+  'Unités' => 'Unités',
+  'Salariés' => 'Salariés',
+  'Vente' => 'Vente',
 );

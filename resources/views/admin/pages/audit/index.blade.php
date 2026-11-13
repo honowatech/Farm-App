@@ -36,6 +36,7 @@
                         </div>
                     </form>
 
+                    <div data-ajax-table>
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
@@ -71,7 +72,10 @@
                         </table>
                     </div>
 
-                    {{ $activities->links() }}
+                    <div class="px-1">
+                        {{ $activities->links() }}
+                    </div>
+                    </div>
                 </div>
             </div>
         </div>

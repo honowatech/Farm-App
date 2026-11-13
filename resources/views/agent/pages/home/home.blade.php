@@ -4,6 +4,62 @@
 
 @section('css')
 <link rel="stylesheet" type="text/css" href="{{ asset('app-assets/css/pages/dashboard-ecommerce.css') }}">
+<style>
+    .agent-quick-actions {
+        display: flex;
+        align-items: stretch;
+        gap: 0.75rem;
+        flex-wrap: nowrap;
+    }
+    .agent-quick-action {
+        flex: 1 1 0;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 1rem 0.5rem;
+        border: 1px solid #ebe9f1;
+        border-radius: 0.5rem;
+        background-color: #fff;
+        color: #5e5873;
+        text-align: center;
+        transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease, color .15s ease;
+    }
+    .agent-quick-action:hover,
+    .agent-quick-action:focus {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(115, 103, 240, .18);
+        border-color: #7367f0;
+        color: #7367f0;
+        text-decoration: none;
+    }
+    .agent-quick-action .avatar {
+        margin: 0;
+        flex-shrink: 0;
+    }
+    .agent-quick-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+    @media (max-width: 767.98px) {
+        .agent-quick-actions {
+            flex-wrap: wrap;
+        }
+        .agent-quick-action {
+            flex: 1 1 calc(33.333% - 0.75rem);
+        }
+    }
+    @media (max-width: 575.98px) {
+        .agent-quick-action {
+            flex: 1 1 calc(50% - 0.75rem);
+            padding: 0.85rem 0.5rem;
+        }
+    }
+</style>
 @endsection
 
 @section('contenu')
@@ -29,32 +85,39 @@
                 <h4 class="card-title">Actions rapides</h4>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-6 col-md-3 mb-1">
-                        <a href="{{ route('nutrition.index') }}" class="btn btn-primary btn-lg btn-block">
-                            <i data-feather="activity"></i> Nutrition
-                        </a>
-                    </div>
-                    <div class="col-6 col-md-3 mb-1">
-                        <a href="{{ route('mortalite.create') }}" class="btn btn-danger btn-lg btn-block">
-                            <i data-feather="alert-triangle"></i> Mortalité
-                        </a>
-                    </div>
-                    <div class="col-6 col-md-3 mb-1">
-                        <a href="{{ route('bande.index') }}" class="btn btn-success btn-lg btn-block">
-                            <i data-feather="columns"></i> Bandes
-                        </a>
-                    </div>
-                    <div class="col-6 col-md-3 mb-1">
-                        <a href="{{ route('nettoyage.index') }}" class="btn btn-info btn-lg btn-block">
-                            <i data-feather="droplet"></i> Nettoyage
-                        </a>
-                    </div>
-                    <div class="col-6 col-md-3 mb-1">
-                        <a href="{{ route('seanceVaccination.index') }}" class="btn btn-warning btn-lg btn-block">
-                            <img src="{{ asset('app-assets/images/feather/vaccination.png') }}" style="height: 1.25rem; width: 1.25rem;"> Vaccination
-                        </a>
-                    </div>
+                <div class="agent-quick-actions">
+                    <a href="{{ route('nutrition.index') }}" class="agent-quick-action">
+                        <span class="avatar bg-light-primary">
+                            <span class="avatar-content"><i data-feather="activity"></i></span>
+                        </span>
+                        <span class="agent-quick-label">Nutrition</span>
+                    </a>
+                    <a href="{{ route('mortalite.create') }}" class="agent-quick-action">
+                        <span class="avatar bg-light-danger">
+                            <span class="avatar-content"><i data-feather="alert-triangle"></i></span>
+                        </span>
+                        <span class="agent-quick-label">Mortalité</span>
+                    </a>
+                    <a href="{{ route('bande.index') }}" class="agent-quick-action">
+                        <span class="avatar bg-light-success">
+                            <span class="avatar-content"><i data-feather="columns"></i></span>
+                        </span>
+                        <span class="agent-quick-label">Bandes</span>
+                    </a>
+                    <a href="{{ route('nettoyage.index') }}" class="agent-quick-action">
+                        <span class="avatar bg-light-info">
+                            <span class="avatar-content"><i data-feather="droplet"></i></span>
+                        </span>
+                        <span class="agent-quick-label">Nettoyage</span>
+                    </a>
+                    <a href="{{ route('seanceVaccination.index') }}" class="agent-quick-action">
+                        <span class="avatar bg-light-warning">
+                            <span class="avatar-content">
+                                <img src="{{ asset('app-assets/images/feather/vaccination.png') }}" style="height: 1.25rem; width: 1.25rem;">
+                            </span>
+                        </span>
+                        <span class="agent-quick-label">Vaccination</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -136,6 +199,7 @@
                 <h4 class="card-title">{{ __('Bandes en Cours') }}</h4>
             </div>
             <div class="card-body p-0">
+                <div data-ajax-table>
                 <div class="table-responsive">
                     <table class="table">
                         <thead>
@@ -147,15 +211,19 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($bandes_en_cours ?? [] as $bande)
+                            @forelse($bandes_paginees ?? [] as $bande)
                             <tr>
                                 <td>{{ $bande->nom }}</td>
                                 <td>{{ $bande->animal?->nom ?? '—' }}</td>
                                 <td>{{ Carbon\Carbon::parse($bande->date_lancement_bande)->format('d/m/Y') }}</td>
                                 <td>
-                                    <a href="{{ route('gestion_bande', ['id' => $bande->id]) }}" class="btn btn-sm btn-primary">
-                                        <i data-feather="eye"></i>
-                                    </a>
+                                    <div class="table-actions">
+                                        <a href="{{ route('gestion_bande', ['id' => $bande->id]) }}"
+                                           class="btn btn-sm btn-icon btn-outline-primary rounded-circle"
+                                           title="Consulter la bande" aria-label="Consulter la bande">
+                                            <i data-feather="eye"></i>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                             @empty
@@ -165,6 +233,12 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+                <div class="px-1 pb-1">
+                    @if(!empty($bandes_paginees))
+                        {{ $bandes_paginees->links() }}
+                    @endif
+                </div>
                 </div>
             </div>
         </div>

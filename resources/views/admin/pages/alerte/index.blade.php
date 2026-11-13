@@ -33,7 +33,9 @@
                             <div class="flex-grow-1">
                                 <h6 class="mb-0">{{ $alerte['titre'] }}</h6>
                                 <p class="mb-50">{{ $alerte['message'] }}</p>
-                                <a href="{{ $alerte['lien'] }}" class="btn btn-sm btn-primary">Voir</a>
+                                <a href="{{ $alerte['lien'] }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                    <i data-feather="eye" class="mr-25" style="width: 16px; height: 16px;"></i> Voir
+                                </a>
                             </div>
                         </div>
                     @empty

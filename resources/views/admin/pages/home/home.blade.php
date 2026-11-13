@@ -141,6 +141,7 @@
                                     <a href="{{ route('bande.index') }}" class="btn btn-sm btn-primary btn-gradient-primary">{{ __('Toutes les bandes') }}</a>
                                 </div>
                                 <div class="card-body p-0">
+                                    <div data-ajax-table>
                                     <div class="table-responsive">
                                         <table class="table mb-0">
                                             <thead>
@@ -154,7 +155,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @forelse($bandes_en_cours as $bande)
+                                                @forelse($bandes_paginees as $bande)
                                                     <tr>
                                                         <td>{{ $bande->nom }}</td>
                                                         <td>{{ $bande->animal?->nom ?? '—' }}</td>
@@ -189,6 +190,10 @@
                                                 @endforelse
                                             </tbody>
                                         </table>
+                                    </div>
+                                    <div class="px-1 pb-1">
+                                        {{ $bandes_paginees->links() }}
+                                    </div>
                                     </div>
                                 </div>
                             </div>

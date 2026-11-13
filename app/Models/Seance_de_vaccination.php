@@ -24,6 +24,7 @@ class Seance_de_vaccination extends Model
         'vaccin_attribuer',
         'verification',
         'description',
+        'cout',
     ];
 
     /**

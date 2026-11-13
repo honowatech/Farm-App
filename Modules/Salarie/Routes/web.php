@@ -13,7 +13,7 @@ use Modules\Salarie\Http\Controllers\SalarieController;
 |
 */
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware(['auth', 'agent_access'])->group(function () {
     Route::resource('/salarie', 'Modules\Salarie\Http\Controllers\SalarieController');
     Route::resource('paiement_salaire', 'Modules\Salarie\Http\Controllers\PaiementSalariesController');
     Route::post('/salarie_ajax', [SalarieController::class, 'ajax'])->name('ajax_recap_salarie');

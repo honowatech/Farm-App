@@ -18,7 +18,15 @@ class PaiementSalariesController extends Controller
      */
     public function index()
     {
-        return view('salarie::index');
+        $paiements = PaiementSalaires::with('salarie')
+            ->orderByDesc('date_paiement')
+            ->paginate(20);
+
+        $total_mois = (float) PaiementSalaires::whereMonth('date_paiement', now()->month)
+            ->whereYear('date_paiement', now()->year)
+            ->sum('montant');
+
+        return view('salarie::salarie.paie', compact('paiements', 'total_mois'));
     }
 
     /**
@@ -28,7 +36,8 @@ class PaiementSalariesController extends Controller
      */
     public function create()
     {
-        return view('salarie::create');
+        return redirect()->route('salarie.index')
+            ->with('message', 'Sélectionnez un salarié pour enregistrer un paiement.');
     }
 
     /**
@@ -130,7 +139,8 @@ class PaiementSalariesController extends Controller
      */
     public function edit($id)
     {
-        return view('salarie::edit');
+        return redirect()->route('salarie.index')
+            ->with('message', 'Les paiements se gèrent depuis la fiche du salarié.');
     }
 
     /**

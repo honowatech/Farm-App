@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Permission;
 use App\Models\Typeusers;
 use App\Models\User;
 use Illuminate\Database\Schema\Blueprint;
@@ -25,6 +26,8 @@ class AccessControlTest extends TestCase
 
     protected function createMinimalSchema(): void
     {
+        Schema::dropIfExists('permission_type_user');
+        Schema::dropIfExists('permissions');
         Schema::dropIfExists('users');
         Schema::dropIfExists('type_users');
 
@@ -45,6 +48,22 @@ class AccessControlTest extends TestCase
             $table->foreignId('id_type_user')->nullable();
             $table->boolean('statut')->default(1);
         });
+
+        Schema::create('permissions', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->unique();
+            $table->string('label')->nullable();
+            $table->string('group')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('permission_type_user', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('permission_id');
+            $table->foreignId('type_user_id');
+            $table->timestamps();
+            $table->unique(['permission_id', 'type_user_id']);
+        });
     }
 
     protected function role(string $libelle): Typeusers
@@ -60,6 +79,12 @@ class AccessControlTest extends TestCase
             'password' => bcrypt('password'),
             'id_type_user' => $idTypeUser ?? $this->role($role)->id,
         ]);
+    }
+
+    protected function grant(Typeusers $role, string $permission): void
+    {
+        $perm = Permission::firstOrCreate(['name' => $permission]);
+        $role->permissions()->syncWithoutDetaching([$perm->id]);
     }
 
     public function test_guest_is_redirected_to_login_on_admin_route(): void
@@ -84,12 +109,37 @@ class AccessControlTest extends TestCase
 
     public function test_agent_can_access_whitelisted_route(): void
     {
-        $this->actingAs($this->user('agent'))->get('/test-nutrition')->assertOk();
+        $agentRole = $this->role('agent');
+        $this->grant($agentRole, 'nutrition.view');
+
+        $this->actingAs($this->user('agent', $agentRole->id))
+            ->get('/test-nutrition')
+            ->assertOk();
     }
 
     public function test_agent_is_denied_non_whitelisted_route(): void
     {
-        $this->actingAs($this->user('agent'))->get('/test-vente')->assertRedirect(route('home'));
+        $this->actingAs($this->user('agent'))
+            ->get('/test-vente')
+            ->assertRedirect(route('home'))
+            ->assertSessionHas('error');
+    }
+
+    public function test_denied_access_redirects_back_to_previous_page_with_toast(): void
+    {
+        $this->actingAs($this->user('agent'))
+            ->from('/nutrition')
+            ->get('/test-vente')
+            ->assertRedirect(url('/nutrition'))
+            ->assertSessionHas('error');
+    }
+
+    public function test_denied_json_access_returns_403(): void
+    {
+        $this->actingAs($this->user('agent'))
+            ->getJson('/test-vente')
+            ->assertStatus(403)
+            ->assertJsonStructure(['message']);
     }
 
     public function test_user_without_role_is_denied(): void
