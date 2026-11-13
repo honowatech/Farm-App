@@ -87,7 +87,7 @@
                     </div>
                     {{-- /Indicateurs clés --}}
 
-                    <div class="row match-height">
+                    <div class="row">
                         {{-- Alertes --}}
                         <div class="col-lg-4 col-md-6 col-12">
                             <div class="card">

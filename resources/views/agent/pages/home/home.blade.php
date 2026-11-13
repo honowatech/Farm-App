@@ -77,7 +77,7 @@
             </div>
         </div>
         <div class="content-body">
-<div class="row match-height">
+<div class="row">
     <!-- Actions rapides -->
     <div class="col-12">
         <div class="card">
