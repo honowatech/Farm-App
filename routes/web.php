@@ -189,7 +189,9 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('admin')->name('admin.')-
     Route::patch('/users/{user}/toggle', [\App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('users.toggle');
 
     Route::get('/roles', [\App\Http\Controllers\Admin\RoleController::class, 'index'])->name('roles.index');
-    Route::get('/roles/{typeUser}', [\App\Http\Controllers\Admin\RoleController::class, 'show'])->name('roles.show');
+    Route::post('/roles', [\App\Http\Controllers\Admin\RoleController::class, 'store'])->name('roles.store');
+    Route::post('/roles/{typeUser}/toggle-permission', [\App\Http\Controllers\Admin\RoleController::class, 'togglePermission'])->name('roles.toggle');
+    Route::delete('/roles/{typeUser}', [\App\Http\Controllers\Admin\RoleController::class, 'destroy'])->name('roles.destroy');
 
     Route::get('/subscriptions', [\App\Http\Controllers\Admin\SubscriptionController::class, 'index'])->name('subscriptions.index');
 

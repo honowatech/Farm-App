@@ -124,20 +124,26 @@ class User extends Authenticatable
             : 'legacy:'.($role ?? '__no_role__');
 
         if (! array_key_exists($cacheKey, $this->permissionCache)) {
-            if ($context->hasTenant()) {
-                $permissions = $role === 'admin'
-                    ? array_keys(config('permissions.permissions', []))
-                    : ($role === null ? [] : config('permissions.roles.'.$role, []));
+            // Source de vérité unique : les permissions sont lues depuis la table
+            // permission_type_user, gérées via l'interface de gestion des rôles.
+            $typeUser = $context->hasTenant()
+                ? Typeusers::where('libelle', $role)->first()
+                : $this->type_user;
 
-                $this->permissionCache[$cacheKey] = array_values(array_filter(
+            if ($typeUser === null && $role !== null && $context->hasTenant()) {
+                // Profil non encore seedé en base : repli temporaire sur le catalogue config.
+                $permissions = config('permissions.roles.'.$role, []);
+                $permissions = array_values(array_filter(
                     $permissions,
-                    fn ($permission) => is_string($permission) && $permission !== '*'
+                    fn ($p) => is_string($p) && $p !== '*'
                 ));
             } else {
-                $this->permissionCache[$cacheKey] = $this->type_user
-                    ? $this->type_user->permissions()->pluck('name')->all()
+                $permissions = $typeUser
+                    ? $typeUser->permissions()->pluck('name')->all()
                     : [];
             }
+
+            $this->permissionCache[$cacheKey] = $permissions;
         }
 
         return $this->permissionCache[$cacheKey];
@@ -145,7 +151,7 @@ class User extends Authenticatable
 
     public function hasPermission(string $permission): bool
     {
-        if ($this->isAdmin()) {
+        if ($this->isAdmin() || $this->isSuperAdmin()) {
             return true;
         }
 
