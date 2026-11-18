@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -53,20 +54,52 @@ class User extends Authenticatable
         return $this->belongsTo('App\Models\Typeusers', 'id_type_user');
     }
 
+    public function tenants(): BelongsToMany
+    {
+        return $this->belongsToMany(Tenant::class, 'tenant_user')
+            ->withPivot(['role_key', 'status', 'invited_at', 'accepted_at'])
+            ->withTimestamps();
+    }
+
     /**
-     * Cache des permissions du rôle pour éviter une requête par entrée de menu.
+     * Cache des permissions calculé par rôle/contexte pour éviter une requête par entrée de menu.
      *
-     * @var array<int, string>|null
+     * @var array<string, array<int, string>>
      */
-    protected ?array $permissionCache = null;
+    protected array $permissionCache = [];
+
+    /**
+     * Cache du rôle de l'utilisateur dans chaque tenant visité pendant la requête.
+     *
+     * @var array<string, string|null>
+     */
+    protected array $tenantRoleCache = [];
 
     public function isAdmin(): bool
     {
-        return $this->type_user?->libelle === 'admin';
+        return $this->roleName() === 'admin';
     }
 
     public function roleName(): ?string
     {
+        $context = app(\App\Support\TenantContext::class);
+
+        if ($context->hasTenant()) {
+            $tenantId = $context->id();
+
+            if (! array_key_exists($tenantId, $this->tenantRoleCache)) {
+                $this->tenantRoleCache[$tenantId] = $context->membershipRole((int) $this->getKey())
+                    ?? $this->tenants()
+                        ->where('tenants.id', $tenantId)
+                        ->wherePivot('status', 'active')
+                        ->first()
+                        ?->pivot
+                        ?->role_key;
+            }
+
+            return $this->tenantRoleCache[$tenantId];
+        }
+
         return $this->type_user?->libelle;
     }
 
@@ -75,13 +108,30 @@ class User extends Authenticatable
      */
     public function permissionKeys(): array
     {
-        if ($this->permissionCache === null) {
-            $this->permissionCache = $this->type_user
-                ? $this->type_user->permissions()->pluck('name')->all()
-                : [];
+        $role = $this->roleName();
+        $context = app(\App\Support\TenantContext::class);
+        $cacheKey = $context->hasTenant()
+            ? $context->id().':'.($role ?? '__no_active_membership__')
+            : 'legacy:'.($role ?? '__no_role__');
+
+        if (! array_key_exists($cacheKey, $this->permissionCache)) {
+            if ($context->hasTenant()) {
+                $permissions = $role === 'admin'
+                    ? array_keys(config('permissions.permissions', []))
+                    : ($role === null ? [] : config('permissions.roles.'.$role, []));
+
+                $this->permissionCache[$cacheKey] = array_values(array_filter(
+                    $permissions,
+                    fn ($permission) => is_string($permission) && $permission !== '*'
+                ));
+            } else {
+                $this->permissionCache[$cacheKey] = $this->type_user
+                    ? $this->type_user->permissions()->pluck('name')->all()
+                    : [];
+            }
         }
 
-        return $this->permissionCache;
+        return $this->permissionCache[$cacheKey];
     }
 
     public function hasPermission(string $permission): bool

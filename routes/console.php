@@ -22,3 +22,6 @@ Artisan::command('inspire', function () {
 // Sauvegarde automatique de la base de données (OPS-07)
 Schedule::command('backup:run')->daily();
 Schedule::command('backup:clean')->daily();
+
+// Désactive les espaces de démonstration expirés (multi-tenant)
+Schedule::command('tenants:purge-expired-demos')->daily();

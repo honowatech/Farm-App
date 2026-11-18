@@ -75,6 +75,14 @@ Le seed est **additif et idempotent** : il conserve les données existantes et p
 - `Salarie` : salariés et paiements de salaires.
 - `GestionCaisse` : comptes, devises, transferts.
 
+## Socle multi-tenant (déploiement non activé)
+
+Le chantier multi-tenant commence par les tables centrales `tenants`, `tenant_domains`, `tenant_user`, `plans` et `subscriptions`. Elles préparent les entreprises, leurs membres, les domaines vérifiés et les forfaits à fonctionnalités et limites configurables.
+
+Le middleware `tenant.resolve` résout un tenant uniquement depuis un domaine vérifié rattaché à une entreprise active ; les domaines inconnus, non vérifiés et les démonstrations expirées sont refusés. Le middleware `tenant.member` exige ensuite une adhésion active. En contexte tenant, les permissions et le rôle administrateur sont calculés depuis `tenant_user.role_key`, et non depuis le rôle historique global de l'utilisateur. Ces middlewares sont enregistrés mais ne sont volontairement pas appliqués aux routes métier historiques.
+
+Ce socle n'active pas encore l'isolation des données métier ni l'inscription publique. Ne pas exposer des espaces d'entreprise avant la migration des données existantes, le cloisonnement de toutes les requêtes métier et les tests empêchant l'accès inter-entreprises.
+
 ## Pagination AJAX
 
 - Les tableaux de liste sont paginés côté serveur (10 à 30 lignes par page selon l'écran).

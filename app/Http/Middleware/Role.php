@@ -22,7 +22,11 @@ class Role
             return redirect()->route('login');
         }
 
-        if (! $user->type_user || ! in_array($user->type_user->libelle, $roles, true)) {
+        // En contexte multi-tenant, roleName() renvoie le rôle de l'utilisateur
+        // dans l'entreprise courante (tenant_user.role_key), sinon son profil global.
+        $role = $user->roleName();
+
+        if (! $role || ! in_array($role, $roles, true)) {
             abort(403, 'Accès non autorisé.');
         }
 

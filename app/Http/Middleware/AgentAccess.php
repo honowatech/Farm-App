@@ -27,8 +27,8 @@ class AgentAccess
 
         $user = Auth::user();
 
-        // Un utilisateur sans rôle est refusé par défaut.
-        if (! $user->type_user) {
+        // Un utilisateur sans rôle actif dans son contexte est refusé par défaut.
+        if (! $user->roleName()) {
             return $this->deny($request, 'Votre compte n\'est associé à aucun profil.');
         }
 

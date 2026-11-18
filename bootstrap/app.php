@@ -3,6 +3,8 @@
 use App\Http\Middleware\AgentAccess;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\RedirectIfAuthenticated;
+use App\Http\Middleware\RequireTenantMembership;
+use App\Http\Middleware\ResolveTenantByDomain;
 use App\Http\Middleware\Role;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
@@ -27,6 +29,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth' => Authenticate::class,
             'guest' => RedirectIfAuthenticated::class,
             'agent_access' => AgentAccess::class,
+            'tenant.resolve' => ResolveTenantByDomain::class,
+            'tenant.member' => RequireTenantMembership::class,
             'role' => Role::class,
         ]);
     })
