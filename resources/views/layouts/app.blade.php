@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1, minimal-ui">
     <meta name="theme-color" content="#7367f0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="manifest" href="/manifest.webmanifest">
     <title>@yield('title')</title>
 
@@ -251,6 +252,17 @@
     <!-- END: Footer-->
     <!-- BEGIN: Vendor JS-->
     <script src="{{ asset('app-assets/vendors/js/vendors.min.js') }}"></script>
+    <script>
+        // Envoie automatiquement le token CSRF avec tous les appels jQuery AJAX.
+        // Évite les erreurs 419 sur les requêtes POST/PUT/PATCH/DELETE émises par
+        // les vues (matrice des rôles, switches, etc.).
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+    </script>
     <!-- BEGIN Vendor JS-->
     <!-- BEGIN: Page Vendor JS-->
     <script src="{{ asset('app-assets/vendors/js/forms/select/select2.full.min.js') }}"></script>

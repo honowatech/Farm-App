@@ -14,8 +14,8 @@ class RoleController extends Controller
         $roles = Typeusers::with('permissions')->orderBy('libelle')->get();
 
         $groups = collect(config('permissions.permissions'))
-            ->groupBy('group')
-            ->map(fn ($items) => collect($items)->sortBy('label')->all());
+            ->groupBy('group', true)
+            ->map(fn ($items) => $items->sortBy('label')->all());
 
         return view('superadmin.pages.roles.index', compact('roles', 'groups'));
     }

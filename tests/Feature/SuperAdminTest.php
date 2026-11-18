@@ -30,6 +30,8 @@ class SuperAdminTest extends TestCase
         Schema::dropIfExists('tenant_domains');
         Schema::dropIfExists('plans');
         Schema::dropIfExists('tenants');
+        Schema::dropIfExists('permission_type_user');
+        Schema::dropIfExists('permissions');
         Schema::dropIfExists('users');
         Schema::dropIfExists('type_users');
 
@@ -47,6 +49,22 @@ class SuperAdminTest extends TestCase
             $table->foreignId('id_type_user')->nullable();
             $table->boolean('statut')->default(1);
             $table->timestamps();
+        });
+
+        Schema::create('permissions', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->unique();
+            $table->string('label')->nullable();
+            $table->string('group')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('permission_type_user', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('permission_id');
+            $table->foreignId('type_user_id');
+            $table->timestamps();
+            $table->unique(['permission_id', 'type_user_id']);
         });
 
         $migration = require database_path('migrations/2026_11_16_150000_create_tenant_control_plane_tables.php');
@@ -110,5 +128,43 @@ class SuperAdminTest extends TestCase
         $roles = Typeusers::withCount('users')->get();
 
         $this->assertSame(1, $roles->firstWhere('libelle', 'superadmin')->users_count);
+    }
+
+    public function test_toggle_permission_endpoint_grants_and_revokes(): void
+    {
+        $superadmin = $this->user('superadmin');
+        $agentRole = Typeusers::create(['libelle' => 'agent']);
+
+        $this->actingAs($superadmin)
+            ->postJson('/admin/roles/'.$agentRole->id.'/toggle-permission', ['permission' => 'achat.view'])
+            ->assertOk()
+            ->assertJson(['ok' => true, 'granted' => true]);
+
+        $this->assertTrue($agentRole->permissions()->where('name', 'achat.view')->exists());
+
+        $this->actingAs($superadmin)
+            ->postJson('/admin/roles/'.$agentRole->id.'/toggle-permission', ['permission' => 'achat.view'])
+            ->assertOk()
+            ->assertJson(['ok' => true, 'granted' => false]);
+
+        $this->assertFalse($agentRole->permissions()->where('name', 'achat.view')->exists());
+    }
+
+    public function test_roles_index_groups_permissions_by_string_keys(): void
+    {
+        $this->user('superadmin');
+
+        $view = (new \App\Http\Controllers\Admin\RoleController())->index();
+
+        $groups = $view->getData()['groups'];
+
+        $this->assertNotEmpty($groups);
+
+        foreach ($groups as $group => $permissions) {
+            foreach ($permissions as $name => $meta) {
+                $this->assertIsString($name, 'La clé de permission doit être une chaîne (ex: achat.view), pas un index numérique.');
+                $this->assertArrayHasKey($name, config('permissions.permissions'), 'Clé inconnue: '.$name);
+            }
+        }
     }
 }

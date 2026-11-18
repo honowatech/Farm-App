@@ -74,6 +74,12 @@
                     <span class="menu-title text-truncate">Paramètres</span>
                 </a>
             </li>
+            <li class="nav-item" id="AdminAudit" data-route="audit.index">
+                <a class="d-flex align-items-center" href="{{ route('audit.index') }}">
+                    <i data-feather="file-text"></i>
+                    <span class="menu-title text-truncate">Journal d'audit</span>
+                </a>
+            </li>
             @else
 
             {{-- Accueil --}}
