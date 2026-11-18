@@ -114,6 +114,8 @@ return [
     */
     'roles' => [
         'admin' => ['*'],
+        // Rôle global du propriétaire de la plateforme (hors contexte tenant).
+        'superadmin' => ['*'],
 
         'gestionnaire' => [
             'dashboard.view', 'alerte.view', 'audit.view',

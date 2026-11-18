@@ -80,6 +80,15 @@ class User extends Authenticatable
         return $this->roleName() === 'admin';
     }
 
+    /**
+     * Super administrateur de la plateforme (propriétaire de l'application).
+     * Rôle global, indépendant de tout tenant.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->type_user?->libelle === 'superadmin';
+    }
+
     public function roleName(): ?string
     {
         $context = app(\App\Support\TenantContext::class);

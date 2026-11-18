@@ -171,4 +171,19 @@ Route::group(['middleware' => ['auth', 'web', 'agent_access']], function () {
     Route::resource('seanceVaccination', 'App\Http\Controllers\SeanceVaccinationController');
 });
 
+// Espace central du super administrateur (propriétaire de la plateforme).
+// Gère les entreprises, les forfaits et la plateforme, hors contexte tenant.
+Route::middleware(['auth', 'role:superadmin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/tenants', [\App\Http\Controllers\Admin\TenantController::class, 'index'])->name('tenants.index');
+    Route::get('/tenants/create', [\App\Http\Controllers\Admin\TenantController::class, 'create'])->name('tenants.create');
+    Route::post('/tenants', [\App\Http\Controllers\Admin\TenantController::class, 'store'])->name('tenants.store');
+    Route::patch('/tenants/{tenant}/toggle', [\App\Http\Controllers\Admin\TenantController::class, 'toggleStatus'])->name('tenants.toggle');
+
+    Route::get('/plans', [\App\Http\Controllers\Admin\PlanController::class, 'index'])->name('plans.index');
+    Route::get('/plans/create', [\App\Http\Controllers\Admin\PlanController::class, 'create'])->name('plans.create');
+    Route::post('/plans', [\App\Http\Controllers\Admin\PlanController::class, 'store'])->name('plans.store');
+});
+
 Auth::routes(['register' => false]);

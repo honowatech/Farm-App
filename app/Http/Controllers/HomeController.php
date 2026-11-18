@@ -47,6 +47,11 @@ class HomeController extends Controller
 
         $role = Auth::user()->type_user?->libelle;
 
+        // Le super administrateur (propriétaire de la plateforme) accède à l'espace central.
+        if ($role === 'superadmin') {
+            return redirect()->route('admin.dashboard');
+        }
+
         // Si l'utilisateur est un agent, afficher la vue agent
         if ($role === 'agent') {
             // Statistiques pour l'agent

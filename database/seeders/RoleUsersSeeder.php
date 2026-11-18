@@ -18,6 +18,7 @@ class RoleUsersSeeder extends Seeder
      * @var array<string, array{name: string, email: string}>
      */
     private array $accounts = [
+        'superadmin' => ['name' => 'Super Administrateur', 'email' => 'superadmin@farmapp.test'],
         'admin' => ['name' => 'Administrateur FarmApp', 'email' => 'admin@farmapp.test'],
         'gestionnaire' => ['name' => 'Gestionnaire de ferme', 'email' => 'gestionnaire@farmapp.test'],
         'agent' => ['name' => 'Agent de terrain', 'email' => 'agent@farmapp.test'],
