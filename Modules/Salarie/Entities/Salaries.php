@@ -2,12 +2,14 @@
 
 namespace Modules\Salarie\Entities;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Salaries extends Model
 {
+    use BelongsToTenant;
     protected $table = 'salaries';
 
     public $timestamps = true;

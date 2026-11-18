@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class PaymentTransaction extends Model
 {
+    use BelongsToTenant;
     use LogsActivity;
 
     protected $table = 'payment_transactions';

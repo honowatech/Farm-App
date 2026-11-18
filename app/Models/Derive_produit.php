@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Derive_produit extends Model
 {
+    use BelongsToTenant;
     protected $table = 'derive_produit';
 
     public $timestamps = true;

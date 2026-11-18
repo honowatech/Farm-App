@@ -2,10 +2,12 @@
 
 namespace Modules\GestionCaisse\Entities;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 
 class Compte extends Model
 {
+    use BelongsToTenant;
     protected $table = 'gestion_caisse_comptes';
 
     public $timestamps = true;

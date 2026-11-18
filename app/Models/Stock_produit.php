@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
@@ -9,6 +10,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Stock_produit extends Model
 {
+    use BelongsToTenant;
     protected $table = 'stock_produits';
 
     public $timestamps = true;

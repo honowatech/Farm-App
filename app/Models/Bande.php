@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use App\Traits\FindsValidFoodSettings;
 use Carbon\Carbon;
 // Ajout du Trait que nous avons créé
@@ -14,6 +15,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class Bande extends Model
 {
+    use BelongsToTenant;
     use FindsValidFoodSettings, HasFactory, LogsActivity, SoftDeletes; // On inclut le Trait ici !
 
     protected $table = 'bandes';

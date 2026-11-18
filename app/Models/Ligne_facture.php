@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Ligne_facture extends Model
 {
+    use BelongsToTenant;
     protected $table = 'ligne_factures';
 
     public $timestamps = true;

@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 
 class ProgrammeVaccination extends Model
 {
+    use BelongsToTenant;
     protected $table = 'programmes_vaccination';
 
     protected $fillable = ['id_type_animal', 'age_jour', 'nom_vaccin', 'rappel_jours', 'description'];

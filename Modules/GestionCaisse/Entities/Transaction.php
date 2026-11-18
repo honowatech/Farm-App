@@ -2,12 +2,14 @@
 
 namespace Modules\GestionCaisse\Entities;
 
+use App\Traits\BelongsToTenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Depenses\Entities\Depense;
 
 class Transaction extends Model
 {
+    use BelongsToTenant;
     protected $table = 'gestion_caisse_transactions';
 
     protected $fillable = [

@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Detail_fournisseur extends Model
 {
+    use BelongsToTenant;
     protected $table = 'detail_fournisseur';
 
     public $timestamps = true;

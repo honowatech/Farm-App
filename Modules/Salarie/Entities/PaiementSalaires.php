@@ -2,11 +2,13 @@
 
 namespace Modules\Salarie\Entities;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PaiementSalaires extends Model
 {
+    use BelongsToTenant;
     protected $table = 'paiement_salaires';
 
     public $timestamps = true;

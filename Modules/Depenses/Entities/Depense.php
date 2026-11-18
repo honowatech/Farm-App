@@ -2,11 +2,13 @@
 
 namespace Modules\Depenses\Entities;
 
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Depense extends Model
 {
+    use BelongsToTenant;
     protected $fillable = ['montant', 'fournisseur', 'description', 'date_depense', 'id_saver', 'id_categorie', 'motif_depense', 'id_compte']; // Les champs autorisés pour la création et la mise à jour
 
     protected $visible = ['montant', 'fournisseur', 'description', 'date_depense', 'id_saver', 'id_categorie', 'motif_depense'];
