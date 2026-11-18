@@ -101,4 +101,14 @@ class SuperAdminTest extends TestCase
             $tenant->users()->first()->pivot->role_key
         );
     }
+
+    public function test_role_listing_counts_users(): void
+    {
+        $role = Typeusers::firstOrCreate(['libelle' => 'superadmin']);
+        $this->user('superadmin');
+
+        $roles = Typeusers::withCount('users')->get();
+
+        $this->assertSame(1, $roles->firstWhere('libelle', 'superadmin')->users_count);
+    }
 }

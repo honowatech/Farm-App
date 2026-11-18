@@ -32,7 +32,7 @@ class Transfert extends Model
 
     public function receiver_user()
     {
-        return $this->belongsTo('App\Models\Users', 'user_id');
+        return $this->belongsTo('App\Models\User', 'user_id');
     }
 
     protected static function newFactory()

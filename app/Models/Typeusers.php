@@ -16,7 +16,7 @@ class Typeusers extends Model
 
     public function users()
     {
-        return $this->hasMany('App\Models\Users', 'id_type_user');
+        return $this->hasMany(User::class, 'id_type_user');
     }
 
     public function permissions()
