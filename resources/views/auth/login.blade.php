@@ -96,6 +96,15 @@
                                     </div>
                                     <button class="text-black btn btn-secondary btn-gradient-secondary btn-block" tabindex="4">{{ __('Se Connecter') }}</button>
                                 </form>
+
+                                <p class="mt-2 text-center">
+                                    <span style="color:black;">Pas de compte ?</span>
+                                    <a href="{{ route('register') }}">Créer un compte</a>
+                                </p>
+
+                                <a href="{{ route('demo.login') }}" class="btn btn-success btn-block mt-1">
+                                    <i data-feather="play" class="mr-50"></i> Voir la démo
+                                </a>
                             </div>
                         </div>
                         <!-- /Login v1 -->

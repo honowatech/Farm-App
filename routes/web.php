@@ -187,3 +187,8 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('admin')->name('admin.')-
 });
 
 Auth::routes(['register' => false]);
+
+// Inscription multi-tenant (utilisateur + entreprise) et accès démo.
+Route::get('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register')->middleware('guest');
+Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register'])->name('register')->middleware('guest');
+Route::get('/demo/login', [\App\Http\Controllers\Auth\DemoController::class, 'login'])->name('demo.login')->middleware('guest');
