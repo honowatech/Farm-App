@@ -79,6 +79,42 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Derniers abonnements --}}
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title">Derniers abonnements</h4>
+                    <a href="{{ route('admin.subscriptions.index') }}" class="btn btn-primary btn-sm">Voir tout</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Entreprise</th>
+                                    <th>Forfait</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($subscriptions as $subscription)
+                                    <tr>
+                                        <td>{{ $subscription->tenant?->name ?? '—' }}</td>
+                                        <td>{{ $subscription->plan?->name ?? '—' }}</td>
+                                        <td>
+                                            <span class="badge badge-glow badge-{{ $subscription->status === 'active' ? 'success' : ($subscription->status === 'trialing' ? 'info' : 'warning') }}">
+                                                {{ $subscription->status }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="3" class="text-center text-muted">Aucun abonnement.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

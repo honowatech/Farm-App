@@ -49,6 +49,31 @@
                     <li id="AdminPlansCreate" data-route="admin.plans.create"><a class="d-flex align-items-center" href="{{ route('admin.plans.create') }}"><i data-feather="circle"></i><span class="menu-item">Ajouter</span></a></li>
                 </ul>
             </li>
+
+            <li class="nav-item" id="AdminUsers" data-route="admin.users.index">
+                <a class="d-flex align-items-center" href="{{ route('admin.users.index') }}">
+                    <i data-feather="users"></i>
+                    <span class="menu-title text-truncate">Utilisateurs</span>
+                </a>
+            </li>
+            <li class="nav-item" id="AdminRoles" data-route="admin.roles.index,admin.roles.show">
+                <a class="d-flex align-items-center" href="{{ route('admin.roles.index') }}">
+                    <i data-feather="shield"></i>
+                    <span class="menu-title text-truncate">Rôles et permissions</span>
+                </a>
+            </li>
+            <li class="nav-item" id="AdminSubscriptions" data-route="admin.subscriptions.index">
+                <a class="d-flex align-items-center" href="{{ route('admin.subscriptions.index') }}">
+                    <i data-feather="credit-card"></i>
+                    <span class="menu-title text-truncate">Abonnements</span>
+                </a>
+            </li>
+            <li class="nav-item" id="AdminSettings" data-route="admin.settings.index">
+                <a class="d-flex align-items-center" href="{{ route('admin.settings.index') }}">
+                    <i data-feather="settings"></i>
+                    <span class="menu-title text-truncate">Paramètres</span>
+                </a>
+            </li>
             @else
 
             {{-- Accueil --}}

@@ -1,0 +1,82 @@
+@extends('layouts.app')
+
+@section('title', 'Utilisateurs')
+
+@section('contenu')
+<div class="content app-content">
+    <div class="content-overlay"></div>
+    <div class="header-navbar-shadow"></div>
+    <div class="content-wrapper">
+        <div class="content-header row">
+            <div class="content-header-left col-md-9 col-12 mb-2">
+                <div class="row breadcrumbs-top">
+                    <div class="col-12">
+                        <h2 class="content-header-title float-left mb-0">Utilisateurs</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-body">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Email</th>
+                                    <th>Profil global</th>
+                                    <th>Entreprises</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($users as $user)
+                                    <tr>
+                                        <td>{{ $user->name }}</td>
+                                        <td>{{ $user->email }}</td>
+                                        <td>
+                                            @if ($user->type_user)
+                                                <span class="badge badge-glow badge-primary">{{ $user->type_user->libelle }}</span>
+                                            @else
+                                                <span class="text-muted">—</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @forelse ($user->tenants as $tenant)
+                                                <span class="badge badge-light-info mr-50">{{ $tenant->name }} ({{ $tenant->pivot->role_key }})</span>
+                                            @empty
+                                                <span class="text-muted">—</span>
+                                            @endforelse
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-glow badge-{{ $user->statut ? 'success' : 'danger' }}">
+                                                {{ $user->statut ? 'Actif' : 'Désactivé' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <form action="{{ route('admin.users.toggle', $user) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" class="btn btn-sm btn-{{ $user->statut ? 'danger' : 'success' }}">
+                                                    {{ $user->statut ? 'Désactiver' : 'Activer' }}
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="6" class="text-center text-muted">Aucun utilisateur.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {{ $users->links() }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
