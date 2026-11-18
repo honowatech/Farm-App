@@ -5,7 +5,9 @@ namespace App\Console\Commands;
 use App\Models\Bande;
 use App\Models\Food_Setting;
 use App\Models\Nutrition;
-use Carbon\Carbon; // Pour récupérer la fréquence totale de nutrition
+use App\Models\Tenant;
+use App\Support\TenantContext;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class DailyNutritionCheck extends Command
@@ -21,9 +23,39 @@ class DailyNutritionCheck extends Command
         parent::__construct();
     }
 
-    public function handle()
+    public function handle(): int
     {
-        // Récupération de toutes les bandes actives
+        $context = app(TenantContext::class);
+
+        // En l'absence de tenant (application non encore cloisonnée), on conserve
+        // l'ancien comportement : traitement de l'ensemble des bandes.
+        $tenants = Tenant::query()->where('status', 'active')->get();
+
+        if ($tenants->isEmpty()) {
+            $this->processBandes();
+            $this->info('Vérification quotidienne de la nutrition terminée.');
+
+            return self::SUCCESS;
+        }
+
+        // En mode multi-tenant, on traite chaque entreprise dans son propre contexte.
+        foreach ($tenants as $tenant) {
+            $context->set($tenant);
+
+            try {
+                $this->processBandes();
+            } finally {
+                $context->clear();
+            }
+        }
+
+        $this->info('Vérification quotidienne de la nutrition terminée pour '.$tenants->count().' entreprise(s).');
+
+        return self::SUCCESS;
+    }
+
+    private function processBandes(): void
+    {
         $bandes = Bande::all();
         $date_actuelle = Carbon::now()->startOfDay();
 
@@ -65,7 +97,5 @@ class DailyNutritionCheck extends Command
                 ]);
             }
         }
-
-        $this->info('Vérification quotidienne de la nutrition terminée.');
     }
 }
