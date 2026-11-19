@@ -113,6 +113,9 @@ class VenteController extends Controller
             // Récupérer l'ID du type utilisateur (client)
             $id_type_user = Typeusers::whereIn('libelle', ['client', 'clients'])->first()->id;
 
+            // Quota du profil client
+            app(\App\Support\TenantQuota::class)->assertProfileWithinLimit('client');
+
             // Création d'un nouvel utilisateur
             $user = new User;
             $user->name = $validated['nom'];
@@ -120,6 +123,8 @@ class VenteController extends Controller
             $user->password = Hash::make($validated['password']);
             $user->id_type_user = $id_type_user;
             $user->save();
+
+            app(\App\Support\TenantQuota::class)->attachUser($user, 'client');
 
             // Enregistrement du client
             $client = new Client;

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\Typeusers;
 use App\Models\User;
@@ -98,12 +99,24 @@ class SuperAdminTest extends TestCase
 
     public function test_registration_creates_user_tenant_and_admin_membership(): void
     {
+        $plan = Plan::create([
+            'code' => 'starter',
+            'name' => 'Starter',
+            'price' => 0,
+            'currency' => 'XAF',
+            'billing_interval' => 'monthly',
+            'trial_days' => 14,
+            'is_active' => true,
+        ]);
+
         $response = $this->post('/register', [
+            'plan_id' => $plan->id,
             'company_name' => 'Ma Ferme Test',
             'name' => 'Jean Dupont',
             'email' => 'jean@example.test',
             'password' => 'secret1234',
             'password_confirmation' => 'secret1234',
+            'billing_mode' => 'trial',
         ]);
 
         $response->assertRedirect(route('home'));
@@ -118,6 +131,12 @@ class SuperAdminTest extends TestCase
             'admin',
             $tenant->users()->first()->pivot->role_key
         );
+
+        $this->assertDatabaseHas('subscriptions', [
+            'tenant_id' => $tenant->id,
+            'plan_id' => $plan->id,
+            'status' => 'trialing',
+        ]);
     }
 
     public function test_role_listing_counts_users(): void

@@ -21,7 +21,7 @@
                 <div class="card-header">
                     <div class="row justify-content-between w-100">
                         <h4 class="card-title">Transactions MaMoNi</h4>
-                        <a class="btn btn-success btn-gradient-success" href="{{ route('paiement.test') }}">
+                        <a class="btn btn-success btn-gradient-success" href="{{ route('admin.paiement.test') }}">
                             <i data-feather="play"></i> Tester un paiement
                         </a>
                     </div>

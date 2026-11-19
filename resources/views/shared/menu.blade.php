@@ -68,6 +68,17 @@
                     <span class="menu-title text-truncate">Abonnements</span>
                 </a>
             </li>
+            <li class="nav-item has-sub">
+                <a class="d-flex align-items-center" href="#">
+                    <i data-feather="smartphone"></i>
+                    <span class="menu-title text-truncate">Paiements</span>
+                </a>
+                <ul class="menu-content">
+                    <li id="AdminPaiements" data-route="admin.paiement.index"><a class="d-flex align-items-center" href="{{ route('admin.paiement.index') }}"><i data-feather="circle"></i><span class="menu-item">Transactions</span></a></li>
+                    <li id="AdminPaiementsTest" data-route="admin.paiement.test"><a class="d-flex align-items-center" href="{{ route('admin.paiement.test') }}"><i data-feather="circle"></i><span class="menu-item">Test</span></a></li>
+                    <li id="AdminPaiementsSettings" data-route="admin.paiement.settings"><a class="d-flex align-items-center" href="{{ route('admin.paiement.settings') }}"><i data-feather="circle"></i><span class="menu-item">Réglages</span></a></li>
+                </ul>
+            </li>
             <li class="nav-item" id="AdminSettings" data-route="admin.settings.index">
                 <a class="d-flex align-items-center" href="{{ route('admin.settings.index') }}">
                     <i data-feather="settings"></i>
@@ -99,6 +110,7 @@
             </li>
             @endcanroute
 
+            @feature('elevage')
             {{-- Élevage --}}
             @cananypermission(['bande.view', 'batiment.view', 'nutrition.view', 'vaccination.view', 'nettoyage.view', 'mortalite.view'])
             <li class="navigation-header"><span>{{ __('message.Élevage') }}</span><i data-feather="more-horizontal"></i></li>
@@ -209,6 +221,9 @@
             </li>
             @endcananypermission
 
+            @endfeature
+
+            @feature('production')
             {{-- Production --}}
             @cananypermission(['ramassage.view', 'produit.view', 'stock_produit.view'])
             <li class="navigation-header"><span>{{ __('message.Production') }}</span><i data-feather="more-horizontal"></i></li>
@@ -257,6 +272,9 @@
             </li>
             @endcanroute
 
+            @endfeature
+
+            @feature('commerce')
             {{-- Commerce --}}
             @cananypermission(['vente.view', 'client.view'])
             <li class="navigation-header"><span>{{ __('message.Commerce') }}</span><i data-feather="more-horizontal"></i></li>
@@ -296,6 +314,9 @@
             </li>
             @endcananypermission
 
+            @endfeature
+
+            @feature('achats')
             {{-- Achats --}}
             @cananypermission(['fournisseur.view', 'matiere_premiere.view', 'achat.view', 'stock_matiere_premiere.view', 'unite.view'])
             <li class="navigation-header"><span>{{ __('message.Achats') }}</span><i data-feather="more-horizontal"></i></li>
@@ -370,6 +391,9 @@
             </li>
             @endcananypermission
 
+            @endfeature
+
+            @feature('finances')
             {{-- Finances --}}
             @cananypermission(['rentabilite.view', 'paiement.view', 'caisse.view', 'depense.view', 'salarie.view', 'paie.view'])
             <li class="navigation-header"><span>{{ __('message.Finances') }}</span><i data-feather="more-horizontal"></i></li>
@@ -383,26 +407,6 @@
                 </a>
             </li>
             @endcanroute
-
-            @cananypermission(['paiement.view', 'paiement.manage', 'paiement.settings'])
-            <li class="nav-item has-sub">
-                <a class="d-flex align-items-center" href="#">
-                    <i data-feather="smartphone"></i>
-                    <span class="menu-title text-truncate">Paiements</span>
-                </a>
-                <ul class="menu-content">
-                    @canroute('paiement.index')
-                    <li id="PaiementIndex" data-route="paiement.index"><a class="d-flex align-items-center" href="{{ route('paiement.index') }}"><i data-feather="circle"></i><span class="menu-item">Transactions</span></a></li>
-                    @endcanroute
-                    @canroute('paiement.test')
-                    <li id="PaiementTest" data-route="paiement.test"><a class="d-flex align-items-center" href="{{ route('paiement.test') }}"><i data-feather="play"></i><span class="menu-item">Tester un paiement</span></a></li>
-                    @endcanroute
-                    @canroute('paiement.settings')
-                    <li id="PaiementConfig" data-route="paiement.settings,paiement.settings.update,paiement.settings.test"><a class="d-flex align-items-center" href="{{ route('paiement.settings') }}"><i data-feather="settings"></i><span class="menu-item">Configuration</span></a></li>
-                    @endcanroute
-                </ul>
-            </li>
-            @endcananypermission
 
             @cananypermission(['caisse.view', 'caisse.manage'])
             <li class="nav-item has-sub">
@@ -470,6 +474,9 @@
             </li>
             @endcananypermission
 
+            @endfeature
+
+            @feature('parametres')
             {{-- Paramètres --}}
             @cananypermission(['user.view', 'agent.view', 'veterinaire.view', 'type_animal.view', 'setting.view', 'foods_setting.view', 'audit.view'])
             <li class="navigation-header"><span>{{ __('message.Paramètres') }}</span><i data-feather="more-horizontal"></i></li>
@@ -560,6 +567,8 @@
                 </a>
             </li>
             @endcananypermission
+
+            @endfeature
 
             @endif
 

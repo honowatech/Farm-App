@@ -12,6 +12,34 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
+        $data = $this->buildQuery($request);
+
+        $types = Typeusers::orderBy('libelle')->get();
+        $tenants = Tenant::orderBy('name')->get();
+
+        return view('superadmin.pages.users.index', array_merge($data, compact('types', 'tenants')));
+    }
+
+    /**
+     * Retourne le tableau filtré/trié en HTML (appel AJAX).
+     */
+    public function ajax(Request $request)
+    {
+        $data = $this->buildQuery($request);
+
+        return view('superadmin.pages.users._table', $data);
+    }
+
+    public function toggleStatus(User $user)
+    {
+        $user->statut = $user->statut ? 0 : 1;
+        $user->save();
+
+        return back()->with('message', 'Statut du compte « '.$user->name.' » mis à jour.');
+    }
+
+    private function buildQuery(Request $request): array
+    {
         $sort = $request->query('sort', 'name');
         $direction = $request->query('direction', 'asc');
         $direction = in_array($direction, ['asc', 'desc'], true) ? $direction : 'asc';
@@ -25,7 +53,12 @@ class UserController extends Controller
 
         // --- Filtres ---
         if ($request->filled('nom')) {
-            $query->where('name', 'like', '%'.$request->input('nom').'%');
+            $term = $request->input('nom');
+            // Le champ « Nom » recherche à la fois le nom et l'email.
+            $query->where(function ($q) use ($term) {
+                $q->where('name', 'like', '%'.$term.'%')
+                  ->orWhere('email', 'like', '%'.$term.'%');
+            });
         }
 
         if ($request->filled('type')) {
@@ -64,18 +97,10 @@ class UserController extends Controller
         }
 
         $users = $query->paginate(20)->withQueryString();
+        // Les liens de pagination de la partial AJAX doivent pointer vers la
+        // page index (et non vers /ajax), tout en conservant filtres + tri.
+        $users->withPath(route('admin.users.index'));
 
-        $types = Typeusers::orderBy('libelle')->get();
-        $tenants = Tenant::orderBy('name')->get();
-
-        return view('superadmin.pages.users.index', compact('users', 'types', 'tenants', 'sort', 'direction'));
-    }
-
-    public function toggleStatus(User $user)
-    {
-        $user->statut = $user->statut ? 0 : 1;
-        $user->save();
-
-        return back()->with('message', 'Statut du compte « '.$user->name.' » mis à jour.');
+        return compact('users', 'sort', 'direction');
     }
 }

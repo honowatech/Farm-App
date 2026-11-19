@@ -3,46 +3,79 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\PaymentTransaction;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Tenant;
+use App\Models\Typeusers;
 use App\Models\User;
+use App\Services\MamoniService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class RegisterController extends Controller
 {
-    public function __construct()
-    {
+    public function __construct(
+        private MamoniService $mamoni,
+    ) {
         $this->middleware('guest');
     }
 
     public function showRegistrationForm()
     {
-        return view('auth.register');
+        $plans = Plan::where('is_active', true)->orderBy('price')->get();
+
+        $plansData = $plans->map(fn ($plan) => [
+            'id' => $plan->id,
+            'name' => $plan->name,
+            'price' => (int) round((float) $plan->price),
+            'trial_days' => (int) $plan->trial_days,
+            'billing_interval' => $plan->billing_interval,
+        ])->values();
+
+        return view('auth.register', compact('plans', 'plansData'));
     }
 
     /**
-     * Inscription : crée l'utilisateur, son entreprise et le rattache en tant
-     * qu'administrateur. Un abonnement d'essai est créé si un forfait le permet.
+     * Inscription multi-tenant : choix du forfait, essai gratuit ou paiement
+     * Mobile Money (MaMoNi), création de l'entreprise et connexion.
      */
     public function register(Request $request)
     {
         $data = $request->validate([
+            'plan_id' => ['required', 'integer', 'exists:plans,id'],
             'company_name' => ['required', 'string', 'max:150'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'billing_mode' => ['required', 'in:trial,payment'],
+            'payment_transaction_id' => ['nullable', 'integer'],
         ]);
 
-        $result = DB::transaction(function () use ($data) {
+        $plan = Plan::where('is_active', true)->findOrFail($data['plan_id']);
+
+        $transaction = null;
+
+        if ($data['billing_mode'] === 'payment') {
+            $transaction = $this->verifyPayment($plan, $data['payment_transaction_id'] ?? null);
+        } else {
+            $this->assertTrialAllowed($plan);
+        }
+
+        $result = DB::transaction(function () use ($data, $plan, $transaction) {
+            // Le créateur d'une entreprise en devient l'administrateur.
+            $typeAdmin = Typeusers::firstOrCreate(['libelle' => 'admin']);
+
             $user = User::create([
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
+                'id_type_user' => $typeAdmin->id,
                 'statut' => 1,
             ]);
 
@@ -59,14 +92,196 @@ class RegisterController extends Controller
                 'accepted_at' => now(),
             ]);
 
-            $this->createTrialSubscription($tenant);
+            if ($data['billing_mode'] === 'trial') {
+                $this->createTrialSubscription($tenant, $plan);
+            } else {
+                $this->createPaidSubscription($tenant, $plan, $transaction);
+            }
 
             return $user;
         });
 
         Auth::login($result);
 
-        return redirect()->route('home');
+        return redirect()
+            ->route('home')
+            ->with('message', 'Bienvenue ! Votre espace « '.$data['company_name'].' » est prêt.');
+    }
+
+    /**
+     * Initie un paiement d'inscription (montant recalculé côté serveur).
+     */
+    public function initiatePayment(Request $request)
+    {
+        $data = $request->validate([
+            'plan_id' => ['required', 'integer', 'exists:plans,id'],
+            'phone_number' => ['required', 'string'],
+            'client_name' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $plan = Plan::where('is_active', true)->findOrFail($data['plan_id']);
+
+        $amount = (int) round((float) $plan->price);
+
+        if ($amount <= 0) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Ce forfait est gratuit : aucun paiement requis.',
+            ], 422);
+        }
+
+        $phone = $this->normalizePhone($data['phone_number']);
+
+        if (! preg_match('/^2376\d{8}$/', $phone)) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Numéro invalide. Format attendu : 2376XXXXXXXX (12 chiffres).',
+            ], 422);
+        }
+
+        $externalRef = 'REG-'.date('Ymd').'-'.strtoupper(Str::random(6));
+
+        $result = $this->mamoni->initPayment(
+            $phone,
+            $amount,
+            $externalRef,
+            $data['client_name'] ?? null
+        );
+
+        if (! $result['ok']) {
+            return response()->json([
+                'ok' => false,
+                'message' => $result['message'] ?? 'Impossible d\'initier le paiement.',
+            ], 422);
+        }
+
+        $transaction = PaymentTransaction::create([
+            'amount' => $amount,
+            'phone_number' => $phone,
+            'external_reference' => $externalRef,
+            'gateway_reference' => $result['data']['gateway_reference'] ?? null,
+            'provider_slug' => $result['data']['payment_provider_slug'] ?? null,
+            'status' => 'pending',
+            'client_name' => $data['client_name'] ?? null,
+            'response' => json_encode($result),
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'transaction_id' => $transaction->id,
+            'gateway_reference' => $transaction->gateway_reference,
+            'provider_slug' => $transaction->provider_slug,
+            'external_reference' => $transaction->external_reference,
+            'amount' => $amount,
+        ]);
+    }
+
+    /**
+     * Vérifie le statut d'un paiement d'inscription (polling).
+     */
+    public function paymentStatus(PaymentTransaction $transaction)
+    {
+        if (! $transaction->gateway_reference) {
+            return response()->json([
+                'final' => true,
+                'payment_status' => $transaction->status,
+                'receipt_url' => $transaction->receipt_url,
+                'provider_slug' => $transaction->provider_slug,
+                'external_reference' => $transaction->external_reference,
+            ]);
+        }
+
+        $result = $this->mamoni->verify($transaction->gateway_reference);
+
+        if ($result['final']) {
+            $status = $result['payment_status'] ?? 'failed';
+            $transaction->update([
+                'status' => $status,
+                'receipt_url' => $result['data']['receipt']['receipt_url'] ?? null,
+                'response' => json_encode($result['data']),
+            ]);
+        }
+
+        return response()->json([
+            'final' => $result['final'],
+            'payment_status' => $result['final'] ? ($result['payment_status'] ?? 'failed') : 'pending',
+            'receipt_url' => $transaction->receipt_url,
+            'provider_slug' => $transaction->provider_slug,
+            'external_reference' => $transaction->external_reference,
+        ]);
+    }
+
+    private function assertTrialAllowed(Plan $plan): void
+    {
+        if ((int) round((float) $plan->price) <= 0) {
+            return;
+        }
+
+        if ((int) $plan->trial_days <= 0) {
+            throw ValidationException::withMessages([
+                'billing_mode' => 'Ce forfait ne propose pas d\'essai gratuit : un paiement est requis.',
+            ]);
+        }
+    }
+
+    private function verifyPayment(Plan $plan, ?int $transactionId): PaymentTransaction
+    {
+        if (! $transactionId) {
+            throw ValidationException::withMessages(['payment' => 'Le paiement est requis pour ce forfait.']);
+        }
+
+        $transaction = PaymentTransaction::withoutGlobalScopes()->find($transactionId);
+
+        if (! $transaction) {
+            throw ValidationException::withMessages(['payment' => 'Transaction de paiement introuvable.']);
+        }
+
+        if ($transaction->status !== 'successful') {
+            throw ValidationException::withMessages(['payment' => 'Le paiement n\'a pas encore été confirmé.']);
+        }
+
+        if ((int) $transaction->amount !== (int) round((float) $plan->price)) {
+            throw ValidationException::withMessages(['payment' => 'Le montant payé ne correspond pas au forfait choisi.']);
+        }
+
+        return $transaction;
+    }
+
+    private function createTrialSubscription(Tenant $tenant, Plan $plan): Subscription
+    {
+        return Subscription::create([
+            'tenant_id' => $tenant->id,
+            'plan_id' => $plan->id,
+            'status' => 'trialing',
+            'trial_ends_at' => now()->addDays((int) $plan->trial_days),
+            'current_period_starts_at' => now(),
+        ]);
+    }
+
+    private function createPaidSubscription(Tenant $tenant, Plan $plan, PaymentTransaction $transaction): Subscription
+    {
+        $subscription = Subscription::create([
+            'tenant_id' => $tenant->id,
+            'plan_id' => $plan->id,
+            'status' => 'active',
+            'starts_at' => now(),
+            'current_period_starts_at' => now(),
+            'current_period_ends_at' => $this->periodEnd($plan),
+            'provider' => 'mamoni',
+            'provider_reference' => $transaction->gateway_reference,
+        ]);
+
+        $transaction->payable()->associate($subscription);
+        $transaction->save();
+
+        return $subscription;
+    }
+
+    private function periodEnd(Plan $plan): Carbon
+    {
+        return $plan->billing_interval === 'annually'
+            ? now()->addYear()
+            : now()->addMonth();
     }
 
     private function uniqueSlug(string $name): string
@@ -83,24 +298,18 @@ class RegisterController extends Controller
         return $slug;
     }
 
-    private function createTrialSubscription(Tenant $tenant): void
+    private function normalizePhone(string $phone): string
     {
-        $plan = Plan::query()
-            ->where('is_active', true)
-            ->where('trial_days', '>', 0)
-            ->orderBy('trial_days')
-            ->first();
+        $phone = preg_replace('/\D/', '', $phone);
 
-        if (! $plan) {
-            return;
+        if (str_starts_with($phone, '237')) {
+            return $phone;
         }
 
-        Subscription::create([
-            'tenant_id' => $tenant->id,
-            'plan_id' => $plan->id,
-            'status' => 'trialing',
-            'trial_ends_at' => now()->addDays($plan->trial_days),
-            'current_period_starts_at' => now(),
-        ]);
+        if (str_starts_with($phone, '6') && strlen($phone) === 9) {
+            return '237'.$phone;
+        }
+
+        return $phone;
     }
 }

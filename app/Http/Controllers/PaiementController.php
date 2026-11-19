@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\PaymentTransaction;
+use App\Models\PlatformSetting;
 use App\Services\MamoniService;
-use App\Services\SettingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -12,7 +12,6 @@ class PaiementController extends Controller
 {
     public function __construct(
         private MamoniService $mamoni,
-        private SettingService $settings,
     ) {}
 
     /**
@@ -38,15 +37,13 @@ class PaiementController extends Controller
             'enabled' => 'nullable',
         ]);
 
-        $this->settings->setMany([
-            'mamoni.base_url' => rtrim($data['base_url'], '/'),
-            'mamoni.login' => $data['login'],
-            'mamoni.password' => $data['password'] ?? '',
-            'mamoni.channel' => $data['channel'],
-            'mamoni.enabled' => $request->has('enabled') ? '1' : '0',
-        ]);
+        PlatformSetting::set('mamoni.base_url', rtrim($data['base_url'], '/'));
+        PlatformSetting::set('mamoni.login', $data['login']);
+        PlatformSetting::set('mamoni.password', $data['password'] ?? '');
+        PlatformSetting::set('mamoni.channel', $data['channel']);
+        PlatformSetting::set('mamoni.enabled', $request->has('enabled') ? '1' : '0');
 
-        return redirect()->route('paiement.settings')->with('message', 'Configuration MaMoNi enregistrée avec succès.');
+        return redirect()->route('admin.paiement.settings')->with('message', 'Configuration MaMoNi enregistrée avec succès.');
     }
 
     /**

@@ -2,24 +2,24 @@
 
 namespace App\Services;
 
+use App\Models\PlatformSetting;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class MamoniService
 {
-    public function __construct(private SettingService $settings) {}
-
     /**
-     * Retourne la configuration MaMoNi (modifiable via l'interface).
+     * Retourne la configuration MaMoNi (globale plateforme, modifiable par le
+     * super administrateur via l'écran dédié).
      */
     public function config(): array
     {
         return [
-            'base_url' => rtrim((string) $this->settings->get('mamoni.base_url', 'https://console-v2.mamonipay.me/api'), '/'),
-            'login' => (string) $this->settings->get('mamoni.login', ''),
-            'password' => (string) $this->settings->get('mamoni.password', ''),
-            'channel' => (string) $this->settings->get('mamoni.channel', 'SELLER_DIRECT'),
-            'enabled' => (string) $this->settings->get('mamoni.enabled', '1') === '1',
+            'base_url' => rtrim((string) PlatformSetting::get('mamoni.base_url', 'https://console-v2.mamonipay.me/api'), '/'),
+            'login' => (string) PlatformSetting::get('mamoni.login', ''),
+            'password' => (string) PlatformSetting::get('mamoni.password', ''),
+            'channel' => (string) PlatformSetting::get('mamoni.channel', 'SELLER_DIRECT'),
+            'enabled' => PlatformSetting::get('mamoni.enabled', '1') === '1',
         ];
     }
 

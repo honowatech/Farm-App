@@ -15,7 +15,7 @@
                         <div class="breadcrumb-wrapper">
                             <ol class="breadcrumb">
                                 <li class="breadcrumb-item"><a href="{{ route('home') }}">Accueil</a></li>
-                                <li class="breadcrumb-item"><a href="{{ route('paiement.index') }}">Paiements</a></li>
+                                <li class="breadcrumb-item"><a href="{{ route('admin.paiement.index') }}">Paiements</a></li>
                                 <li class="breadcrumb-item active">Test</li>
                             </ol>
                         </div>
@@ -100,7 +100,7 @@
 
     function demarrerPolling(transactionId) {
         pollingTimer = setInterval(function () {
-            $.post('{{ url("/paiement/statut") }}/' + transactionId, { _token: '{{ csrf_token() }}' }, function (res) {
+            $.post('{{ url("/admin/paiement/statut") }}/' + transactionId, { _token: '{{ csrf_token() }}' }, function (res) {
                 if (res.final) {
                     clearInterval(pollingTimer);
                     var extra = 'Réf. ' + (res.external_reference || '') + (res.provider_slug ? ' · ' + res.provider_slug : '');
@@ -137,7 +137,7 @@
             $('#resultat').show();
             $('#statut').html('<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x text-primary"></i><p class="mt-1">Initialisation du paiement…</p></div>');
 
-            $.post('{{ route("paiement.initiate") }}', {
+            $.post('{{ route("admin.paiement.initiate") }}', {
                 _token: '{{ csrf_token() }}',
                 phone_number: phone,
                 amount: amount,

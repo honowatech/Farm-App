@@ -87,6 +87,9 @@ class ClientController extends Controller
             'adresse' => 'bail|required|min:4',
         ]);
         // dd($nom,$email,$password,$telephone,$adresse,);
+        // On applique le quota du profil « client » avant toute création.
+        app(\App\Support\TenantQuota::class)->assertProfileWithinLimit('client');
+
         // on crèe son compte utilisateur
         $user = new User;
         $user->name = $nom;
@@ -94,6 +97,8 @@ class ClientController extends Controller
         $user->password = Hash::make($password);
         $user->id_type_user = $id_type_user;
         $user->save();
+
+        app(\App\Support\TenantQuota::class)->attachUser($user, 'client');
         // On enregistre le client
         $client = new Client;
         $client->nom = $nom;

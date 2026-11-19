@@ -46,7 +46,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group(['middleware' => ['auth', 'web']], function () {
+Route::group(['middleware' => ['auth', 'web', 'feature']], function () {
     // Language
     Route::post('lang/{locale}', [LanguageController::class, 'switchLang'])->name('lang.switch');
 
@@ -121,14 +121,6 @@ Route::group(['middleware' => ['auth', 'web']], function () {
         // Rentabilité
         Route::get('/rentabilite', [RentabiliteController::class, 'index'])->name('rentabilite.index');
 
-        // Paiements MaMoNi
-        Route::get('/paiement/settings', [PaiementController::class, 'settings'])->name('paiement.settings');
-        Route::post('/paiement/settings', [PaiementController::class, 'updateSettings'])->name('paiement.settings.update');
-        Route::post('/paiement/settings/test-connexion', [PaiementController::class, 'testConnection'])->name('paiement.settings.test');
-        Route::get('/paiement', [PaiementController::class, 'index'])->name('paiement.index');
-        Route::get('/paiement/test', [PaiementController::class, 'test'])->name('paiement.test');
-        Route::post('/paiement/initier', [PaiementController::class, 'initiate'])->name('paiement.initiate');
-        Route::post('/paiement/statut/{transaction}', [PaiementController::class, 'status'])->name('paiement.status');
         Route::get('/ajout de client', [VenteController::class, 'get_formulaire'])->name('formulaire');
         Route::get('/selection-client', [VenteController::class, 'get_client'])->name('client');
         Route::get('/achat_ajax_result', [VenteController::class, 'get_prix'])->name('ajax_result_prix');
@@ -184,8 +176,11 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('admin')->name('admin.')-
     Route::get('/plans', [\App\Http\Controllers\Admin\PlanController::class, 'index'])->name('plans.index');
     Route::get('/plans/create', [\App\Http\Controllers\Admin\PlanController::class, 'create'])->name('plans.create');
     Route::post('/plans', [\App\Http\Controllers\Admin\PlanController::class, 'store'])->name('plans.store');
+    Route::get('/plans/{plan}/edit', [\App\Http\Controllers\Admin\PlanController::class, 'edit'])->name('plans.edit');
+    Route::put('/plans/{plan}', [\App\Http\Controllers\Admin\PlanController::class, 'update'])->name('plans.update');
 
     Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
+    Route::get('/users/ajax', [\App\Http\Controllers\Admin\UserController::class, 'ajax'])->name('users.ajax');
     Route::patch('/users/{user}/toggle', [\App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('users.toggle');
 
     Route::get('/roles', [\App\Http\Controllers\Admin\RoleController::class, 'index'])->name('roles.index');
@@ -194,6 +189,18 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('admin')->name('admin.')-
     Route::delete('/roles/{typeUser}', [\App\Http\Controllers\Admin\RoleController::class, 'destroy'])->name('roles.destroy');
 
     Route::get('/subscriptions', [\App\Http\Controllers\Admin\SubscriptionController::class, 'index'])->name('subscriptions.index');
+    Route::post('/subscriptions/{subscription}/status', [\App\Http\Controllers\Admin\SubscriptionController::class, 'changeStatus'])->name('subscriptions.status');
+    Route::post('/subscriptions/{subscription}/extend', [\App\Http\Controllers\Admin\SubscriptionController::class, 'extend'])->name('subscriptions.extend');
+    Route::post('/subscriptions/{subscription}/plan', [\App\Http\Controllers\Admin\SubscriptionController::class, 'changePlan'])->name('subscriptions.plan');
+
+    // Paiements MaMoNi (super admin)
+    Route::get('/paiement', [\App\Http\Controllers\PaiementController::class, 'index'])->name('paiement.index');
+    Route::get('/paiement/test', [\App\Http\Controllers\PaiementController::class, 'test'])->name('paiement.test');
+    Route::post('/paiement/initier', [\App\Http\Controllers\PaiementController::class, 'initiate'])->name('paiement.initiate');
+    Route::post('/paiement/statut/{transaction}', [\App\Http\Controllers\PaiementController::class, 'status'])->name('paiement.status');
+    Route::get('/paiement/settings', [\App\Http\Controllers\PaiementController::class, 'settings'])->name('paiement.settings');
+    Route::post('/paiement/settings', [\App\Http\Controllers\PaiementController::class, 'updateSettings'])->name('paiement.settings.update');
+    Route::post('/paiement/settings/test-connexion', [\App\Http\Controllers\PaiementController::class, 'testConnection'])->name('paiement.settings.test');
 
     Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
@@ -222,4 +229,6 @@ Auth::routes(['register' => false]);
 // Inscription multi-tenant (utilisateur + entreprise) et accès démo.
 Route::get('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register')->middleware('guest');
 Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register'])->name('register')->middleware('guest');
+Route::post('/register/pay/init', [\App\Http\Controllers\Auth\RegisterController::class, 'initiatePayment'])->name('register.pay.init')->middleware('guest');
+Route::post('/register/pay/status/{transaction}', [\App\Http\Controllers\Auth\RegisterController::class, 'paymentStatus'])->name('register.pay.status')->middleware('guest');
 Route::get('/demo/login', [\App\Http\Controllers\Auth\DemoController::class, 'login'])->name('demo.login')->middleware('guest');

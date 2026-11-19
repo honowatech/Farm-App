@@ -52,12 +52,11 @@ class Plan extends Model
     }
 
     /**
-     * Retourne la limite configurée pour une clé, ou $default.
+     * Retourne la limite configurée pour une clé (notation pointée acceptée),
+     * ou $default.
      */
     public function limit(string $key, mixed $default = null): mixed
     {
-        $limits = $this->limits ?? [];
-
-        return $limits[$key] ?? $default;
+        return data_get($this->limits ?? [], $key, $default);
     }
 }

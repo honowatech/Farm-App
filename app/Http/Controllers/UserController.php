@@ -63,12 +63,18 @@ class UserController extends Controller
             'password' => 'bail|required|min:8',
             'type_user' => 'bail|required|min:1',
         ]);
+
+        app(\App\Support\TenantQuota::class)->assertProfileWithinLimit($type->libelle);
+
         $user = new User;
         $user->name = $name;
         $user->email = $email;
         $user->password = Hash::make($password);
         $user->id_type_user = $type_user;
         $user->save();
+
+        app(\App\Support\TenantQuota::class)->attachUser($user, $type->libelle);
+
         $message = strtoupper($user->type_user->libelle).' '.strtoupper($name)." créé avec <b class='text-success'> Succès.</b>";
         session()->flash('message', $message);
 

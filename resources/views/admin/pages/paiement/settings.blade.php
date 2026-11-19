@@ -121,7 +121,7 @@
                         <div class="breadcrumb-wrapper">
                             <ol class="breadcrumb">
                                 <li class="breadcrumb-item"><a href="{{ route('home') }}">Accueil</a></li>
-                                <li class="breadcrumb-item"><a href="{{ route('paiement.index') }}">Paiements</a></li>
+                                <li class="breadcrumb-item"><a href="{{ route('admin.paiement.index') }}">Paiements</a></li>
                                 <li class="breadcrumb-item active">Configuration</li>
                             </ol>
                         </div>
@@ -138,7 +138,7 @@
                                 <h3 class="card-title">Paramètres de paiement MaMoNi</h3>
                             </div>
                             <div class="card-body">
-                                <form class="form" action="{{ route('paiement.settings.update') }}" method="POST">
+                                <form class="form" action="{{ route('admin.paiement.settings.update') }}" method="POST">
                                     @csrf
                                     <div class="mx-auto row col-lg-10">
                                         <div class="mx-auto col-md-6 col-12">
@@ -221,7 +221,7 @@
                                     </div>
                                     <div class="row col-12">
                                         <div class="mx-auto text-center d-none d-md-block col-lg-8 col-md-12 col-12">
-                                            <a href="{{ route('paiement.index') }}" class="mt-1 btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-danger mt-md-2 mr-md-4">
+                                            <a href="{{ route('admin.paiement.index') }}" class="mt-1 btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-danger mt-md-2 mr-md-4">
                                                 <i class="mr-1" data-feather="x"></i> Annuler
                                             </a>
                                             <button type="submit" class="mt-1 btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-success mt-md-2">
@@ -232,7 +232,7 @@
                                             <button type="submit" class="mt-1 btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-success mt-md-2 mr-md-2">
                                                 <i class="mr-1" data-feather="save"></i> Enregistrer
                                             </button>
-                                            <a href="{{ route('paiement.index') }}" class="mt-1 btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-danger mt-md-2">
+                                            <a href="{{ route('admin.paiement.index') }}" class="mt-1 btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-danger mt-md-2">
                                                 <i class="mr-1" data-feather="x"></i> Annuler
                                             </a>
                                         </div>
@@ -295,7 +295,7 @@
 
         ajouterMessage('bot', 'Vérification de la connexion…');
 
-        $.post('{{ route("paiement.settings.test") }}', {
+        $.post('{{ route("admin.paiement.settings.test") }}', {
             _token: '{{ csrf_token() }}',
             base_url: baseUrl,
             login: login,

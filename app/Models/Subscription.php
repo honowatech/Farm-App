@@ -56,6 +56,11 @@ class Subscription extends Model
         return $this->status === 'canceled';
     }
 
+    public function isSuspended(): bool
+    {
+        return $this->status === 'suspended';
+    }
+
     public function isPastDue(): bool
     {
         return $this->status === 'past_due';

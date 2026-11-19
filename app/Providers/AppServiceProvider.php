@@ -50,5 +50,31 @@ class AppServiceProvider extends ServiceProvider
         Blade::if('cananypermission', function (array $permissions): bool {
             return auth()->check() && auth()->user()->hasAnyPermission($permissions);
         });
+
+        Blade::if('feature', function (string $feature): bool {
+            $context = app(TenantContext::class);
+
+            if (! $context->hasTenant()) {
+                return true;
+            }
+
+            return $context->tenant()->hasFeature($feature);
+        });
+
+        Blade::if('anyfeature', function (array $features): bool {
+            $context = app(TenantContext::class);
+
+            if (! $context->hasTenant()) {
+                return true;
+            }
+
+            foreach ($features as $feature) {
+                if ($context->tenant()->hasFeature($feature)) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
     }
 }

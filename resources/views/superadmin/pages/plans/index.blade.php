@@ -29,30 +29,49 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Code</th>
                                     <th>Nom</th>
+                                    <th>Code</th>
                                     <th>Prix</th>
                                     <th>Période</th>
+                                    <th>Essai</th>
+                                    <th>Fonctionnalités</th>
                                     <th>Actif</th>
                                     <th>Abonnements</th>
+                                    <th class="text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($plans as $plan)
                                     <tr>
-                                        <td><code>{{ $plan->code }}</code></td>
                                         <td>{{ $plan->name }}</td>
+                                        <td><code>{{ $plan->code }}</code></td>
                                         <td>{{ number_format((float) $plan->price, 0, ',', ' ') }} {{ $plan->currency }}</td>
-                                        <td>{{ $plan->billing_interval }}</td>
+                                        <td>{{ $plan->billing_interval === 'annually' ? 'Annuel' : 'Mensuel' }}</td>
+                                        <td>{{ (int) $plan->trial_days > 0 ? $plan->trial_days.' j' : '—' }}</td>
+                                        <td>
+                                            @php
+                                                $enabled = collect($plan->features)->filter()->keys();
+                                            @endphp
+                                            @if ($enabled->isNotEmpty())
+                                                <span class="badge badge-light-primary">{{ $enabled->count() }} / {{ count(config('features.features', [])) }}</span>
+                                            @else
+                                                <span class="text-muted">—</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             <span class="badge badge-glow badge-{{ $plan->is_active ? 'success' : 'secondary' }}">
                                                 {{ $plan->is_active ? 'Oui' : 'Non' }}
                                             </span>
                                         </td>
                                         <td>{{ $plan->subscriptions_count }}</td>
+                                        <td class="text-right">
+                                            <a href="{{ route('admin.plans.edit', $plan) }}" class="btn btn-sm btn-primary">
+                                                <i data-feather="edit-2" class="mr-50"></i> Modifier
+                                            </a>
+                                        </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="6" class="text-center text-muted">Aucun forfait.</td></tr>
+                                    <tr><td colspan="9" class="text-center text-muted">Aucun forfait.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
