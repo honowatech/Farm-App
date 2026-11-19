@@ -61,9 +61,39 @@ class ClientPortalController extends Controller
     {
         $this->client();
 
-        $produits = Produit::where('statut', 1)->orderBy('nom')->get();
+        $cart = array_filter(session('cart', []), fn ($q) => (int) $q > 0);
+        $produits = Produit::whereIn('id', array_keys($cart))->get()->keyBy('id');
 
-        return view('client.pages.commande.create', compact('produits'));
+        return view('client.pages.commande.create', compact('produits', 'cart'));
+    }
+
+    public function addToCart(Request $request)
+    {
+        $this->client();
+
+        $data = $request->validate([
+            'id_produit' => ['required', 'integer', 'exists:produits,id'],
+            'qte' => ['nullable', 'integer', 'min:1'],
+        ]);
+
+        $cart = session('cart', []);
+        $id = $data['id_produit'];
+        $cart[$id] = ($cart[$id] ?? 0) + ($data['qte'] ?? 1);
+        session(['cart' => $cart]);
+
+        return back()->with('message', 'Produit ajouté au panier.');
+    }
+
+    public function removeFromCart(Request $request)
+    {
+        $this->client();
+
+        $id = $request->input('id_produit');
+        $cart = session('cart', []);
+        unset($cart[$id]);
+        session(['cart' => $cart]);
+
+        return back()->with('message', 'Produit retiré du panier.');
     }
 
     public function commandeStore(Request $request)
@@ -137,6 +167,8 @@ class ClientPortalController extends Controller
 
             return $commande;
         });
+
+        session()->forget('cart');
 
         return redirect()->route('client.commandes.show', $commande)
             ->with('message', 'Commande '.$commande->matricule.' enregistrée avec succès.');

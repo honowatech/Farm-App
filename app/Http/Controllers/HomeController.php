@@ -52,6 +52,11 @@ class HomeController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
+        // Le client (B2B/B2C) accède à son portail dédié.
+        if ($role === 'client') {
+            return redirect()->route('client.dashboard');
+        }
+
         // Si l'utilisateur est un agent, afficher la vue agent
         if ($role === 'agent') {
             // Statistiques pour l'agent

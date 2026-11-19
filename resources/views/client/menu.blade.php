@@ -34,7 +34,11 @@
             <li class="nav-item" id="ClientCommande" data-route="client.commande.create">
                 <a class="d-flex align-items-center" href="{{ route('client.commande.create') }}">
                     <i data-feather="shopping-cart"></i>
-                    <span class="menu-title text-truncate">Commander</span>
+                    <span class="menu-title text-truncate">Mon panier</span>
+                    @php $cartCount = array_sum(array_map('intval', session('cart', []))); @endphp
+                    @if($cartCount > 0)
+                        <span class="badge badge-pill badge-success ml-25">{{ $cartCount }}</span>
+                    @endif
                 </a>
             </li>
             <li class="nav-item" id="ClientCommandes" data-route="client.commandes.index,client.commandes.show">

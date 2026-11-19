@@ -17,7 +17,7 @@
             </div>
             <div class="content-header-right col-md-4 col-12 text-right">
                 <a href="{{ route('client.commande.create') }}" class="btn btn-success btn-sm">
-                    <i data-feather="shopping-cart" class="mr-50"></i> Commander
+                    <i data-feather="shopping-cart" class="mr-50"></i> Voir le panier
                 </a>
             </div>
         </div>
@@ -30,9 +30,19 @@
                             <div class="card-body d-flex flex-column">
                                 <h4 class="card-title">{{ $produit->nom }}</h4>
                                 <p class="card-text text-muted small">{{ $produit->description ?? '—' }}</p>
-                                <div class="mt-auto d-flex justify-content-between align-items-center">
-                                    <h5 class="font-weight-bolder text-success mb-0">{{ number_format((float) $produit->prix_unitaire, 0, ',', ' ') }} FCFA</h5>
-                                    <span class="badge badge-light-{{ $produit->statut ? 'success' : 'secondary' }}">{{ $produit->statut ? 'Disponible' : 'Indisponible' }}</span>
+                                <div class="mt-auto">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h5 class="font-weight-bolder text-success mb-0">{{ number_format((float) $produit->prix_unitaire, 0, ',', ' ') }} FCFA</h5>
+                                        <span class="badge badge-light-{{ $produit->statut ? 'success' : 'secondary' }}">{{ $produit->statut ? 'Disponible' : 'Indisponible' }}</span>
+                                    </div>
+                                    <form action="{{ route('client.panier.add') }}" method="POST" class="d-flex">
+                                        @csrf
+                                        <input type="hidden" name="id_produit" value="{{ $produit->id }}">
+                                        <input type="number" name="qte" min="1" value="1" class="form-control form-control-sm mr-1" style="width: 70px;">
+                                        <button type="submit" class="btn btn-primary btn-sm btn-block" {{ $produit->statut ? '' : 'disabled' }}>
+                                            <i data-feather="shopping-cart" class="mr-50"></i> Ajouter
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
