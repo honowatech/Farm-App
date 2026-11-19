@@ -108,10 +108,13 @@
                                                         @if ($plan->description)
                                                             <p class="mb-0 mt-50 text-muted" style="font-size:.85rem;">{{ $plan->description }}</p>
                                                         @endif
-                                                        @if (! empty($plan->features))
+                                                        @php
+                                                            $enabledFeatures = collect($plan->features)->filter(fn ($v) => $v === true)->keys();
+                                                        @endphp
+                                                        @if ($enabledFeatures->isNotEmpty())
                                                             <ul class="plan-features">
-                                                                @foreach ($plan->features as $key => $value)
-                                                                    <li><i data-feather="check"></i>{{ is_string($key) ? $key : $value }}</li>
+                                                                @foreach ($enabledFeatures as $featureKey)
+                                                                    <li><i data-feather="check"></i>{{ config('features.features.'.$featureKey.'.label', $featureKey) }}</li>
                                                                 @endforeach
                                                             </ul>
                                                         @endif

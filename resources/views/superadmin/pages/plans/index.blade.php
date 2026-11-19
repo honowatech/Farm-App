@@ -50,10 +50,15 @@
                                         <td>{{ (int) $plan->trial_days > 0 ? $plan->trial_days.' j' : '—' }}</td>
                                         <td>
                                             @php
-                                                $enabled = collect($plan->features)->filter()->keys();
+                                                $enabled = collect($plan->features)
+                                                    ->filter(fn ($v) => $v === true)
+                                                    ->keys()
+                                                    ->map(fn ($k) => config('features.features.'.$k.'.label', $k));
                                             @endphp
                                             @if ($enabled->isNotEmpty())
-                                                <span class="badge badge-light-primary">{{ $enabled->count() }} / {{ count(config('features.features', [])) }}</span>
+                                                @foreach ($enabled as $label)
+                                                    <span class="badge badge-light-primary mr-50 mb-50">{{ $label }}</span>
+                                                @endforeach
                                             @else
                                                 <span class="text-muted">—</span>
                                             @endif
