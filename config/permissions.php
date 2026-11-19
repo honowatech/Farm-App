@@ -24,6 +24,7 @@ return [
         'dashboard.view' => ['label' => 'Voir le tableau de bord', 'group' => 'Général'],
         'alerte.view' => ['label' => 'Consulter les alertes', 'group' => 'Général'],
         'audit.view' => ['label' => "Consulter le journal d'audit", 'group' => 'Général'],
+        'profil.manage' => ['label' => 'Gérer son profil', 'group' => 'Général'],
 
         // Élevage
         'bande.view' => ['label' => 'Consulter les bandes', 'group' => 'Élevage'],
@@ -81,6 +82,10 @@ return [
         'paiement.view' => ['label' => 'Consulter les paiements', 'group' => 'Commerce'],
         'paiement.manage' => ['label' => 'Gérer les paiements', 'group' => 'Commerce'],
         'paiement.settings' => ['label' => 'Configurer les paiements', 'group' => 'Commerce'],
+        'catalogue.view' => ['label' => 'Consulter le catalogue produits', 'group' => 'Commerce'],
+        'commande.manage' => ['label' => 'Passer et suivre ses commandes', 'group' => 'Commerce'],
+        'facture.client.view' => ['label' => 'Consulter et télécharger ses factures', 'group' => 'Commerce'],
+        'livraison.view' => ['label' => 'Suivre ses livraisons', 'group' => 'Commerce'],
 
         // Finances
         'depense.view' => ['label' => 'Consulter les dépenses', 'group' => 'Finances'],
@@ -197,6 +202,11 @@ return [
 
         'client' => [
             'dashboard.view',
+            'profil.manage',
+            'catalogue.view',
+            'commande.manage',
+            'facture.client.view',
+            'livraison.view',
         ],
     ],
 

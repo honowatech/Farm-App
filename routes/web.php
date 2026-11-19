@@ -199,6 +199,21 @@ Route::middleware(['auth', 'role:superadmin'])->prefix('admin')->name('admin.')-
     Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
 });
 
+// Espace client (portail B2B/B2C) : catalogue, commandes, factures, profil.
+Route::middleware(['auth', 'role:client'])->prefix('espace-client')->name('client.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\ClientPortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/catalogue', [\App\Http\Controllers\ClientPortalController::class, 'catalogue'])->name('catalogue');
+    Route::get('/commander', [\App\Http\Controllers\ClientPortalController::class, 'commandeCreate'])->name('commande.create');
+    Route::post('/commander', [\App\Http\Controllers\ClientPortalController::class, 'commandeStore'])->name('commande.store');
+    Route::get('/commandes', [\App\Http\Controllers\ClientPortalController::class, 'commandes'])->name('commandes.index');
+    Route::get('/commandes/{commande}', [\App\Http\Controllers\ClientPortalController::class, 'commandeShow'])->name('commandes.show');
+    Route::get('/factures', [\App\Http\Controllers\ClientPortalController::class, 'factures'])->name('factures.index');
+    Route::get('/factures/{facture}/pdf', [\App\Http\Controllers\ClientPortalController::class, 'factureDownload'])->name('factures.pdf');
+    Route::get('/factures/{facture}', [\App\Http\Controllers\ClientPortalController::class, 'factureShow'])->name('factures.show');
+    Route::get('/profil', [\App\Http\Controllers\ClientPortalController::class, 'profil'])->name('profil');
+    Route::post('/profil', [\App\Http\Controllers\ClientPortalController::class, 'profilUpdate'])->name('profil.update');
+});
+
 Auth::routes(['register' => false]);
 
 // Inscription multi-tenant (utilisateur + entreprise) et accès démo.

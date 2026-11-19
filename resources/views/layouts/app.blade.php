@@ -225,7 +225,11 @@
         </div>
     </nav>
     <!-- END: Header-->
-    @include('shared.menu')
+    @if(auth()->user()->roleName() === 'client')
+        @include('client.menu')
+    @else
+        @include('shared.menu')
+    @endif
     <!-- BEGIN: Content-->
     @yield('contenu')
     <!-- END: Content-->
