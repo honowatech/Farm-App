@@ -225,7 +225,7 @@
         </div>
     </nav>
     <!-- END: Header-->
-    @if(auth()->user()->roleName() === 'client')
+    @if(auth()->user()->type_user?->libelle === 'client')
         @include('client.menu')
     @else
         @include('shared.menu')

@@ -158,9 +158,8 @@ class ClientPortalTest extends TestCase
         app(TenantContext::class)->clear();
 
         $this->actingAs($user)
-            ->post(route('client.commande.store'), [
-                'quantites' => [$produit->id => 2],
-            ])
+            ->withSession(['cart' => [$produit->id => 2]])
+            ->post(route('client.commande.store'))
             ->assertRedirect();
 
         $commande = Commande::where('id_client', $client->id)->first();

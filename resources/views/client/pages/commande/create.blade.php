@@ -35,69 +35,65 @@
             @else
                 <div class="card">
                     <div class="card-body">
-                        <form action="{{ route('client.commande.store') }}" method="POST">
-                            @csrf
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Produit</th>
-                                            <th class="text-right">Prix unitaire</th>
-                                            <th style="width: 120px;" class="text-center">Quantité</th>
-                                            <th class="text-right">Sous-total</th>
-                                            <th></th>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="panier-table">
+                                <thead>
+                                    <tr>
+                                        <th>Produit</th>
+                                        <th class="text-right">Prix unitaire</th>
+                                        <th style="width: 120px;" class="text-center">Quantité</th>
+                                        <th class="text-right">Sous-total</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php $totalPanier = 0; @endphp
+                                    @foreach($cart as $id => $qte)
+                                        @php
+                                            $produit = $produits[$id] ?? null;
+                                            if (! $produit) { continue; }
+                                            $sousTotal = (float) $produit->prix_unitaire * (int) $qte;
+                                            $totalPanier += $sousTotal;
+                                        @endphp
+                                        <tr class="ligne-panier" data-id="{{ $produit->id }}">
+                                            <td>
+                                                <div class="font-weight-bold">{{ $produit->nom }}</div>
+                                                <div class="text-muted small">{{ $produit->description ?? '' }}</div>
+                                            </td>
+                                            <td class="text-right">{{ number_format((float) $produit->prix_unitaire, 0, ',', ' ') }} FCFA</td>
+                                            <td class="text-center">
+                                                <input type="number" min="0" value="{{ $qte }}"
+                                                       class="form-control form-control-sm text-center qte-input"
+                                                       data-id="{{ $produit->id }}" data-prix="{{ $produit->prix_unitaire }}">
+                                            </td>
+                                            <td class="text-right sous-total" id="sous-total-{{ $produit->id }}">{{ number_format($sousTotal, 0, ',', ' ') }} FCFA</td>
+                                            <td class="text-right">
+                                                <button type="button" class="btn btn-sm text-danger p-0 btn-remove" data-id="{{ $produit->id }}" title="Retirer">
+                                                    <i data-feather="trash-2"></i>
+                                                </button>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        @php $totalPanier = 0; @endphp
-                                        @foreach($cart as $id => $qte)
-                                            @php
-                                                $produit = $produits[$id] ?? null;
-                                                if (! $produit) { continue; }
-                                                $sousTotal = (float) $produit->prix_unitaire * (int) $qte;
-                                                $totalPanier += $sousTotal;
-                                            @endphp
-                                            <tr>
-                                                <td>
-                                                    <div class="font-weight-bold">{{ $produit->nom }}</div>
-                                                    <div class="text-muted small">{{ $produit->description ?? '' }}</div>
-                                                </td>
-                                                <td class="text-right">{{ number_format((float) $produit->prix_unitaire, 0, ',', ' ') }} FCFA</td>
-                                                <td class="text-center">
-                                                    <input type="number" name="quantites[{{ $produit->id }}]" min="0" value="{{ $qte }}"
-                                                           class="form-control form-control-sm text-center qte-input" data-prix="{{ $produit->prix_unitaire }}"
-                                                           data-sous-total="sous-total-{{ $produit->id }}">
-                                                </td>
-                                                <td class="text-right sous-total" id="sous-total-{{ $produit->id }}">{{ number_format($sousTotal, 0, ',', ' ') }} FCFA</td>
-                                                <td class="text-right">
-                                                    <form action="{{ route('client.panier.remove') }}" method="POST" class="d-inline">
-                                                        @csrf
-                                                        <input type="hidden" name="id_produit" value="{{ $produit->id }}">
-                                                        <button type="submit" class="btn btn-sm text-danger p-0" title="Retirer">
-                                                            <i data-feather="trash-2"></i>
-                                                        </button>
-                                                    </form>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <th colspan="3" class="text-right">Total</th>
-                                            <th class="text-right text-success" id="total-panier">{{ number_format($totalPanier, 0, ',', ' ') }} FCFA</th>
-                                            <th></th>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
+                                    @endforeach
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="3" class="text-right">Total</th>
+                                        <th class="text-right text-success" id="total-panier">{{ number_format($totalPanier, 0, ',', ' ') }} FCFA</th>
+                                        <th></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
 
-                            <div class="d-flex justify-content-between align-items-center mt-2">
-                                <a href="{{ route('client.catalogue') }}" class="btn btn-outline-secondary">Continuer mes achats</a>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <a href="{{ route('client.catalogue') }}" class="btn btn-outline-secondary">Continuer mes achats</a>
+                            <form action="{{ route('client.commande.store') }}" method="POST">
+                                @csrf
                                 <button type="submit" class="btn btn-success">
                                     <i data-feather="check" class="mr-50"></i> Valider la commande
                                 </button>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
                 </div>
             @endif
@@ -112,23 +108,73 @@
         return new Intl.NumberFormat('fr-FR').format(Math.round(valeur)) + ' FCFA';
     }
 
-    function recalculerTotal() {
-        var total = 0;
-        $('.sous-total').each(function () {
-            var texte = $(this).text().replace(/\D/g, '');
-            total += parseInt(texte, 10) || 0;
-        });
-        $('#total-panier').text(formatMontant(total));
+    function mettreAJourCompteur(count) {
+        var $badge = $('#cart-count-badge');
+        if (count > 0) {
+            $badge.text(count).show();
+        } else {
+            $badge.hide();
+        }
     }
 
-    $('.qte-input').on('input', function () {
+    // Mise à jour de la quantité en AJAX.
+    $(document).on('change', '.qte-input', function () {
         var $input = $(this);
-        var prix = parseFloat($input.data('prix')) || 0;
+        var id = $input.data('id');
         var qte = parseInt($input.val(), 10) || 0;
-        var sousTotal = prix * qte;
 
-        $('#' + $input.data('sous-total')).text(formatMontant(sousTotal));
-        recalculerTotal();
+        $.ajax({
+            url: '{{ route('client.panier.update') }}',
+            method: 'POST',
+            dataType: 'json',
+            data: { id_produit: id, qte: qte, _token: $('meta[name="csrf-token"]').attr('content') }
+        }).done(function (res) {
+            if (!res.ok) { return; }
+
+            mettreAJourCompteur(res.cartCount);
+
+            if (res.removed) {
+                $('.ligne-panier[data-id="' + id + '"]').remove();
+            } else {
+                $('#sous-total-' + id).text(formatMontant(res.sousTotal));
+            }
+
+            $('#total-panier').text(formatMontant(res.total));
+
+            // Panier vide après retrait : recharge la vue une seule fois.
+            if (res.cartCount === 0) {
+                window.location.reload();
+            }
+        }).fail(function (xhr) {
+            var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Erreur lors de la mise à jour.';
+            toastr.error(msg, 'Panier');
+        });
+    });
+
+    // Retrait d'un produit en AJAX.
+    $(document).on('click', '.btn-remove', function () {
+        var $btn = $(this);
+        var id = $btn.data('id');
+
+        $.ajax({
+            url: '{{ route('client.panier.remove') }}',
+            method: 'POST',
+            dataType: 'json',
+            data: { id_produit: id, _token: $('meta[name="csrf-token"]').attr('content') }
+        }).done(function (res) {
+            if (!res.ok) { return; }
+
+            mettreAJourCompteur(res.cartCount);
+            $('.ligne-panier[data-id="' + id + '"]').remove();
+            $('#total-panier').text(formatMontant(res.total));
+
+            if (res.cartCount === 0) {
+                window.location.reload();
+            }
+        }).fail(function (xhr) {
+            var msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Erreur lors du retrait.';
+            toastr.error(msg, 'Panier');
+        });
     });
 </script>
 @endsection

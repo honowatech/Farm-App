@@ -206,6 +206,7 @@ Route::middleware(['auth', 'role:client'])->prefix('espace-client')->name('clien
     Route::get('/commander', [\App\Http\Controllers\ClientPortalController::class, 'commandeCreate'])->name('commande.create');
     Route::post('/commander', [\App\Http\Controllers\ClientPortalController::class, 'commandeStore'])->name('commande.store');
     Route::post('/panier/ajouter', [\App\Http\Controllers\ClientPortalController::class, 'addToCart'])->name('panier.add');
+    Route::post('/panier/mettre-a-jour', [\App\Http\Controllers\ClientPortalController::class, 'updateCart'])->name('panier.update');
     Route::post('/panier/retirer', [\App\Http\Controllers\ClientPortalController::class, 'removeFromCart'])->name('panier.remove');
     Route::get('/commandes', [\App\Http\Controllers\ClientPortalController::class, 'commandes'])->name('commandes.index');
     Route::get('/commandes/{commande}', [\App\Http\Controllers\ClientPortalController::class, 'commandeShow'])->name('commandes.show');

@@ -81,7 +81,42 @@ class ClientPortalController extends Controller
         $cart[$id] = ($cart[$id] ?? 0) + ($data['qte'] ?? 1);
         session(['cart' => $cart]);
 
-        return back()->with('message', 'Produit ajouté au panier.');
+        return response()->json([
+            'ok' => true,
+            'message' => 'Produit ajouté au panier.',
+            'cartCount' => $this->cartCount($cart),
+        ]);
+    }
+
+    public function updateCart(Request $request)
+    {
+        $this->client();
+
+        $data = $request->validate([
+            'id_produit' => ['required', 'integer'],
+            'qte' => ['required', 'integer', 'min:0'],
+        ]);
+
+        $cart = session('cart', []);
+        $id = $data['id_produit'];
+        $qte = (int) $data['qte'];
+
+        if ($qte <= 0) {
+            unset($cart[$id]);
+        } else {
+            $cart[$id] = $qte;
+        }
+
+        session(['cart' => $cart]);
+
+        $produit = Produit::find($id);
+        $sousTotal = $produit ? (float) $produit->prix_unitaire * $qte : 0;
+
+        $summary = $this->cartSummary($cart);
+        $summary['sousTotal'] = $sousTotal;
+        $summary['removed'] = $qte <= 0;
+
+        return response()->json($summary);
     }
 
     public function removeFromCart(Request $request)
@@ -93,38 +128,57 @@ class ClientPortalController extends Controller
         unset($cart[$id]);
         session(['cart' => $cart]);
 
-        return back()->with('message', 'Produit retiré du panier.');
+        return response()->json($this->cartSummary($cart));
+    }
+
+    private function cartCount(array $cart): int
+    {
+        return array_sum(array_map('intval', $cart));
+    }
+
+    private function cartSummary(array $cart): array
+    {
+        $total = 0;
+
+        if (count($cart) > 0) {
+            $produits = Produit::whereIn('id', array_keys($cart))->get()->keyBy('id');
+
+            foreach ($cart as $id => $qte) {
+                $produit = $produits[$id] ?? null;
+
+                if ($produit) {
+                    $total += (float) $produit->prix_unitaire * (int) $qte;
+                }
+            }
+        }
+
+        return [
+            'ok' => true,
+            'cartCount' => $this->cartCount($cart),
+            'total' => $total,
+        ];
     }
 
     public function commandeStore(Request $request)
     {
         $client = $this->client();
 
-        $data = $request->validate([
-            'quantites' => ['required', 'array'],
-            'quantites.*' => ['nullable', 'integer', 'min:0'],
-        ]);
+        $cart = array_filter(session('cart', []), fn ($q) => (int) $q > 0);
 
-        $ids = array_keys(array_filter($data['quantites'], fn ($q) => (int) $q > 0));
-
-        if (empty($ids)) {
-            return back()->with('error', 'Veuillez saisir au moins une quantité.');
+        if (empty($cart)) {
+            return redirect()->route('client.commande.create')->with('error', 'Votre panier est vide.');
         }
 
         // Prix recalculés côté serveur (jamais depuis le navigateur).
-        $produits = Produit::whereIn('id', $ids)->get()->keyBy('id');
+        $produits = Produit::whereIn('id', array_keys($cart))->get()->keyBy('id');
 
         $lignes = [];
         $totalHt = 0;
 
-        foreach ($data['quantites'] as $id => $qte) {
+        foreach ($cart as $id => $qte) {
             $qte = (int) $qte;
 
-            if ($qte <= 0) {
-                continue;
-            }
-
-            $produit = $produits[(int) $id] ?? null;
+            $produit = $produits[$id] ?? null;
 
             if (! $produit) {
                 continue;
