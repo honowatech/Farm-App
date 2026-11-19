@@ -23,7 +23,9 @@ return new class extends Migration
             $table->string('reference_number')->nullable();
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('related_transaction_id')->nullable()->constrained('gestion_caisse_transactions');
-            $table->foreignId('id_depense')->nullable()->constrained('depense_depenses');
+            // Le module Depenses crée la table `depenses` (pas `depense_depenses`) :
+            // on garde la colonne sans contrainte pour éviter l'échec de la FK.
+            $table->unsignedBigInteger('id_depense')->nullable();
             $table->foreign('compte_id')->references('id')->on('gestion_caisse_comptes')->cascadeOnDelete('cascade');
             $table->timestamps();
 

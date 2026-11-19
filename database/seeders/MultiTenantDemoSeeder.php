@@ -53,21 +53,21 @@ class MultiTenantDemoSeeder extends Seeder
                 'slug' => 'ferme-alpha',
                 'domain' => 'alpha.farmapp.test',
                 'plan' => 'essentiel',
-                'users' => ['admin', 'agent'],
+                'users' => ['admin', 'gestionnaire', 'agent', 'veterinaire', 'commercial', 'client'],
             ],
             [
                 'name' => 'Ferme Beta',
                 'slug' => 'ferme-beta',
                 'domain' => 'beta.farmapp.test',
                 'plan' => 'pro',
-                'users' => ['admin', 'agent', 'comptable', 'magasinier'],
+                'users' => ['admin', 'gestionnaire', 'agent', 'veterinaire', 'magasinier', 'commercial', 'caissier', 'comptable', 'rh'],
             ],
             [
                 'name' => 'Ferme Gamma',
                 'slug' => 'ferme-gamma',
                 'domain' => 'gamma.farmapp.test',
                 'plan' => 'entreprise',
-                'users' => ['admin', 'agent', 'comptable', 'magasinier', 'commercial', 'caissier', 'veterinaire'],
+                'users' => ['admin', 'gestionnaire', 'agent', 'veterinaire', 'magasinier', 'commercial', 'caissier', 'comptable', 'rh', 'client'],
             ],
         ];
 

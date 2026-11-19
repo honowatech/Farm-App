@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Plan;
+use App\Models\Subscription;
 use App\Models\Tenant;
 use App\Models\Typeusers;
 use App\Models\User;
@@ -51,6 +53,21 @@ class DemoController extends Controller
                 'accepted_at' => now(),
             ],
         ]);
+
+        // Abonne la démo au forfait le plus complet pour montrer toutes les
+        // fonctionnalités (sinon le menu serait vide, sans abonnement actif).
+        $plan = Plan::where('code', 'entreprise')->first() ?? Plan::first();
+
+        if ($plan) {
+            Subscription::firstOrCreate(
+                ['tenant_id' => $tenant->id, 'plan_id' => $plan->id, 'status' => 'active'],
+                [
+                    'starts_at' => now(),
+                    'current_period_starts_at' => now(),
+                    'current_period_ends_at' => now()->addMonth(),
+                ]
+            );
+        }
 
         Auth::login($user);
 

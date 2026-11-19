@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('unite', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->change();
-        });
+        // La colonne `id` est déjà `bigint unsigned auto_increment` via
+        // `$table->id()`. L'ancienne conversion en `unsignedBigInteger`
+        // retirait l'auto-incrément : on n'applique aucun changement.
     }
 
     /**
@@ -21,8 +21,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('unite', function (Blueprint $table) {
-            $table->bigInteger('id')->change();
-        });
+        // Aucune opération (voir up).
     }
 };

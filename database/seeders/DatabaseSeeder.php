@@ -18,13 +18,23 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // 1. Profils, permissions et utilisateurs d'abord : certains référentiels
+        //    (Phase5DemoSeeder) enregistrent des `id_saver` qui référencent des
+        //    utilisateurs existants.
+        $this->call([
+            RolePermissionSeeder::class,
+            RoleUsersSeeder::class,
+        ]);
+
+        // 2. Référentiels de base (uniquement sur base vide).
         if (DB::table('bandes')->count() === 0) {
             $this->call(Phase5DemoSeeder::class);
         }
 
+        // 3. Forfaits, entreprises de démonstration et activité métier.
         $this->call([
-            RolePermissionSeeder::class,
-            RoleUsersSeeder::class,
+            PlanSeeder::class,
+            MultiTenantDemoSeeder::class,
             MonthActivitySeeder::class,
         ]);
     }
