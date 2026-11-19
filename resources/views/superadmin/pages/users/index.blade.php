@@ -2,15 +2,6 @@
 
 @section('title', 'Utilisateurs')
 
-@php
-    function triUrl($colonne) {
-        $sort = request('sort', 'name');
-        $direction = request('direction', 'asc');
-        $nouvelleDirection = ($sort === $colonne && $direction === 'asc') ? 'desc' : 'asc';
-        return route('admin.users.index', ['sort' => $colonne, 'direction' => $nouvelleDirection]);
-    }
-@endphp
-
 @section('contenu')
 <div class="content app-content">
     <div class="content-overlay"></div>
@@ -29,31 +20,69 @@
         <div class="content-body">
             <div class="card">
                 <div class="card-body">
+                    {{-- Barre de filtres --}}
+                    <form method="GET" action="{{ route('admin.users.index') }}" class="mb-1">
+                        <div class="row">
+                            <div class="col-md-3 col-12 form-group">
+                                <input type="text" name="nom" value="{{ request('nom') }}" class="form-control" placeholder="Rechercher par nom…">
+                            </div>
+                            <div class="col-md-3 col-12 form-group">
+                                <select name="type" class="form-control">
+                                    <option value="">Tous les profils</option>
+                                    @foreach($types as $type)
+                                        <option value="{{ $type->id }}" {{ request('type') == $type->id ? 'selected' : '' }}>{{ ucfirst($type->libelle) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-2 col-12 form-group">
+                                <select name="statut" class="form-control">
+                                    <option value="">Tous les statuts</option>
+                                    <option value="1" {{ request('statut') === '1' ? 'selected' : '' }}>Actif</option>
+                                    <option value="0" {{ request('statut') === '0' ? 'selected' : '' }}>Désactivé</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 col-12 form-group">
+                                <select name="entreprise" class="form-control">
+                                    <option value="">Toutes les entreprises</option>
+                                    @foreach($tenants as $tenant)
+                                        <option value="{{ $tenant->id }}" {{ request('entreprise') == $tenant->id ? 'selected' : '' }}>{{ $tenant->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-1 col-12 form-group">
+                                <button type="submit" class="btn btn-primary btn-block"><i data-feather="search"></i></button>
+                            </div>
+                        </div>
+                        @if(request()->hasAny(['nom', 'type', 'statut', 'entreprise']))
+                            <a href="{{ route('admin.users.index') }}" class="btn btn-sm btn-outline-secondary"><i data-feather="x" class="mr-50"></i> Réinitialiser</a>
+                        @endif
+                    </form>
+
                     <div class="table-responsive">
                         <table class="table">
                             <thead>
                                 <tr>
                                     <th>
-                                        <a href="{{ triUrl('name') }}" class="d-inline-flex align-items-center text-body">
+                                        <a href="{{ route('admin.users.index', array_merge(request()->except('page'), ['sort' => 'name', 'direction' => ($sort === 'name' && $direction === 'asc') ? 'desc' : 'asc'])) }}" class="d-inline-flex align-items-center text-body">
                                             Nom
                                             @if($sort === 'name')<i data-feather="{{ $direction === 'asc' ? 'chevron-up' : 'chevron-down' }}" style="width:14px;height:14px;" class="ml-25"></i>@endif
                                         </a>
                                     </th>
                                     <th>Email</th>
                                     <th>
-                                        <a href="{{ triUrl('type') }}" class="d-inline-flex align-items-center text-body">
+                                        <a href="{{ route('admin.users.index', array_merge(request()->except('page'), ['sort' => 'type', 'direction' => ($sort === 'type' && $direction === 'asc') ? 'desc' : 'asc'])) }}" class="d-inline-flex align-items-center text-body">
                                             Profil global
                                             @if($sort === 'type')<i data-feather="{{ $direction === 'asc' ? 'chevron-up' : 'chevron-down' }}" style="width:14px;height:14px;" class="ml-25"></i>@endif
                                         </a>
                                     </th>
                                     <th>
-                                        <a href="{{ triUrl('entreprise') }}" class="d-inline-flex align-items-center text-body">
+                                        <a href="{{ route('admin.users.index', array_merge(request()->except('page'), ['sort' => 'entreprise', 'direction' => ($sort === 'entreprise' && $direction === 'asc') ? 'desc' : 'asc'])) }}" class="d-inline-flex align-items-center text-body">
                                             Entreprises
                                             @if($sort === 'entreprise')<i data-feather="{{ $direction === 'asc' ? 'chevron-up' : 'chevron-down' }}" style="width:14px;height:14px;" class="ml-25"></i>@endif
                                         </a>
                                     </th>
                                     <th>
-                                        <a href="{{ triUrl('statut') }}" class="d-inline-flex align-items-center text-body">
+                                        <a href="{{ route('admin.users.index', array_merge(request()->except('page'), ['sort' => 'statut', 'direction' => ($sort === 'statut' && $direction === 'asc') ? 'desc' : 'asc'])) }}" class="d-inline-flex align-items-center text-body">
                                             Statut
                                             @if($sort === 'statut')<i data-feather="{{ $direction === 'asc' ? 'chevron-up' : 'chevron-down' }}" style="width:14px;height:14px;" class="ml-25"></i>@endif
                                         </a>
@@ -96,7 +125,7 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="6" class="text-center text-muted">Aucun utilisateur.</td></tr>
+                                    <tr><td colspan="6" class="text-center text-muted">Aucun utilisateur ne correspond aux filtres.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>

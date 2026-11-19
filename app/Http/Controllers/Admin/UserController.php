@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
+use App\Models\Typeusers;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -22,8 +23,27 @@ class UserController extends Controller
 
         $query = User::with(['type_user', 'tenants'])->withCount('tenants');
 
+        // --- Filtres ---
+        if ($request->filled('nom')) {
+            $query->where('name', 'like', '%'.$request->input('nom').'%');
+        }
+
+        if ($request->filled('type')) {
+            $query->where('id_type_user', $request->input('type'));
+        }
+
+        if ($request->filled('statut')) {
+            $query->where('statut', $request->input('statut'));
+        }
+
+        if ($request->filled('entreprise')) {
+            $query->whereHas('tenants', function ($q) use ($request) {
+                $q->where('tenants.id', $request->input('entreprise'));
+            });
+        }
+
+        // --- Tri ---
         if ($sort === 'type') {
-            // Tri par profil global (type_users.libelle), sans perdre les colonnes users.
             $query->leftJoin('type_users', 'users.id_type_user', '=', 'type_users.id')
                 ->select('users.*')
                 ->orderBy('type_users.libelle', $direction)
@@ -31,7 +51,6 @@ class UserController extends Controller
         } elseif ($sort === 'statut') {
             $query->orderBy('users.statut', $direction)->orderBy('users.name', 'asc');
         } elseif ($sort === 'entreprise') {
-            // Tri par nom d'entreprise (première entreprise du membre, par ordre alpha).
             $query->orderBy(
                 Tenant::select('name')
                     ->join('tenant_user', 'tenants.id', '=', 'tenant_user.tenant_id')
@@ -46,7 +65,10 @@ class UserController extends Controller
 
         $users = $query->paginate(20)->withQueryString();
 
-        return view('superadmin.pages.users.index', compact('users', 'sort', 'direction'));
+        $types = Typeusers::orderBy('libelle')->get();
+        $tenants = Tenant::orderBy('name')->get();
+
+        return view('superadmin.pages.users.index', compact('users', 'types', 'tenants', 'sort', 'direction'));
     }
 
     public function toggleStatus(User $user)
