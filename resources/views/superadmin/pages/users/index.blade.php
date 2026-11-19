@@ -2,6 +2,15 @@
 
 @section('title', 'Utilisateurs')
 
+@php
+    function triUrl($colonne) {
+        $sort = request('sort', 'name');
+        $direction = request('direction', 'asc');
+        $nouvelleDirection = ($sort === $colonne && $direction === 'asc') ? 'desc' : 'asc';
+        return route('admin.users.index', ['sort' => $colonne, 'direction' => $nouvelleDirection]);
+    }
+@endphp
+
 @section('contenu')
 <div class="content app-content">
     <div class="content-overlay"></div>
@@ -24,11 +33,31 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Nom</th>
+                                    <th>
+                                        <a href="{{ triUrl('name') }}" class="d-inline-flex align-items-center text-body">
+                                            Nom
+                                            @if($sort === 'name')<i data-feather="{{ $direction === 'asc' ? 'chevron-up' : 'chevron-down' }}" style="width:14px;height:14px;" class="ml-25"></i>@endif
+                                        </a>
+                                    </th>
                                     <th>Email</th>
-                                    <th>Profil global</th>
-                                    <th>Entreprises</th>
-                                    <th>Statut</th>
+                                    <th>
+                                        <a href="{{ triUrl('type') }}" class="d-inline-flex align-items-center text-body">
+                                            Profil global
+                                            @if($sort === 'type')<i data-feather="{{ $direction === 'asc' ? 'chevron-up' : 'chevron-down' }}" style="width:14px;height:14px;" class="ml-25"></i>@endif
+                                        </a>
+                                    </th>
+                                    <th>
+                                        <a href="{{ triUrl('entreprise') }}" class="d-inline-flex align-items-center text-body">
+                                            Entreprises
+                                            @if($sort === 'entreprise')<i data-feather="{{ $direction === 'asc' ? 'chevron-up' : 'chevron-down' }}" style="width:14px;height:14px;" class="ml-25"></i>@endif
+                                        </a>
+                                    </th>
+                                    <th>
+                                        <a href="{{ triUrl('statut') }}" class="d-inline-flex align-items-center text-body">
+                                            Statut
+                                            @if($sort === 'statut')<i data-feather="{{ $direction === 'asc' ? 'chevron-up' : 'chevron-down' }}" style="width:14px;height:14px;" class="ml-25"></i>@endif
+                                        </a>
+                                    </th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
