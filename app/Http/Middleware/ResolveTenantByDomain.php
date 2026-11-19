@@ -37,10 +37,26 @@ class ResolveTenantByDomain
 
         if (! $valid) {
             if ($tenantId) {
+                // Domaine mappé mais entreprise désactivée/expirée : 404.
                 Cache::forget($cacheKey);
+
+                return $this->notFound($request);
             }
 
-            return $this->notFound($request);
+            // Aucun domaine mappé : en développement local (localhost), on
+            // résout depuis l'appartenance de l'utilisateur connecté. En
+            // production (domaine inconnu), on continue de renvoyer 404.
+            if ($this->isLocalHost($host)) {
+                $tenant = $this->resolveFromUser($request);
+            } else {
+                return $this->notFound($request);
+            }
+        }
+
+        // Aucun tenant résolu (utilisateur sans entreprise en dev local) :
+        // on continue en mode legacy, sans contexte tenant.
+        if (! $tenant) {
+            return $next($request);
         }
 
         $this->tenantContext->set($tenant);
@@ -52,6 +68,29 @@ class ResolveTenantByDomain
             $this->tenantContext->clear();
             $request->attributes->remove('tenant');
         }
+    }
+
+    /**
+     * Résout le tenant depuis la première appartenance active de l'utilisateur.
+     */
+    private function resolveFromUser(Request $request): ?Tenant
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return null;
+        }
+
+        return $user->tenants()
+            ->wherePivot('status', 'active')
+            ->first();
+    }
+
+    private function isLocalHost(string $host): bool
+    {
+        return in_array($host, ['localhost', '127.0.0.1', '::1'], true)
+            || str_ends_with($host, '.localhost')
+            || str_ends_with($host, '.local');
     }
 
     private function notFound(Request $request): Response

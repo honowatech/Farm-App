@@ -46,7 +46,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group(['middleware' => ['auth', 'web', 'feature']], function () {
+Route::group(['middleware' => ['auth', 'web', 'tenant.resolve', 'feature']], function () {
     // Language
     Route::post('lang/{locale}', [LanguageController::class, 'switchLang'])->name('lang.switch');
 
@@ -147,7 +147,7 @@ Route::group(['middleware' => ['auth', 'web', 'feature']], function () {
     });
 });
 
-Route::group(['middleware' => ['auth', 'web', 'agent_access']], function () {
+Route::group(['middleware' => ['auth', 'web', 'tenant.resolve', 'feature', 'agent_access']], function () {
     Route::resource('nutrition', 'App\Http\Controllers\NutritionController');
     Route::get('/check', [NutritionController::class, 'checkNutrition'])->name('nutrition.check');
     Route::get('/search-nutruition', [NutritionController::class, 'search'])->name('nutrition.search');
