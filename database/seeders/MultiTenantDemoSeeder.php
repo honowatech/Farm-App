@@ -7,6 +7,8 @@ use App\Models\Bande;
 use App\Models\Batiment;
 use App\Models\Client;
 use App\Models\Facture;
+use App\Models\Food_Setting;
+use App\Models\FoodSettingVersion;
 use App\Models\Fournisseur;
 use App\Models\Ligne_facture;
 use App\Models\Matiere_premiere;
@@ -173,6 +175,9 @@ class MultiTenantDemoSeeder extends Seeder
                 ['prix_unitaire' => 380, 'seuil_alerte' => 80]
             );
 
+            // Plans d'alimentation associés aux types d'animaux.
+            $this->seedFoodSettings($typeChair, $typePonte, $alimChair, $alimPonte, $kg);
+
             $poulet = Produit::firstOrCreate(
                 ['nom' => 'Poulet entier'],
                 ['prix_unitaire' => 3500, 'id_type_produit' => $typeAnimal->id, 'statut' => 1]
@@ -275,6 +280,56 @@ class MultiTenantDemoSeeder extends Seeder
         } finally {
             Model::reguard();
             $context->clear();
+        }
+    }
+
+    /**
+     * Crée les plans d'alimentation (foods_setting + versions) par type d'animal.
+     *
+     * @param  Type_animal  $typeChair
+     * @param  Type_animal  $typePonte
+     * @param  Matiere_premiere  $alimChair
+     * @param  Matiere_premiere  $alimPonte
+     * @param  Unite  $kg
+     */
+    private function seedFoodSettings($typeChair, $typePonte, $alimChair, $alimPonte, $kg): void
+    {
+        $plans = [
+            $typeChair->id => [
+                ['aliment' => $alimChair->id, 'age_min' => 0, 'age_max' => 14, 'qte' => 0.03, 'freq' => 2],
+                ['aliment' => $alimChair->id, 'age_min' => 15, 'age_max' => 28, 'qte' => 0.08, 'freq' => 2],
+                ['aliment' => $alimChair->id, 'age_min' => 29, 'age_max' => 70, 'qte' => 0.12, 'freq' => 2],
+            ],
+            $typePonte->id => [
+                ['aliment' => $alimPonte->id, 'age_min' => 0, 'age_max' => 30, 'qte' => 0.06, 'freq' => 2],
+                ['aliment' => $alimPonte->id, 'age_min' => 31, 'age_max' => 120, 'qte' => 0.11, 'freq' => 2],
+                ['aliment' => $alimPonte->id, 'age_min' => 121, 'age_max' => 720, 'qte' => 0.12, 'freq' => 2],
+            ],
+        ];
+
+        foreach ($plans as $typeAnimalId => $versions) {
+            foreach ($versions as $plan) {
+                $setting = Food_Setting::firstOrCreate([
+                    'id_type_animal' => $typeAnimalId,
+                    'aliment' => (string) $plan['aliment'],
+                ]);
+
+                FoodSettingVersion::firstOrCreate(
+                    [
+                        'food_setting_id' => $setting->id,
+                        'age_min' => $plan['age_min'],
+                        'age_max' => $plan['age_max'],
+                    ],
+                    [
+                        'id_unite' => $kg->id,
+                        'quantite_aliment' => $plan['qte'],
+                        'frequency' => $plan['freq'],
+                        'period' => 'day',
+                        'activated_at' => now(),
+                        'ended_at' => null,
+                    ]
+                );
+            }
         }
     }
 }
