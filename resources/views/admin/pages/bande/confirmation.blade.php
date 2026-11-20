@@ -5,7 +5,7 @@
 </div>
 <div>
     <div class="row text-center mx-auto">
-        <button type="button" id="no" class=" col-md-2 col-10 mx-auto btn btn-gradient-danger btn-danger">
+        <button type="button" id="no" data-dismiss="modal" class=" col-md-2 col-10 mx-auto btn btn-gradient-danger btn-danger">
             non
         </button>
 
