@@ -69,6 +69,13 @@ class MultiTenantDemoSeeder extends Seeder
                 'plan' => 'entreprise',
                 'users' => ['admin', 'gestionnaire', 'agent', 'veterinaire', 'magasinier', 'commercial', 'caissier', 'comptable', 'rh', 'client'],
             ],
+            [
+                'name' => 'Ferme de démonstration',
+                'slug' => 'demo',
+                'domain' => 'demo.farmapp.test',
+                'plan' => 'entreprise',
+                'users' => ['admin'],
+            ],
         ];
 
         foreach ($specs as $spec) {
@@ -76,7 +83,7 @@ class MultiTenantDemoSeeder extends Seeder
             $this->seedBusinessData($tenant, $spec);
         }
 
-        $this->command?->info('MultiTenantDemoSeeder : 3 forfaits, 3 entreprises et 30 jours de données créés.');
+        $this->command?->info('MultiTenantDemoSeeder : '.count($plans).' forfaits, '.count($specs).' entreprises et 30 jours de données créés.');
     }
 
     /**
