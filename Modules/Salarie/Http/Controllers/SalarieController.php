@@ -117,7 +117,6 @@ class SalarieController extends Controller
         } else {
             $telephone_secondaire = null;
         }
-        // dd($nom,$telephone,$telephone_secondaire,$salaire,$accumulateur,$type_periode,$date_debut_contrat,$cni);
         // On enregistre le salaries
         $salaries = new Salaries;
         $salaries->nom = $nom;
@@ -232,7 +231,6 @@ class SalarieController extends Controller
                 'telephone' => 'unique:salaries',
             ]);
         }
-        // dd($nom,$telephone,$telephone_secondaire,$salaire,$accumulateur,$type_periode,$date_debut_contrat,$cni);
         // On enregistre le salaries
         $salaries = Salaries::findOrFail($id);
         $salaries->nom = $nom;

@@ -23,7 +23,7 @@ class SeanceVaccinationController extends Controller
             array_push($verification, 0);
         }
         $valeur_verifie = implode($verification);
-        $seance_Vaccinations = Seance_de_vaccination::where(function ($query) use ($request, $valeur_verifie) {
+        $seance_Vaccinations = Seance_de_vaccination::with(['veterinaire', 'bande'])->where(function ($query) use ($request, $valeur_verifie) {
             $query->where('vaccin_attribuer', 'like', '%'.$request->input('recherche').'%')
                 ->orWhere('verification', 'like', '%'.$valeur_verifie.'%')
                 ->orWhere('created_at', 'like', '%'.$request->input('recherche').'%');
@@ -119,7 +119,6 @@ class SeanceVaccinationController extends Controller
             'verif' => 'bail|required|numeric',
         ]);
 
-        // dd($nom,$telephone,$telephone_secondaire,$adresse);
         // On édite leveterinaire
         $seance = Seance_de_vaccination::findOrFail($id);
         $seance->vaccin_attribuer = $vaccin_attribuer;

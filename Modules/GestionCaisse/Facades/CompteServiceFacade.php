@@ -139,7 +139,7 @@ class CompteServiceFacade extends Facade
      */
     public static function listTransferts($pagination = 20)
     {
-        return Transfert::paginate($pagination);
+        return Transfert::with(['sender_account', 'receiver_account.compte_devise'])->paginate($pagination);
     }
 
     /**

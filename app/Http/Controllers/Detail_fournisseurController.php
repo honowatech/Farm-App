@@ -35,7 +35,6 @@ class Detail_fournisseurController extends Controller
             'id_details' => 'bail|required',
             'id_fournisseur' => 'bail|required|numeric|min:1',
         ]);
-        // dd($ids_detais);
         // On enregistre le Fournisseur
         foreach ($ids_detais as $key => $id_matiere_premiere) {
             $detail = new Detail_fournisseur;

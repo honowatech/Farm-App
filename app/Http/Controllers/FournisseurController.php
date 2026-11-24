@@ -87,7 +87,6 @@ class FournisseurController extends Controller
                 'telephone' => 'bail|unique:fournisseurs|regex:/^[6,2][0-9]{8}$/',
             ]);
         }
-        // dd($nom,$telephone,$telephone_secondaire,$adresse);
         // On enregistre le Fournisseur
         $fournisseur = new Fournisseur;
         $fournisseur->nom = $nom;
@@ -162,7 +161,6 @@ class FournisseurController extends Controller
                 'telephone' => 'unique:fournisseurs',
             ]);
         }
-        // dd($nom,$telephone,$telephone_secondaire,$adresse);
         // On édite lefournisseur
         $fournisseur = Fournisseur::findOrFail($id);
         $fournisseur->nom = $nom;

@@ -285,10 +285,7 @@
                     Ok
                 </button>
             </div>
-            <div id="button_footer" hidden>
-                <button type="button" class="mx-auto col-md-5 col-10 btn btn-gradient-danger btn-danger" data-dismiss="modal">Annuler</button>
-                <button type="submit" class="mx-auto col-md-5 col-10 5 btn btn-gradient-success btn-success">Confirmer</button>
-            </div>
+            @include('partials.modals.confirm-delete')
         </div>
     </div>
 </div>

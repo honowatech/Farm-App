@@ -24,7 +24,7 @@ class DepensesController extends Controller
      */
     public function index(Request $request)
     {
-        $depenses = Depense::Where('date_depense', 'like', '%'.$request->input('recherche').'%')
+        $depenses = Depense::with('categorie_depense')->Where('date_depense', 'like', '%'.$request->input('recherche').'%')
             ->paginate(20);
         session()->flash('search', $request->input('recherche'));
         $types = Categorie::all();
@@ -198,7 +198,7 @@ class DepensesController extends Controller
             $query->where('fournisseur', $fournisseur);
         }
 
-        $depenses = $query->orderByDesc('date_depense')->paginate(20);
+        $depenses = $query->with('categorie_depense')->orderByDesc('date_depense')->paginate(20);
 
         return view('depenses::depense.infos', compact('depenses'))->render();
     }

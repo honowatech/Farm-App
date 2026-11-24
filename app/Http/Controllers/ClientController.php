@@ -88,7 +88,6 @@ class ClientController extends Controller
             'password' => 'bail|required|min:8',
             'adresse' => 'bail|required|min:4',
         ]);
-        // dd($nom,$email,$password,$telephone,$adresse,);
         // On applique les quotas du profil et des fiches clients avant création.
         $quota = app(TenantQuota::class);
         $quota->assertProfileWithinLimit('client');
@@ -180,7 +179,6 @@ class ClientController extends Controller
                 'telephone' => 'unique:clients',
             ]);
         }
-        // dd($nom,$prenom,$email,$telephone,$adresse,);
         // on édite son compte utilisateur
         $user = User::findOrFail($id_user);
         $user->name = $nom;

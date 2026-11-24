@@ -308,14 +308,7 @@
         </div>
     </div>
 </div>
-<div id="button_footer" hidden>
-    <button type="button" class="col-md-5 col-10 mx-auto btn btn-gradient-danger btn-danger" data-dismiss="modal">Annuler</button>
-    <form method="POST" class="destroy_form m-0 p-0 col-md-5 col-10 mx-auto">
-        @csrf
-        @method('DELETE')
-        <button type="submit" class="col-12 btn btn-gradient-success btn-success">Confirmer</button>
-    </form>
-</div>
+@include('partials.modals.confirm-delete')
 
 @endsection
 @section('javascript')

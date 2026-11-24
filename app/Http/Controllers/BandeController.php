@@ -9,10 +9,12 @@ use App\Models\Produit;
 use App\Models\Stock_produit;
 use App\Models\Type_animal;
 use App\Models\Type_produit;
+use App\Http\Requests\StoreBandeRequest;
+use App\Support\TenantContext;
 use App\Support\TenantQuota;
-use App\Support\TenantValidation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BandeController extends Controller
 {
@@ -55,62 +57,69 @@ class BandeController extends Controller
      *
      * @return Response
      */
-    public function store(Request $request)
+    public function store(StoreBandeRequest $request)
     {
-        // Validation des données
-        $validated = $request->validate([
-            'nom' => 'bail|required|unique:bandes|max:255|min:4',
-            'type_animal' => ['bail', 'required', 'integer', TenantValidation::exists('type_animals')], // Vérifie que le type d'animal existe
-            'age_depart' => 'bail|required|numeric|min:1',
-            'batiment' => ['bail', 'required', 'integer', TenantValidation::exists('batiments')], // Vérifie que le bâtiment existe
-            'unite_age_depart' => 'bail|required|string|in:jour,semaine,mois,annee',
-            'nbre_sujet' => 'bail|required|numeric|min:1',
-            'date' => 'bail|required|date|before_or_equal:today', // La date ne peut pas être dans le futur
-            'prix_acquisition' => 'bail|required|numeric|min:0',
-        ]);
+        $validated = $request->validated();
+
         app(TenantQuota::class)->assertWithinLimit('bandes', Bande::count());
 
-        // Préparation des données
-        $nom = $request->input('nom');
-        $id_type_animal = $request->input('type_animal');
-        $id_batiment = $request->input('batiment');
+        // Ajoute l'heure actuelle à la date de lancement pour l'enregistrer en
+        // format complet Y-m-d H:i:s.
+        $dateLancement = Carbon::parse($validated['date'])->setTimeFrom(Carbon::now());
 
-        // Ajoute l'heure actuelle à la date de lancement pour l'enregistrer en format complet Y-m-d H:i:s
-        $date_lancement_bande = Carbon::parse($request->input('date'))->setTimeFrom(Carbon::now());
-
-        $age_depart = $request->input('age_depart');
-        $nbre_sujet = $request->input('nbre_sujet');
-        $prix_acquisition = $request->input('prix_acquisition');
-        $unite_age_depart = $request->input('unite_age_depart');
-        // Création de la bande
-        $bande = Bande::create([
-            'nom' => $nom,
-            'id_type_animal' => $id_type_animal,
-            'id_batiment' => $id_batiment,
-            'date_lancement_bande' => $date_lancement_bande,
-            'age_depart' => $age_depart,
-            'nbre_sujet' => $nbre_sujet,
-            'statut_bande' => 'encours', // Par défaut la bande est "en cours"
-            'unite_age_depart' => $unite_age_depart,
-            'prix_acquisition' => $prix_acquisition,
-        ]);
-
-        // Création des animaux associés à la bande
-        for ($numero_animal = 1; $numero_animal <= $nbre_sujet; $numero_animal++) {
-            Animal::create([
-                'id_type_animal' => $id_type_animal,
-                'id_bande' => $bande->id,
-                'age' => $age_depart,
-                'statut_animal' => 'enelevage', // Statut par défaut
-                'numero_animal' => strtotime(now()).'_'.$bande->id.'_'.$numero_animal, // Génère un identifiant unique pour chaque animal
+        $bande = DB::transaction(function () use ($validated, $dateLancement) {
+            $bande = Bande::create([
+                'nom' => $validated['nom'],
+                'id_type_animal' => $validated['type_animal'],
+                'id_batiment' => $validated['batiment'],
+                'date_lancement_bande' => $dateLancement,
+                'age_depart' => $validated['age_depart'],
+                'nbre_sujet' => $validated['nbre_sujet'],
+                'statut_bande' => 'encours',
+                'unite_age_depart' => $validated['unite_age_depart'],
+                'prix_acquisition' => $validated['prix_acquisition'],
             ]);
+
+            $this->createAnimals($bande, (int) $validated['nbre_sujet'], $validated['age_depart'], $validated['type_animal']);
+
+            return $bande;
+        });
+
+        session()->flash('message', strtoupper($validated['nom'])." créé avec <b class='text-success'> Succès.</b>");
+
+        return redirect()->route('bande.index');
+    }
+
+    /**
+     * Crée les animaux de la bande par insertion en masse (une seule requête
+     * par lot) au lieu d'une requête par animal.
+     */
+    private function createAnimals(Bande $bande, int $nbreSujet, $ageDepart, $idTypeAnimal): void
+    {
+        if ($nbreSujet <= 0) {
+            return;
         }
 
-        // Message de succès
-        session()->flash('message', strtoupper($nom)." créé avec <b class='text-success'> Succès.</b>");
+        $now = now();
+        $timestamp = strtotime($now);
+        $rows = [];
 
-        // Redirection vers la liste des bandes
-        return redirect()->route('bande.index');
+        for ($numero = 1; $numero <= $nbreSujet; $numero++) {
+            $rows[] = [
+                'id_type_animal' => $idTypeAnimal,
+                'id_bande' => $bande->id,
+                'age' => $ageDepart,
+                'statut_animal' => 'enelevage',
+                'numero_animal' => $timestamp.'_'.$bande->id.'_'.$numero,
+                'tenant_id' => app(TenantContext::class)->id(),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        foreach (array_chunk($rows, 1000) as $chunk) {
+            Animal::insert($chunk);
+        }
     }
 
     /**
@@ -183,7 +192,7 @@ class BandeController extends Controller
             $nouveau_produit = new Produit;
             $nouveau_produit->id_type_animal = $bande_id_annimal;
             $nouveau_produit->prix_unitaire = 1;
-            $nouveau_produit->nom = $bande->type_animal->nom;
+            $nouveau_produit->nom = $bande->animal->nom;
             $nouveau_produit->id_type_produit = $id_type_produit; // Assigner l'id directement
             $nouveau_produit->save();
 

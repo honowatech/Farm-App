@@ -57,7 +57,6 @@ class Derive_produitController extends Controller
         ]);
         session()->forget('message');
 
-        // dd($id_produit,$nom,$prix_unitaire,$min,$max,$id_unite);
         $derive = new Derive_produit;
         $derive->id_produit = $id_produit;
         $derive->nom = $nom;
@@ -121,7 +120,6 @@ class Derive_produitController extends Controller
             'max' => 'bail|required|numeric|min:0|gte:'.$min,
             'unite' => 'bail|required|numeric|min:1',
         ]);
-        // dd($id_produit,$nom,$prix_unitaire,$min,$max,$id_unite);
         $derive = Derive_produit::findOrFail($id);
         $derive->nom = $nom;
         $derive->prix_unitaire = $prix_unitaire;

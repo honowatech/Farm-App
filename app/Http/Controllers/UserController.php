@@ -18,7 +18,7 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $users = User::where('name', 'like', '%'.$request->input('recherche').'%')
+        $users = User::with('type_user')->where('name', 'like', '%'.$request->input('recherche').'%')
             ->orWhere('email', 'like', '%'.$request->input('recherche').'%')
             ->orderBy('updated_at', 'desc')
             ->paginate(20);

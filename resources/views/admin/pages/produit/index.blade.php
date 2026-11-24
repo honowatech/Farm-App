@@ -137,7 +137,7 @@
                                                                 <input type="hidden" name="delete" value="0">
                                                             </form>
                                                         </span>
-                                                        @if($produit->derives->count() == 0 && $produit->mouvements_de_stock->count() == 0)
+                                                        @if($produit->derives_count == 0 && $produit->mouvements_de_stock_count == 0)
                                                             <span class="dropdown-item" onclick="actions('form_delete_{{$produit->id}}', 'Supprimer' ,'{{$produit->nom}}')">
                                                                     <i class="text-danger" data-feather='trash'></i>
                                                                     <span class="ml-1" type="button">

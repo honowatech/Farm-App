@@ -20,10 +20,11 @@ class AchatController extends Controller
      */
     public function index(Request $request)
     {
-        $achats = Achat::where(function ($query) use ($request) {
-            $query->where('prix_unitaire', 'like', '%'.$request->input('recherche').'%')
-                ->orWhere('mode_de_paiement', 'like', '%'.$request->input('recherche').'%');
-        })
+        $achats = Achat::with(['fournisseur', 'matiere_premiere'])
+            ->where(function ($query) use ($request) {
+                $query->where('prix_unitaire', 'like', '%'.$request->input('recherche').'%')
+                    ->orWhere('mode_de_paiement', 'like', '%'.$request->input('recherche').'%');
+            })
             ->orderBy('updated_at', 'desc')->paginate(20);
         $fournisseurs = Fournisseur::orderBy('nom')->get();
         $aliments = Matiere_premiere::orderBy('nom_produit')->get();
@@ -228,7 +229,7 @@ class AchatController extends Controller
         }
 
         // Exécution de la requête et récupération des résultats
-        $achats = $query->paginate(30);
+        $achats = $query->with(['fournisseur', 'matiere_premiere'])->paginate(30);
 
         return view('admin.pages.achat.details', compact('achats'))->render();
     }

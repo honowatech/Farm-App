@@ -72,7 +72,6 @@ class PaiementSalariesController extends Controller
             $date_debut = $salarie->date_dernier_paiement;
             $description = '<b> '.$salarie->nom.' </b> a reçu un paiement de Salaire de <b> '.$montant.' </b> FCFA  le <b> '.Ladate(now()).' à '.Heure(now()).' </b> pour une période de <b> '.$nbre_fois.'x'.$salarie->accumulateur.' </b> ('.$types_periode[$salarie->type_periode].')';
             $date_fin = prochaine_date_paie($salarie->type_periode, $salarie->accumulateur, $salarie->date_dernier_paiement, $nbre_fois);
-            // dd('paiement complet' , $montant , 'Salarié_'.$id_salarie , $type , $description , $nbre_fois , $date_debut , $date_fin , $pas_avance);
         } elseif ($type == 'avance' && $pas_avance['statut'] == true) {
             $validated = $request->validate([
                 'montant' => 'bail|required|numeric|max:'.$salarie->salaire.'|min:25',
@@ -83,7 +82,6 @@ class PaiementSalariesController extends Controller
             $date_debut = $salarie->date_dernier_paiement;
             $description = '<b> '.$salarie->nom." </b> a reçu une avance de paiement de Salaire d'un montant de <b> ".$montant.' </b> FCFA le <b> '.Ladate(now()).' à '.Heure(now()).' <b>';
             $date_fin = prochaine_date_paie($salarie->type_periode, $salarie->accumulateur, $salarie->date_dernier_paiement, $nbre_fois, $type);
-            // dd('Avance paiement' , $montant , 'Salarié_'.$id_salarie , $type , $description , $nbre_fois , $date_debut , $date_fin , $pas_avance);
         } else {
             $type = 'avance';
             $nbre_fois = 1;
@@ -92,7 +90,6 @@ class PaiementSalariesController extends Controller
             $montant = $pas_avance['montant'];
             $date_debut = $salarie->date_dernier_paiement;
             $description = '<b> '.$salarie->nom." </b> a reçu un paiement de Salaire d'un montant de <b> ".$montant.' </b> FCFA le <b> '.Ladate(now()).' à '.Heure(now())." </b> pour combler l'avance faite et avancer la prochaine date de paie jusqu'au ".Ladate($date_fin);
-            // dd('Avance paiement' , $montant , 'Salarié_'.$id_salarie , $type , $description , $nbre_fois , $date_debut , $date_fin , $pas_avance);
         }
         $status_dernier_paiement = PaiementSalaires::where('id_salarie', $id_salarie)->orderBy('id', 'desc')->first();
         $transaction = new PaiementSalaires;

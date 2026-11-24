@@ -25,7 +25,7 @@ class NutritionController extends Controller
      */
     public function index(Request $request)
     {
-        $nutritions = Nutrition::where('date', 'like', '%'.$request->input('recherche').'%')
+        $nutritions = Nutrition::with(['bande_name', 'aliment_name'])->where('date', 'like', '%'.$request->input('recherche').'%')
             ->orderBy('updated_at', 'desc')->paginate(20);
         $bandes = Bande::orderBy('nom')->get();
         session()->flash('search', $request->input('recherche'));
@@ -283,7 +283,7 @@ class NutritionController extends Controller
         }
 
         // Exécution de la requête et récupération des résultats
-        $nutritions = $query->paginate(30);
+        $nutritions = $query->with(['bande_name', 'aliment_name'])->paginate(30);
 
         return view('admin.pages.nutrition.details', compact('nutritions'))->render();
     }

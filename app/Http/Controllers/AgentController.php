@@ -131,7 +131,6 @@ class AgentController extends Controller
                 'telephone' => 'unique:agents',
             ]);
         }
-        // dd($nom,$telephone,$telephone_secondaire,$adresse);
         // On édite leagent
         $agent = Agent::findOrFail($id);
         $agent->nom = $nom;

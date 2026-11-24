@@ -17,10 +17,12 @@ class ProduitController extends Controller
      */
     public function index(Request $request)
     {
-        $produits = Produit::where(function ($query) use ($request) {
-            $query->where('nom', 'like', '%'.$request->input('recherche').'%')
-                ->orWhere('description', 'like', '%'.$request->input('recherche').'%');
-        })
+        $produits = Produit::with('type_animal')
+            ->withCount(['derives', 'mouvements_de_stock'])
+            ->where(function ($query) use ($request) {
+                $query->where('nom', 'like', '%'.$request->input('recherche').'%')
+                    ->orWhere('description', 'like', '%'.$request->input('recherche').'%');
+            })
             ->orderBy('updated_at', 'desc')
             ->paginate(20);
         session()->flash('search', $request->input('recherche'));

@@ -25,7 +25,7 @@ class RamassageController extends Controller
     {
         $bandes = Bande::orderBy('nom')->get();
         $recherche = (string) $request->input('recherche');
-        $ramassages = Ramassage::where(function ($query) use ($recherche) {
+        $ramassages = Ramassage::with(['bande', 'produit'])->where(function ($query) use ($recherche) {
             $query->where('commentaire', 'like', '%'.$recherche.'%')
                 ->orWhere('to_do_date', 'like', '%'.$recherche.'%');
         })
@@ -197,7 +197,6 @@ class RamassageController extends Controller
             ]);
         }
         session()->forget('id_produit');
-        // dd($id_produit,$qtes,$ids,$id_prestataire,$commentaire,$id_bande,$date);
         $ramassage = new Ramassage;
         $ramassage->id_produit = $id_produit;
         $ramassage->id_bande = $id_bande;
@@ -293,7 +292,6 @@ class RamassageController extends Controller
             'max' => 'bail|required|numeric|min:0|gte:'.$min,
             'unite' => 'bail|required|numeric|min:1',
         ]);
-        // dd($id_produit,$nom,$prix_unitaire,$min,$max,$id_unite);
         $derive = Ramassage::findOrFail($id);
         $derive->nom = $nom;
         $derive->prix_unitaire = $prix_unitaire;
@@ -344,7 +342,7 @@ class RamassageController extends Controller
         }
 
         // Exécution de la requête et récupération des résultats
-        $ramassages = $query->paginate(30);
+        $ramassages = $query->with(['bande', 'produit'])->paginate(30);
 
         return view('admin.pages.ramassage.details', compact('ramassages'))->render();
     }

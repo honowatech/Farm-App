@@ -58,7 +58,6 @@ class VeterinaireController extends Controller
                 'telephone' => 'bail|unique:veterinaires|regex:/^[6,2][0-9]{8}$/',
             ]);
         }
-        // dd($nom,$telephone,$telephone_secondaire,$adresse);
         // On enregistre le veterinaire
         $veterinaire = new Veterinaire;
         $veterinaire->nom = $nom;
@@ -132,7 +131,6 @@ class VeterinaireController extends Controller
                 'telephone' => 'unique:veterinaires',
             ]);
         }
-        // dd($nom,$telephone,$telephone_secondaire,$adresse);
         // On édite leveterinaire
         $veterinaire = Veterinaire::findOrFail($id);
         $veterinaire->nom = $nom;

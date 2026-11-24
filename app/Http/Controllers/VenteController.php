@@ -32,7 +32,7 @@ class VenteController extends Controller
      */
     public function index(Request $request)
     {
-        $ventes = Vente::Where('date_vente', 'like', '%'.$request->input('recherche').'%')
+        $ventes = Vente::with(['facture.client_facture', 'saver'])->Where('date_vente', 'like', '%'.$request->input('recherche').'%')
             ->paginate(20);
         session()->flash('search', $request->input('recherche'));
         $produits = Produit::select('id', 'nom')->orderBy('nom')->get();
@@ -281,7 +281,7 @@ class VenteController extends Controller
 
     public function search(Request $request)
     {
-        $ventes = $this->applyVenteFilters($request, Vente::query())->paginate(30);
+        $ventes = $this->applyVenteFilters($request, Vente::query())->with(['facture.client_facture', 'saver'])->paginate(30);
 
         return view('admin.pages.vente.result_ajax', compact('ventes'))->render();
     }
