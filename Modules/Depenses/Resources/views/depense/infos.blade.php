@@ -13,7 +13,7 @@
     	@php
         	$count = 20*$depenses->currentPage() -19 ;
     	@endphp
-    	@foreach($depenses as $depense)
+        @forelse($depenses as $depense)
             <tr class="text-center">
                 <td>
                 	{{$count}}
@@ -45,7 +45,11 @@
                             <i data-feather="more-vertical"></i>
                         </button>
                         <div class="dropdown-menu">
-                            <a class="dropdown-item"  data-toggle="modal" data-target="#description">
+                            <a class="dropdown-item" href="{{ route('depenses.edit', $depense->id) }}">
+                                <i data-feather="edit-2"></i>
+                                <span class="ml-1">Modifier</span>
+                            </a>
+                            <a class="dropdown-item" href="#" onclick="response_ajax('info_description', [], '{{ route('depenses.show', $depense->id) }}', 'GET'); return false;" data-toggle="modal" data-target="#description">
                                 <i data-feather='eye'></i>
                                 <span class="ml-1">Informations</span>
                             </a>
@@ -55,7 +59,7 @@
                                     <span class="ml-1" type="button">
                                         Supprimer
                                     </span>
-                                <form id="form_delete_{{$depense->id}}" action="{{route('depenses.destroy',$depense->id)}}" method="POST">
+                                <form id="form_delete_{{$depense->id}}" action="{{route('depenses.destroy',$depense->id)}}" method="POST" style="display:none;">
                                     @csrf
                                     @method('DELETE')
                                 </form>
@@ -64,31 +68,26 @@
                     </div>
                 </td>
             </tr>
-        @endforeach
+        @empty
+            <tr><td colspan="6" class="py-2 text-center text-muted">Aucune dépense trouvée.</td></tr>
+        @endforelse
     </tbody>
 </table>
 
-<div class="modal fade" id="description" tabindex="-1" aria-labelledby="descriptionTitle" aria-modal="true" role="dialog">
-    <div class="modal-dialog modal-dialog-centered modal-md modal-dialog-scrollable" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="descriptionTitle"> Informations </h5>
-                <button type="button" class="close m-0" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-10 mx-auto" id="info_description">
-                        Infos de chaque Batîment ici !
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer justify-content-center justify-content-md-apt-1">
-                <button data-dismiss="modal" class="btn px-2 btn-success btn-gradient-success mx-auto">
-                    Ok
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+@if($depenses->hasPages())
+    <nav class="d-flex justify-content-center mt-1" aria-label="Pagination des dépenses">
+        <ul class="pagination">
+            @if($depenses->onFirstPage())
+                <li class="page-item disabled"><span class="page-link">Précédent</span></li>
+            @else
+                <li class="page-item"><a class="page-link" href="#" onclick="mettre({{ $depenses->currentPage() - 1 }}); return false;">Précédent</a></li>
+            @endif
+            <li class="page-item disabled"><span class="page-link">Page {{ $depenses->currentPage() }} / {{ $depenses->lastPage() }}</span></li>
+            @if($depenses->hasMorePages())
+                <li class="page-item"><a class="page-link" href="#" onclick="mettre({{ $depenses->currentPage() + 1 }}); return false;">Suivant</a></li>
+            @else
+                <li class="page-item disabled"><span class="page-link">Suivant</span></li>
+            @endif
+        </ul>
+    </nav>
+@endif

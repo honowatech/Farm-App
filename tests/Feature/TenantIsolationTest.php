@@ -2,12 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\UniteController;
 use App\Models\Tenant;
-use App\Models\Typeusers;
 use App\Models\Unite;
 use App\Support\TenantContext;
+use App\Support\TenantValidation;
+use Illuminate\Http\Request;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
 use LogicException;
 use Tests\TestCase;
 
@@ -114,6 +118,23 @@ class TenantIsolationTest extends TestCase
         $this->assertNull(Unite::find($uniteB->id));
     }
 
+    public function test_tenant_exists_validation_rejects_another_tenants_record(): void
+    {
+        $tenantA = $this->tenant('ferme-a');
+        $tenantB = $this->tenant('ferme-b');
+        $context = app(TenantContext::class);
+        $context->set($tenantB);
+        $uniteB = Unite::create(['libelle' => 'B - kg']);
+
+        $context->set($tenantA);
+        $validator = Validator::make(
+            ['unite' => $uniteB->id],
+            ['unite' => ['required', TenantValidation::exists('unite')]]
+        );
+
+        $this->assertTrue($validator->fails());
+    }
+
     public function test_enforce_throws_without_tenant_context(): void
     {
         config(['multitenancy.enforce' => true]);
@@ -122,5 +143,77 @@ class TenantIsolationTest extends TestCase
         $this->expectException(LogicException::class);
 
         Unite::all();
+    }
+
+    public function test_unit_index_renders_a_full_page_for_direct_navigation_and_a_fragment_for_ajax(): void
+    {
+        $tenant = $this->tenant('ferme-unites');
+        app(TenantContext::class)->set($tenant);
+        Unite::create(['libelle' => 'Kilogramme', 'abrege' => 'kg']);
+        $controller = app(UniteController::class);
+
+        $page = $controller->index(Request::create('/unite', 'GET'));
+        $fragment = $controller->index(Request::create('/unite', 'GET', [], [], [], [
+            'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest',
+        ]));
+
+        $this->assertSame('admin.pages.setting.unites.page', $page->name());
+        $this->assertSame('admin.pages.setting.unites.index', $fragment->name());
+    }
+
+    public function test_unit_management_validates_duplicates_per_tenant_and_allows_self_updates(): void
+    {
+        $tenantA = $this->tenant('ferme-unites-a');
+        $tenantB = $this->tenant('ferme-unites-b');
+        $context = app(TenantContext::class);
+        $context->set($tenantA);
+        $controller = app(UniteController::class);
+        $ajaxServer = ['HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest'];
+
+        $created = $controller->store(Request::create('/unite', 'POST', [
+            'table_data' => ['Kilogramme', 'kg'],
+        ], [], [], $ajaxServer));
+        $unit = Unite::firstOrFail();
+        $updated = $controller->update(Request::create('/unite/'.$unit->id, 'PATCH', [
+            'table_data' => ['kilogramme', 'KG'],
+        ], [], [], $ajaxServer), $unit->id);
+        $duplicate = $controller->store(Request::create('/unite', 'POST', [
+            'table_data' => [' KILOGRAMME ', ' kg '],
+        ], [], [], $ajaxServer));
+
+        $this->assertStringContainsString('Effectué', $created);
+        $this->assertStringContainsString('Effectué', $updated);
+        $this->assertStringContainsString('danger', $duplicate);
+        $this->assertSame(1, Unite::count());
+
+        $context->set($tenantB);
+        $sameLabelForAnotherTenant = $controller->store(Request::create('/unite', 'POST', [
+            'table_data' => ['Kilogramme', 'kg'],
+        ], [], [], $ajaxServer));
+
+        $this->assertStringContainsString('Effectué', $sameLabelForAnotherTenant);
+        $this->assertSame(1, Unite::count());
+    }
+
+    public function test_finance_and_salary_module_routes_require_tenant_and_feature_middleware(): void
+    {
+        foreach ([
+            'depenses.index',
+            'categorie.index',
+            'compte.index',
+            'devise.index',
+            'transfert.index',
+            'salarie.index',
+            'paiement_salaire.index',
+            'gestion-caisse.index',
+        ] as $routeName) {
+            $route = Route::getRoutes()->getByName($routeName);
+            $this->assertNotNull($route, "Missing route {$routeName}");
+            $middleware = $route->middleware();
+
+            $this->assertContains('tenant.resolve', $middleware, $routeName);
+            $this->assertContains('tenant.member', $middleware, $routeName);
+            $this->assertContains('feature', $middleware, $routeName);
+        }
     }
 }

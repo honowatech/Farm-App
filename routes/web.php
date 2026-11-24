@@ -1,13 +1,21 @@
 <?php
 
 use App\Http\Controllers\AchatController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\PlanController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\SubscriptionController;
+use App\Http\Controllers\Admin\TenantController;
 use App\Http\Controllers\AgentController;
 use App\Http\Controllers\AlerteController;
 use App\Http\Controllers\AnimalController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\Auth\DemoController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BandeController;
 use App\Http\Controllers\BatimentController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ClientPortalController;
 use App\Http\Controllers\Derive_produitController;
 use App\Http\Controllers\Detail_fournisseurController;
 use App\Http\Controllers\FactureController;
@@ -20,6 +28,7 @@ use App\Http\Controllers\LogoController;
 use App\Http\Controllers\Matiere_premiereController;
 use App\Http\Controllers\MortaliteController;
 use App\Http\Controllers\NutritionController;
+use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\PaiementController;
 use App\Http\Controllers\ProduitController;
 use App\Http\Controllers\ProgrammeVaccinationController;
@@ -28,6 +37,7 @@ use App\Http\Controllers\RentabiliteController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\Stock_matiere_premiereController;
 use App\Http\Controllers\Stock_produitController;
+use App\Http\Controllers\TenantSubscriptionController;
 use App\Http\Controllers\Type_animalController;
 use App\Http\Controllers\UniteController;
 use App\Http\Controllers\UserController;
@@ -46,7 +56,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group(['middleware' => ['auth', 'web', 'tenant.resolve', 'feature']], function () {
+Route::group(['middleware' => ['auth', 'web', 'tenant.resolve', 'tenant.member', 'trial.readonly', 'feature']], function () {
     // Language
     Route::post('lang/{locale}', [LanguageController::class, 'switchLang'])->name('lang.switch');
 
@@ -147,7 +157,7 @@ Route::group(['middleware' => ['auth', 'web', 'tenant.resolve', 'feature']], fun
     });
 });
 
-Route::group(['middleware' => ['auth', 'web', 'tenant.resolve', 'feature', 'agent_access']], function () {
+Route::group(['middleware' => ['auth', 'web', 'tenant.resolve', 'tenant.member', 'trial.readonly', 'feature', 'agent_access']], function () {
     Route::resource('nutrition', 'App\Http\Controllers\NutritionController');
     Route::get('/check', [NutritionController::class, 'checkNutrition'])->name('nutrition.check');
     Route::get('/search-nutruition', [NutritionController::class, 'search'])->name('nutrition.search');
@@ -163,72 +173,96 @@ Route::group(['middleware' => ['auth', 'web', 'tenant.resolve', 'feature', 'agen
     Route::resource('seanceVaccination', 'App\Http\Controllers\SeanceVaccinationController');
 });
 
+Route::middleware(['auth', 'tenant.resolve', 'tenant.member', 'role:admin'])
+    ->prefix('guide')
+    ->name('onboarding.')
+    ->group(function () {
+        Route::get('/', [OnboardingController::class, 'index'])->name('index');
+        Route::get('/exemple/{module}', [OnboardingController::class, 'example'])->name('example');
+        Route::post('/progression/{guide}', [OnboardingController::class, 'complete'])->name('complete');
+    });
+
+Route::middleware(['auth', 'tenant.resolve', 'tenant.member', 'role:admin'])
+    ->prefix('abonnement')
+    ->name('tenant.subscription.')
+    ->group(function () {
+        Route::get('/', [TenantSubscriptionController::class, 'index'])->name('index');
+        Route::post('/paiement', [TenantSubscriptionController::class, 'initiate'])->name('initiate');
+        Route::post('/paiement/{transaction}/statut', [TenantSubscriptionController::class, 'status'])->name('status');
+    });
+
 // Espace central du super administrateur (propriétaire de la plateforme).
 // Gère les entreprises, les forfaits et la plateforme, hors contexte tenant.
 Route::middleware(['auth', 'role:superadmin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/tenants', [\App\Http\Controllers\Admin\TenantController::class, 'index'])->name('tenants.index');
-    Route::get('/tenants/create', [\App\Http\Controllers\Admin\TenantController::class, 'create'])->name('tenants.create');
-    Route::post('/tenants', [\App\Http\Controllers\Admin\TenantController::class, 'store'])->name('tenants.store');
-    Route::patch('/tenants/{tenant}/toggle', [\App\Http\Controllers\Admin\TenantController::class, 'toggleStatus'])->name('tenants.toggle');
+    Route::get('/tenants', [TenantController::class, 'index'])->name('tenants.index');
+    Route::get('/tenants/create', [TenantController::class, 'create'])->name('tenants.create');
+    Route::post('/tenants', [TenantController::class, 'store'])->name('tenants.store');
+    Route::patch('/tenants/{tenant}/toggle', [TenantController::class, 'toggleStatus'])->name('tenants.toggle');
 
-    Route::get('/plans', [\App\Http\Controllers\Admin\PlanController::class, 'index'])->name('plans.index');
-    Route::get('/plans/create', [\App\Http\Controllers\Admin\PlanController::class, 'create'])->name('plans.create');
-    Route::post('/plans', [\App\Http\Controllers\Admin\PlanController::class, 'store'])->name('plans.store');
-    Route::get('/plans/{plan}/edit', [\App\Http\Controllers\Admin\PlanController::class, 'edit'])->name('plans.edit');
-    Route::put('/plans/{plan}', [\App\Http\Controllers\Admin\PlanController::class, 'update'])->name('plans.update');
+    Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');
+    Route::get('/plans/create', [PlanController::class, 'create'])->name('plans.create');
+    Route::post('/plans', [PlanController::class, 'store'])->name('plans.store');
+    Route::get('/plans/{plan}/edit', [PlanController::class, 'edit'])->name('plans.edit');
+    Route::put('/plans/{plan}', [PlanController::class, 'update'])->name('plans.update');
 
-    Route::get('/users', [\App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
-    Route::get('/users/ajax', [\App\Http\Controllers\Admin\UserController::class, 'ajax'])->name('users.ajax');
-    Route::patch('/users/{user}/toggle', [\App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('users.toggle');
+    Route::get('/users', [App\Http\Controllers\Admin\UserController::class, 'index'])->name('users.index');
+    Route::get('/users/ajax', [App\Http\Controllers\Admin\UserController::class, 'ajax'])->name('users.ajax');
+    Route::patch('/users/{user}/toggle', [App\Http\Controllers\Admin\UserController::class, 'toggleStatus'])->name('users.toggle');
 
-    Route::get('/roles', [\App\Http\Controllers\Admin\RoleController::class, 'index'])->name('roles.index');
-    Route::post('/roles', [\App\Http\Controllers\Admin\RoleController::class, 'store'])->name('roles.store');
-    Route::post('/roles/{typeUser}/toggle-permission', [\App\Http\Controllers\Admin\RoleController::class, 'togglePermission'])->name('roles.toggle');
-    Route::delete('/roles/{typeUser}', [\App\Http\Controllers\Admin\RoleController::class, 'destroy'])->name('roles.destroy');
+    Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
+    Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
+    Route::post('/roles/{typeUser}/toggle-permission', [RoleController::class, 'togglePermission'])->name('roles.toggle');
+    Route::delete('/roles/{typeUser}', [RoleController::class, 'destroy'])->name('roles.destroy');
 
-    Route::get('/subscriptions', [\App\Http\Controllers\Admin\SubscriptionController::class, 'index'])->name('subscriptions.index');
-    Route::post('/subscriptions/{subscription}/status', [\App\Http\Controllers\Admin\SubscriptionController::class, 'changeStatus'])->name('subscriptions.status');
-    Route::post('/subscriptions/{subscription}/extend', [\App\Http\Controllers\Admin\SubscriptionController::class, 'extend'])->name('subscriptions.extend');
-    Route::post('/subscriptions/{subscription}/plan', [\App\Http\Controllers\Admin\SubscriptionController::class, 'changePlan'])->name('subscriptions.plan');
+    Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions.index');
+    Route::post('/subscriptions/{subscription}/status', [SubscriptionController::class, 'changeStatus'])->name('subscriptions.status');
+    Route::post('/subscriptions/{subscription}/extend', [SubscriptionController::class, 'extend'])->name('subscriptions.extend');
+    Route::post('/subscriptions/{subscription}/plan', [SubscriptionController::class, 'changePlan'])->name('subscriptions.plan');
 
     // Paiements MaMoNi (super admin)
-    Route::get('/paiement', [\App\Http\Controllers\PaiementController::class, 'index'])->name('paiement.index');
-    Route::get('/paiement/test', [\App\Http\Controllers\PaiementController::class, 'test'])->name('paiement.test');
-    Route::post('/paiement/initier', [\App\Http\Controllers\PaiementController::class, 'initiate'])->name('paiement.initiate');
-    Route::post('/paiement/statut/{transaction}', [\App\Http\Controllers\PaiementController::class, 'status'])->name('paiement.status');
-    Route::get('/paiement/settings', [\App\Http\Controllers\PaiementController::class, 'settings'])->name('paiement.settings');
-    Route::post('/paiement/settings', [\App\Http\Controllers\PaiementController::class, 'updateSettings'])->name('paiement.settings.update');
-    Route::post('/paiement/settings/test-connexion', [\App\Http\Controllers\PaiementController::class, 'testConnection'])->name('paiement.settings.test');
+    Route::get('/paiement', [PaiementController::class, 'index'])->name('paiement.index');
+    Route::get('/paiement/test', [PaiementController::class, 'test'])->name('paiement.test');
+    Route::post('/paiement/initier', [PaiementController::class, 'initiate'])->name('paiement.initiate');
+    Route::post('/paiement/statut/{transaction}', [PaiementController::class, 'status'])->name('paiement.status');
+    Route::get('/paiement/settings', [PaiementController::class, 'settings'])->name('paiement.settings');
+    Route::post('/paiement/settings', [PaiementController::class, 'updateSettings'])->name('paiement.settings.update');
+    Route::post('/paiement/settings/test-connexion', [PaiementController::class, 'testConnection'])->name('paiement.settings.test');
 
-    Route::get('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
-    Route::post('/settings', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
+    Route::get('/settings', [App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [App\Http\Controllers\Admin\SettingController::class, 'update'])->name('settings.update');
 });
 
 // Espace client (portail B2B/B2C) : catalogue, commandes, factures, profil.
-Route::middleware(['auth', 'role:client'])->prefix('espace-client')->name('client.')->group(function () {
-    Route::get('/', [\App\Http\Controllers\ClientPortalController::class, 'dashboard'])->name('dashboard');
-    Route::get('/catalogue', [\App\Http\Controllers\ClientPortalController::class, 'catalogue'])->name('catalogue');
-    Route::get('/commander', [\App\Http\Controllers\ClientPortalController::class, 'commandeCreate'])->name('commande.create');
-    Route::post('/commander', [\App\Http\Controllers\ClientPortalController::class, 'commandeStore'])->name('commande.store');
-    Route::post('/panier/ajouter', [\App\Http\Controllers\ClientPortalController::class, 'addToCart'])->name('panier.add');
-    Route::post('/panier/mettre-a-jour', [\App\Http\Controllers\ClientPortalController::class, 'updateCart'])->name('panier.update');
-    Route::post('/panier/retirer', [\App\Http\Controllers\ClientPortalController::class, 'removeFromCart'])->name('panier.remove');
-    Route::get('/commandes', [\App\Http\Controllers\ClientPortalController::class, 'commandes'])->name('commandes.index');
-    Route::get('/commandes/{commande}', [\App\Http\Controllers\ClientPortalController::class, 'commandeShow'])->name('commandes.show');
-    Route::get('/factures', [\App\Http\Controllers\ClientPortalController::class, 'factures'])->name('factures.index');
-    Route::get('/factures/{facture}/pdf', [\App\Http\Controllers\ClientPortalController::class, 'factureDownload'])->name('factures.pdf');
-    Route::get('/factures/{facture}', [\App\Http\Controllers\ClientPortalController::class, 'factureShow'])->name('factures.show');
-    Route::get('/profil', [\App\Http\Controllers\ClientPortalController::class, 'profil'])->name('profil');
-    Route::post('/profil', [\App\Http\Controllers\ClientPortalController::class, 'profilUpdate'])->name('profil.update');
+Route::middleware(['auth', 'tenant.resolve', 'tenant.member', 'trial.readonly', 'role:client'])->prefix('espace-client')->name('client.')->group(function () {
+    Route::get('/', [ClientPortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/catalogue', [ClientPortalController::class, 'catalogue'])->name('catalogue');
+    Route::get('/commander', [ClientPortalController::class, 'commandeCreate'])->name('commande.create');
+    Route::post('/commander', [ClientPortalController::class, 'commandeStore'])->name('commande.store');
+    Route::post('/panier/ajouter', [ClientPortalController::class, 'addToCart'])->name('panier.add');
+    Route::post('/panier/mettre-a-jour', [ClientPortalController::class, 'updateCart'])->name('panier.update');
+    Route::post('/panier/retirer', [ClientPortalController::class, 'removeFromCart'])->name('panier.remove');
+    Route::get('/commandes', [ClientPortalController::class, 'commandes'])->name('commandes.index');
+    Route::get('/commandes/{commande}', [ClientPortalController::class, 'commandeShow'])->name('commandes.show');
+    Route::get('/factures', [ClientPortalController::class, 'factures'])->name('factures.index');
+    Route::get('/factures/{facture}/pdf', [ClientPortalController::class, 'factureDownload'])->name('factures.pdf');
+    Route::get('/factures/{facture}', [ClientPortalController::class, 'factureShow'])->name('factures.show');
+    Route::get('/profil', [ClientPortalController::class, 'profil'])->name('profil');
+    Route::post('/profil', [ClientPortalController::class, 'profilUpdate'])->name('profil.update');
 });
 
 Auth::routes(['register' => false]);
 
 // Inscription multi-tenant (utilisateur + entreprise) et accès démo.
-Route::get('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register')->middleware('guest');
-Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register'])->name('register')->middleware('guest');
-Route::post('/register/pay/init', [\App\Http\Controllers\Auth\RegisterController::class, 'initiatePayment'])->name('register.pay.init')->middleware('guest');
-Route::post('/register/pay/status/{transaction}', [\App\Http\Controllers\Auth\RegisterController::class, 'paymentStatus'])->name('register.pay.status')->middleware('guest');
-Route::get('/demo/login', [\App\Http\Controllers\Auth\DemoController::class, 'login'])->name('demo.login')->middleware('guest');
+Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register')->middleware('guest');
+Route::post('/register', [RegisterController::class, 'register'])->name('register')->middleware('guest');
+Route::post('/register/pay/init', [RegisterController::class, 'initiatePayment'])->name('register.pay.init')->middleware('guest');
+Route::post('/register/pay/status/{transaction}', [RegisterController::class, 'paymentStatus'])->name('register.pay.status')->middleware('guest');
+Route::get('/demo/login', [DemoController::class, 'login'])
+    ->name('demo.login')
+    ->middleware('throttle:5,1');
+Route::get('/demo/subscribe', [DemoController::class, 'prepareSubscription'])->name('demo.subscribe');
+Route::post('/demo/profile', [DemoController::class, 'switchProfile'])
+    ->middleware(['auth', 'tenant.resolve', 'tenant.member'])
+    ->name('demo.profile.switch');

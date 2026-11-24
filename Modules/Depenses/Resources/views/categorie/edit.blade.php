@@ -47,7 +47,7 @@
                                                             <div class="input-group-prepend ">
                                                                 <span class="input-group-text"><i data-feather="map-pin"></i></span>
                                                             </div>
-                                                            <input type="text" id="nom" class="form-control @error('nom') is-invalid @enderror" name="nom" placeholder="Nom" value="{{ old('nom') == null ? $categorie->nom : old('nom') }}" / required>
+                                                            <input type="text" id="nom" class="form-control @error('nom') is-invalid @enderror" name="nom" placeholder="Nom" maxlength="255" value="{{ old('nom', $categorie->nom) }}" required>
                                                         </div>
                                                         @error('nom')
                                                         <small class="alert alert-danger">{{ $message }}</small>
@@ -58,9 +58,9 @@
                                             <div class="col-md-8 col-12 mx-auto">
                                                 <div class="form-group">
                                                     <label for="description">Description</label>
-                                                    <span class="text-danger cursor-pointer" title="Obligatoire">*</span>
+                                                    <span class="text-info cursor-pointer" title="Optionnel">Optionnel</span>
                                                     <div class="form-group">
-                                                            <textarea type="description" autocomplete="" class="form-control @error('description') is-invalid @enderror" id="description" placeholder="Description" name="description"aria-describedby="basic-default-description1" rows="3" required>{{ old('description') == null ? $categorie->description : old('description') }}</textarea>
+                                                            <textarea autocomplete="off" class="form-control @error('description') is-invalid @enderror" id="description" placeholder="Description" name="description" maxlength="255" aria-describedby="basic-default-description1" rows="3">{{ old('description', $categorie->description) }}</textarea>
                                                         @error('description') 
                                                             <small class="alert alert-danger"> {{$message}} </small>
                                                         @enderror

@@ -23,8 +23,10 @@ class Matiere_premiereController extends Controller
             return view('admin.pages.home.infos.matiere_premieres_ajax', compact('matiere_premieres', 'title'));
         }
 
-        $matierePremieres = Matiere_premiere::where('nom_produit', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('description', 'like', '%'.$request->input('recherche').'%')
+        $matierePremieres = Matiere_premiere::where(function ($query) use ($request) {
+            $query->where('nom_produit', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('description', 'like', '%'.$request->input('recherche').'%');
+        })
             ->orderBy('updated_at', 'desc')
             ->paginate(20);
         session()->flash('search', $request->input('recherche'));

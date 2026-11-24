@@ -27,6 +27,7 @@ class ClientPortalTest extends TestCase
     {
         Schema::dropIfExists('ligne_commandes');
         Schema::dropIfExists('commandes');
+        Schema::dropIfExists('factures');
         Schema::dropIfExists('produits');
         Schema::dropIfExists('clients');
         Schema::dropIfExists('tenant_user');
@@ -34,6 +35,8 @@ class ClientPortalTest extends TestCase
         Schema::dropIfExists('subscriptions');
         Schema::dropIfExists('plans');
         Schema::dropIfExists('tenants');
+        Schema::dropIfExists('permission_type_user');
+        Schema::dropIfExists('permissions');
         Schema::dropIfExists('users');
         Schema::dropIfExists('type_users');
 
@@ -41,6 +44,22 @@ class ClientPortalTest extends TestCase
             $table->id();
             $table->string('libelle');
             $table->timestamps();
+        });
+
+        Schema::create('permissions', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->unique();
+            $table->string('label')->nullable();
+            $table->string('group')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('permission_type_user', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('permission_id');
+            $table->foreignId('type_user_id');
+            $table->timestamps();
+            $table->unique(['permission_id', 'type_user_id']);
         });
 
         Schema::create('users', function (Blueprint $table) {
@@ -94,6 +113,19 @@ class ClientPortalTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('factures', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('matricule', 80)->nullable();
+            $table->unsignedInteger('id_client');
+            $table->date('date_facturation')->nullable();
+            $table->decimal('total_ht', 12, 2)->default(0);
+            $table->decimal('tva', 12, 2)->default(0);
+            $table->decimal('total_ttc', 12, 2)->default(0);
+            $table->string('tenant_id', 26)->nullable()->index();
+            $table->softDeletes();
+            $table->timestamps();
+        });
+
         Schema::create('ligne_commandes', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('id_commande');
@@ -131,10 +163,20 @@ class ClientPortalTest extends TestCase
         return Tenant::create(['name' => 'Ferme Test', 'slug' => 'ferme-test', 'status' => 'active']);
     }
 
+    private function addClientMembership(Tenant $tenant, User $user): void
+    {
+        $tenant->users()->attach($user->id, [
+            'role_key' => 'client',
+            'status' => 'active',
+            'accepted_at' => now(),
+        ]);
+    }
+
     public function test_client_can_view_catalogue(): void
     {
         $user = $this->clientUser();
         $tenant = $this->tenant();
+        $this->addClientMembership($tenant, $user);
 
         app(TenantContext::class)->set($tenant);
         Client::create(['nom' => 'Client Test', 'id_user' => $user->id]);
@@ -147,10 +189,92 @@ class ClientPortalTest extends TestCase
             ->assertSee('Poulet entier');
     }
 
+    public function test_demo_admin_switching_to_client_profile_can_access_dashboard(): void
+    {
+        $tenant = Tenant::create([
+            'name' => 'Espace démo',
+            'slug' => 'espace-demo',
+            'status' => 'active',
+            'is_demo' => true,
+            'demo_expires_at' => now()->addDay(),
+        ]);
+        $tenant->domains()->create([
+            'domain' => 'espace-demo.example.test',
+            'verified_at' => now(),
+        ]);
+
+        $admin = User::create([
+            'name' => 'Admin démo',
+            'email' => 'demo-portal-admin@example.test',
+            'password' => Hash::make('password'),
+        ]);
+        $clientUser = User::create([
+            'name' => 'Client démo',
+            'email' => 'client@espace-demo.test',
+            'password' => Hash::make('password'),
+        ]);
+        $tenant->users()->attach($admin->id, [
+            'role_key' => 'admin',
+            'status' => 'active',
+        ]);
+        $tenant->users()->attach($clientUser->id, [
+            'role_key' => 'client',
+            'status' => 'active',
+        ]);
+
+        app(TenantContext::class)->set($tenant);
+        Client::create(['nom' => 'Client Démo', 'id_user' => $clientUser->id]);
+        app(TenantContext::class)->clear();
+
+        $this->actingAs($admin)
+            ->withSession([
+                'demo_workspace_tenant_id' => $tenant->id,
+                'demo_workspace_user_id' => $admin->id,
+                'demo_workspace_profile' => 'client',
+            ])
+            ->get(route('client.dashboard'))
+            ->assertOk()
+            ->assertSee('Mes dernières commandes');
+
+        // La page profil s'affiche en mode démo, mais la modification est désactivée.
+        $this->actingAs($admin)
+            ->withSession([
+                'demo_workspace_tenant_id' => $tenant->id,
+                'demo_workspace_user_id' => $admin->id,
+                'demo_workspace_profile' => 'client',
+            ])
+            ->get(route('client.profil'))
+            ->assertOk()
+            ->assertSee('modification du profil est désactivée');
+
+        $this->actingAs($admin)
+            ->withSession([
+                'demo_workspace_tenant_id' => $tenant->id,
+                'demo_workspace_user_id' => $admin->id,
+                'demo_workspace_profile' => 'client',
+            ])
+            ->post(route('client.profil.update'), [
+                'name' => 'Nom modifié',
+                'email' => 'demo-portal-admin@example.test',
+            ])
+            ->assertForbidden();
+    }
+
+    public function test_nonmember_client_cannot_access_the_portal(): void
+    {
+        $user = $this->clientUser();
+        $this->tenant();
+
+        $this->actingAs($user)
+            ->get(route('client.catalogue'))
+            ->assertNotFound();
+    }
+
     public function test_client_can_place_order(): void
     {
         $user = $this->clientUser();
         $tenant = $this->tenant();
+        $this->addClientMembership($tenant, $user);
 
         app(TenantContext::class)->set($tenant);
         $client = Client::create(['nom' => 'Client Test', 'id_user' => $user->id]);
@@ -174,6 +298,7 @@ class ClientPortalTest extends TestCase
     {
         $userA = $this->clientUser();
         $tenant = $this->tenant();
+        $this->addClientMembership($tenant, $userA);
 
         app(TenantContext::class)->set($tenant);
         $clientA = Client::create(['nom' => 'Client A', 'id_user' => $userA->id]);
@@ -184,6 +309,7 @@ class ClientPortalTest extends TestCase
             'password' => Hash::make('password'),
             'id_type_user' => Typeusers::firstOrCreate(['libelle' => 'client'])->id,
         ]);
+        $this->addClientMembership($tenant, $userB);
         $clientB = Client::create(['nom' => 'Client B', 'id_user' => $userB->id]);
 
         $commandeB = Commande::create([

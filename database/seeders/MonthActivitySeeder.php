@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Injecte 30 jours d'activité réaliste sur l'ensemble des fonctionnalités
@@ -42,6 +42,12 @@ class MonthActivitySeeder extends Seeder
 
     public function run(): void
     {
+        if (Schema::hasColumn('bandes', 'tenant_id')) {
+            $this->command?->warn('MonthActivitySeeder ignoré : ce seeder SQL historique ne respecte pas le cloisonnement tenant. Utilisez MultiTenantDemoSeeder.');
+
+            return;
+        }
+
         $this->start = now()->subDays(30)->startOfDay();
         $this->today = now()->startOfDay();
 
@@ -217,7 +223,8 @@ class MonthActivitySeeder extends Seeder
         }
     }
 
-    private function seedReferentials(): void    {
+    private function seedReferentials(): void
+    {
         // Devise et comptes de caisse
         if (! DB::table('gestion_caisse_devises')->where('code', 'XAF')->exists()) {
             DB::table('gestion_caisse_devises')->insert([

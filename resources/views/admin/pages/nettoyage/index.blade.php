@@ -71,7 +71,7 @@
     	                                        </td>
                                                 <td>
                                                     <span class="font-weight-bolder">
-                                                        {{name($nettoyage->batiment->nom)}}
+                                                        {{$nettoyage->batiment?->nom ?? '—'}}
                                                     </span>
                                                 </td>
                                                 <td>

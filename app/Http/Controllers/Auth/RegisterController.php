@@ -13,8 +13,8 @@ use App\Services\MamoniService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -26,9 +26,10 @@ class RegisterController extends Controller
         $this->middleware('guest');
     }
 
-    public function showRegistrationForm()
+    public function showRegistrationForm(Request $request)
     {
         $plans = Plan::where('is_active', true)->orderBy('price')->get();
+        $fromDemo = $request->boolean('from_demo');
 
         $plansData = $plans->map(fn ($plan) => [
             'id' => $plan->id,
@@ -38,7 +39,7 @@ class RegisterController extends Controller
             'billing_interval' => $plan->billing_interval,
         ])->values();
 
-        return view('auth.register', compact('plans', 'plansData'));
+        return view('auth.register', compact('plans', 'plansData', 'fromDemo'));
     }
 
     /**
@@ -55,19 +56,24 @@ class RegisterController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'billing_mode' => ['required', 'in:trial,payment'],
             'payment_transaction_id' => ['nullable', 'integer'],
+            'payment_registration_token' => ['required_if:billing_mode,payment', 'nullable', 'string'],
         ]);
 
         $plan = Plan::where('is_active', true)->findOrFail($data['plan_id']);
 
-        $transaction = null;
-
-        if ($data['billing_mode'] === 'payment') {
-            $transaction = $this->verifyPayment($plan, $data['payment_transaction_id'] ?? null);
-        } else {
+        if ($data['billing_mode'] === 'trial') {
             $this->assertTrialAllowed($plan);
         }
 
-        $result = DB::transaction(function () use ($data, $plan, $transaction) {
+        $result = DB::transaction(function () use ($data, $plan) {
+            $transaction = $data['billing_mode'] === 'payment'
+                ? $this->verifyPayment(
+                    $plan,
+                    $data['payment_transaction_id'] ?? null,
+                    $data['payment_registration_token'] ?? null
+                )
+                : null;
+
             // Le créateur d'une entreprise en devient l'administrateur.
             $typeAdmin = Typeusers::firstOrCreate(['libelle' => 'admin']);
 
@@ -102,10 +108,20 @@ class RegisterController extends Controller
         });
 
         Auth::login($result);
+        $request->session()->forget([
+            'demo_workspace_tenant_id',
+            'demo_workspace_user_id',
+            'demo_workspace_profile',
+            'demo_workspace_access_token',
+            'demo_workspace_claim_token',
+        ]);
+        $request->session()->regenerate();
 
         return redirect()
-            ->route('home')
-            ->with('message', 'Bienvenue ! Votre espace « '.$data['company_name'].' » est prêt.');
+            ->route('onboarding.index')
+            ->with('message', 'Bienvenue ! Votre espace « '.$data['company_name'].' » est prêt.')
+            ->withCookie($this->forgetDemoCookie('farmapp_demo_access'))
+            ->withCookie($this->forgetDemoCookie('farmapp_demo_recovery'));
     }
 
     /**
@@ -140,6 +156,7 @@ class RegisterController extends Controller
         }
 
         $externalRef = 'REG-'.date('Ymd').'-'.strtoupper(Str::random(6));
+        $registrationToken = Str::random(64);
 
         $result = $this->mamoni->initPayment(
             $phone,
@@ -164,6 +181,7 @@ class RegisterController extends Controller
             'status' => 'pending',
             'client_name' => $data['client_name'] ?? null,
             'response' => json_encode($result),
+            'registration_token_hash' => hash('sha256', $registrationToken),
         ]);
 
         return response()->json([
@@ -173,14 +191,24 @@ class RegisterController extends Controller
             'provider_slug' => $transaction->provider_slug,
             'external_reference' => $transaction->external_reference,
             'amount' => $amount,
+            'registration_token' => $registrationToken,
         ]);
     }
 
     /**
      * Vérifie le statut d'un paiement d'inscription (polling).
      */
-    public function paymentStatus(PaymentTransaction $transaction)
+    public function paymentStatus(PaymentTransaction $transaction, Request $request)
     {
+        $token = $request->input('registration_token');
+
+        abort_unless(
+            is_string($token)
+                && $transaction->registration_token_hash
+                && hash_equals($transaction->registration_token_hash, hash('sha256', $token)),
+            404
+        );
+
         if (! $transaction->gateway_reference) {
             return response()->json([
                 'final' => true,
@@ -224,20 +252,34 @@ class RegisterController extends Controller
         }
     }
 
-    private function verifyPayment(Plan $plan, ?int $transactionId): PaymentTransaction
+    private function verifyPayment(Plan $plan, ?int $transactionId, ?string $token): PaymentTransaction
     {
-        if (! $transactionId) {
+        if (! $transactionId || ! $token) {
             throw ValidationException::withMessages(['payment' => 'Le paiement est requis pour ce forfait.']);
         }
 
-        $transaction = PaymentTransaction::withoutGlobalScopes()->find($transactionId);
+        $transaction = PaymentTransaction::withoutGlobalScopes()
+            ->whereKey($transactionId)
+            ->lockForUpdate()
+            ->first();
 
         if (! $transaction) {
             throw ValidationException::withMessages(['payment' => 'Transaction de paiement introuvable.']);
         }
 
+        if (! $transaction->registration_token_hash
+            || ! hash_equals($transaction->registration_token_hash, hash('sha256', $token))) {
+            throw ValidationException::withMessages(['payment' => 'Jeton de paiement invalide.']);
+        }
+
         if ($transaction->status !== 'successful') {
             throw ValidationException::withMessages(['payment' => 'Le paiement n\'a pas encore été confirmé.']);
+        }
+
+        if ($transaction->payable_id !== null
+            || $transaction->payable_type !== null
+            || ! str_starts_with($transaction->external_reference, 'REG-')) {
+            throw ValidationException::withMessages(['payment' => 'Cette transaction ne peut pas être utilisée pour une inscription.']);
         }
 
         if ((int) $transaction->amount !== (int) round((float) $plan->price)) {
@@ -275,6 +317,21 @@ class RegisterController extends Controller
         $transaction->save();
 
         return $subscription;
+    }
+
+    private function forgetDemoCookie(string $name)
+    {
+        return cookie(
+            $name,
+            '',
+            -1,
+            '/',
+            config('session.domain'),
+            config('session.secure'),
+            true,
+            false,
+            'lax'
+        );
     }
 
     private function periodEnd(Plan $plan): Carbon

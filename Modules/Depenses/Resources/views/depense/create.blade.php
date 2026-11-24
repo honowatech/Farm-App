@@ -32,29 +32,33 @@
                             <h3 class="card-title">{{ __('depenses::translated.Formulaire de création') }}</h3>
                         </div>
                         <div class="card-body">
-                            <form class="form" action="{{ route('depenses.store') }}" method="POST">
+                            <form id="expenseForm" class="form" action="{{ route('depenses.store') }}" method="POST">
                                 @csrf
                                 <div class="row col-lg-8 mx-auto" id='replace'>
                                     <div class="form-group col-12 py-1">
                                         <label>{{ __('Utiliser une caisse ?') }}</label>
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" id="useCaisseSwitch" checked {{ old('id_caisse') ? 'checked' : '' }}>
+                                            <input type="hidden" name="use_caisse" value="0">
+                                            <input type="checkbox" class="custom-control-input" id="useCaisseSwitch" name="use_caisse" value="1" @checked(old('use_caisse', true))>
                                             <label class="custom-control-label" for="useCaisseSwitch">{{ __('Oui') }}</label>
                                         </div>
                                     </div>
-                                    <div class="col-12 col-md-6 py-1 {{ old('id_caisse') ? '' : 'd-none' }}" id="caisseSelection">
+                                    <div class="col-12 col-md-6 py-1 {{ old('use_caisse', true) ? '' : 'd-none' }}" id="caisseSelection">
                                         <label for="caisse">{{ __('Choisir une caisse') }} <span class="text-danger">*</span></label>
                                         <select id="caisse" name="id_caisse" class="select2 form-control @error('id_caisse') is-invalid @enderror">
-                                            <option selected value="">{{ __('Choisir une caisse') }}</option>
+                                            <option value="" @selected(! old('id_caisse'))>{{ __('Choisir une caisse') }}</option>
                                             @foreach($caisses as $caisse)
                                                 <option value="{{ $caisse->id }}" {{ old('id_caisse') == $caisse->id ? 'selected' : '' }}>{{ $caisse->nom }}</option>
                                             @endforeach
                                         </select>
+                                        @error('id_caisse')
+                                            <div class="text-danger"><strong>{{ $message }}</strong></div>
+                                        @enderror
                                     </div>
                                     <div class="col-12 col-md-6 py-1">
                                         <label>{{ __('depenses::translated.Type de dépense') }}<span class="text-danger">*</span></label>
-                                        <select required id="type" onchange="" name="id_type_depense" class="select2 form-control @error('id_type_depense') is-invalid @enderror">
-                                            <option selected value="">{{ __('depenses::translated.Choisir un type') }}</option>
+                                        <select required id="type" name="id_type_depense" class="select2 form-control @error('id_type_depense') is-invalid @enderror">
+                                            <option value="" @selected(! old('id_type_depense'))>{{ __('depenses::translated.Choisir un type') }}</option>
                                             @if($categories->isEmpty())
                                                 <option selected value="">{{ __('depenses::translated.Aucun type trouvé') }}</option>
                                             @else
@@ -119,7 +123,7 @@
                                             <label for="adresse">{{ __('depenses::translated.Description') }}</label>
                                             <span class="text-info cursor-pointer" title="optionnel">{{ __('depenses::translated.Optionnel') }}</span>
                                             <div class="form-group">
-                                                <textarea type="text" id="description" class="form-control @error('description') is-invalid @enderror" name="description" rows="3" placeholder="{{ __('depenses::translated.Entrer du texte ici') }}"></textarea>
+                                                <textarea id="description" class="form-control @error('description') is-invalid @enderror" name="description" rows="3" placeholder="{{ __('depenses::translated.Entrer du texte ici') }}">{{ old('description') }}</textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -157,7 +161,7 @@
 @section('javascript')
 <script type="text/javascript">
 
-         $('form').on('submit', function(e) {
+         $('#expenseForm').on('submit', function(e) {
                 e.preventDefault(); // Empêche la soumission du formulaire par défaut
 
                 // Supprime les anciens messages d'erreur
@@ -194,7 +198,8 @@
                 }
 
                 if(valid){
-                   $('form').off('submit').submit();
+                   $('#expenseForm').off('submit');
+                   this.submit();
                 }
             });
          function remplir_montant(id){
@@ -258,6 +263,9 @@
             } else {
                 caisseSelection.classList.add('d-none');
             }
+            var caisse = document.getElementById('caisse');
+            caisse.required = this.checked;
+            caisse.disabled = !this.checked;
         });
 
         // Trigger the event on page load based on the initial state

@@ -38,8 +38,8 @@
                                                 <label>{{ __('depenses::translated.Type') }} <span class="text-danger">*</span></label>
                                                 <select required id="type" name="id_type_depense" class="select2 form-control @error('id_type_depense') is-invalid @enderror">
                                                     <option value="">{{ __('depenses::translated.Choisir un type') }}</option>
-                                                    <option value="ponctuel" selected>Ponctuel</option>
-                                                    <option value="reguliere">Régulière</option>
+                                                    <option value="ponctuel" @selected(old('id_type_depense', 'ponctuel') === 'ponctuel')>Ponctuel</option>
+                                                    <option value="reguliere" @selected(old('id_type_depense') === 'reguliere')>Régulière</option>
                                                 </select>
                                                 @error('id_type_depense')
                                                     <div class="text-danger"><strong>{{ $message }}</strong></div>
@@ -67,26 +67,28 @@
                                         <div class="prix_unitaire col-md-8 col-12 d-none py-1 mx-auto">
                                             <label for="prix_unitaire">{{ __('depenses::translated.Montant dépense') }} <span class="text-danger">*</span></label>
                                             <div class="input-group input-group-merge @error('animal') is-invalid @enderror">
-                                                <input type="text" class="text-center @error('prix_unitaire') is-invalid @enderror form-control" placeholder="1,000" id="prix_unitaire" name="prix_unitaire2" onkeyup="format_montant('prix_unitaire')" value="{{ old('prix_unitaire2') }}" required/>
+                                                <input type="number" min="1" step="1" class="text-center @error('prix_unitaire') is-invalid @enderror form-control" placeholder="1000" id="prix_unitaire" name="prix_unitaire" value="{{ old('prix_unitaire') }}"/>
                                                 <div class="input-group-append">
                                                     <span class="input-group-text">FCFA</span>
                                                 </div>
                                             </div>
-                                            <input type="text" id="prix_unitaire2" name="prix_unitaire" value="{{ old('prix_unitaire') }}" hidden />
+                                            @error('prix_unitaire')
+                                                <div class="text-danger"><strong>{{ $message }}</strong></div>
+                                            @enderror
                                             <small class="alert alert-danger d-none" id="erreur_montant">{{ __('depenses::translated.veuillez entrer le montant de la dépense') }}</small>
                                         </div>
                                         <div class="frequence col-md-8 col-12 mx-auto d-none">
                                             <div class="form-group">
                                                 <label>{{ __('depenses::translated.Fréquence') }} <span class="text-danger">*</span></label>
-                                                <select required id="frequence" name="frequence" class="select2 form-control @error('frequence') is-invalid @enderror">
-                                                    <option selected value="">{{ __('depenses::translated.Choisir une fréquence') }}</option>
-                                                    <option value="mensuel">{{ __('depenses::translated.Mensuel') }}</option>
-                                                    <option value="hebdomadaire">{{ __('depenses::translated.Hebdomadaire') }}</option>
-                                                    <option value="bimensuel">{{ __('depenses::translated.Bimensuel') }}</option>
-                                                    <option value="trimestriel">{{ __('depenses::translated.Trimestriel') }}</option>
-                                                    <option value="semestriel">{{ __('depenses::translated.Semestriel') }}</option>
-                                                    <option value="annuel">{{ __('depenses::translated.Annuel') }}</option>
-                                                    <option value="quotidien">{{ __('depenses::translated.Quotidien') }}</option>
+                                                <select id="frequence" name="frequence" class="select2 form-control @error('frequence') is-invalid @enderror">
+                                                    <option value="" @selected(! old('frequence'))>{{ __('depenses::translated.Choisir une fréquence') }}</option>
+                                                    <option value="mensuel" @selected(old('frequence') === 'mensuel')>{{ __('depenses::translated.Mensuel') }}</option>
+                                                    <option value="hebdomadaire" @selected(old('frequence') === 'hebdomadaire')>{{ __('depenses::translated.Hebdomadaire') }}</option>
+                                                    <option value="bimensuel" @selected(old('frequence') === 'bimensuel')>{{ __('depenses::translated.Bimensuel') }}</option>
+                                                    <option value="trimestriel" @selected(old('frequence') === 'trimestriel')>{{ __('depenses::translated.Trimestriel') }}</option>
+                                                    <option value="semestriel" @selected(old('frequence') === 'semestriel')>{{ __('depenses::translated.Semestriel') }}</option>
+                                                    <option value="annuel" @selected(old('frequence') === 'annuel')>{{ __('depenses::translated.Annuel') }}</option>
+                                                    <option value="quotidien" @selected(old('frequence') === 'quotidien')>{{ __('depenses::translated.Quotidien') }}</option>
                                                 </select>
                                                 @error('frequence')
                                                     <div class="text-danger"><strong>{{ $message }}</strong></div>
@@ -139,28 +141,15 @@
 
 @section('javascript')
     <script type="text/javascript">
-         $(document).ready(function() {
-        // Fonction qui s'exécute quand le type est sélectionné
-        $('#type').on('change', function() {
-            var selectedType = $(this).val();
-
-            if (selectedType === 'ponctuel') {
-                // Si le type est "Ponctuel", masquer le champ fréquence
-                $('.frequence').addClass('d-none');
-                $('.prix_unitaire').addClass('d-none');
-            } else if (selectedType === 'reguliere') {
-                // Si le type est "Régulière", afficher le champ fréquence
-                $('.frequence').removeClass('d-none');
-                $('.prix_unitaire').removeClass('d-none');
-            } else {
-                // Si aucun type valide n'est sélectionné, masquer par défaut
-                $('.frequence').addClass('d-none');
-                 $('.prix_unitaire').addClass('d-none');
+        $(document).ready(function() {
+            function updateRecurringFields() {
+                var recurring = $('#type').val() === 'reguliere';
+                $('.frequence, .prix_unitaire').toggleClass('d-none', !recurring);
+                $('#frequence, #prix_unitaire').prop('required', recurring);
             }
-        });
 
-        // Masquer la fréquence au chargement initial si "Ponctuel" est sélectionné
-        $('#type').trigger('change');
-    });
+            $('#type').on('change', updateRecurringFields);
+            updateRecurringFields();
+        });
     </script>
 @endsection

@@ -38,7 +38,7 @@
                             </td>
                             <td>
                                 <span class="font-weight-bolder">
-                                    {{ucfirst($achat->matiere_premiere->nom_produit)}}                   
+                                    {{$achat->matiere_premiere?->nom_produit ?? '—'}}                   
                                 </span>
                             </td>
                             <td>

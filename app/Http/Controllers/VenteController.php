@@ -13,6 +13,7 @@ use App\Models\Typeusers;
 use App\Models\User;
 use App\Models\Vente;
 use App\Services\VenteService;
+use App\Support\TenantQuota;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -113,8 +114,10 @@ class VenteController extends Controller
             // Récupérer l'ID du type utilisateur (client)
             $id_type_user = Typeusers::whereIn('libelle', ['client', 'clients'])->first()->id;
 
-            // Quota du profil client
-            app(\App\Support\TenantQuota::class)->assertProfileWithinLimit('client');
+            // Quotas du profil client et des fiches clients.
+            $quota = app(TenantQuota::class);
+            $quota->assertProfileWithinLimit('client');
+            $quota->assertWithinLimit('clients', Client::count());
 
             // Création d'un nouvel utilisateur
             $user = new User;
@@ -124,7 +127,7 @@ class VenteController extends Controller
             $user->id_type_user = $id_type_user;
             $user->save();
 
-            app(\App\Support\TenantQuota::class)->attachUser($user, 'client');
+            app(TenantQuota::class)->attachUser($user, 'client');
 
             // Enregistrement du client
             $client = new Client;

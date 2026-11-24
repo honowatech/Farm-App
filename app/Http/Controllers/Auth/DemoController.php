@@ -3,74 +3,107 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\Plan;
-use App\Models\Subscription;
-use App\Models\Tenant;
-use App\Models\Typeusers;
-use App\Models\User;
+use App\Services\DemoWorkspaceService;
+use App\Support\TenantContext;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class DemoController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('guest');
-    }
+    private const ACCESS_COOKIE = 'farmapp_demo_access';
 
     /**
-     * Connecte l'utilisateur à l'espace de démonstration pré-rempli.
+     * Connecte l'utilisateur à la ferme de démonstration partagée.
      */
-    public function login()
+    public function login(Request $request, DemoWorkspaceService $workspaces): RedirectResponse
     {
-        $tenant = Tenant::firstOrCreate(
-            ['slug' => 'demo'],
-            [
-                'name' => 'Ferme de démonstration',
-                'status' => 'active',
-                'is_demo' => true,
-                'demo_expires_at' => now()->addDays(30),
-            ]
-        );
-
-        $typeAdmin = Typeusers::firstOrCreate(['libelle' => 'admin']);
-
-        $user = User::firstOrNew(['email' => 'demo@farmapp.test']);
-        $user->name = 'Démo FarmApp';
-        $user->id_type_user = $typeAdmin->id;
-        $user->statut = 1;
-
-        if (! $user->exists) {
-            $user->password = Hash::make('11111111');
+        if (
+            Auth::check()
+            && (int) $request->session()->get('demo_workspace_user_id') !== (int) $request->user()->getKey()
+        ) {
+            return redirect()->route('home');
         }
 
-        $user->save();
-
-        $tenant->users()->syncWithoutDetaching([
-            $user->id => [
-                'role_key' => 'admin',
-                'status' => 'active',
-                'accepted_at' => now(),
-            ],
-        ]);
-
-        // Abonne la démo au forfait le plus complet pour montrer toutes les
-        // fonctionnalités (sinon le menu serait vide, sans abonnement actif).
-        $plan = Plan::where('code', 'entreprise')->first() ?? Plan::first();
-
-        if ($plan) {
-            Subscription::firstOrCreate(
-                ['tenant_id' => $tenant->id, 'plan_id' => $plan->id, 'status' => 'active'],
-                [
-                    'starts_at' => now(),
-                    'current_period_starts_at' => now(),
-                    'current_period_ends_at' => now()->addMonth(),
-                ]
-            );
-        }
+        // Démo partagée : on se connecte à la ferme de démonstration commune
+        // (données déjà seedées) au lieu de générer une copie isolée par visiteur.
+        $workspace = $workspaces->ensureSharedDemo();
+        $tenant = $workspace['tenant'];
+        $user = $workspace['user'];
 
         Auth::login($user);
+        $request->session()->regenerate();
+        $request->session()->put([
+            'demo_workspace_tenant_id' => (string) $tenant->id,
+            'demo_workspace_user_id' => (int) $user->id,
+            'demo_workspace_profile' => 'admin',
+        ]);
 
         return redirect()->route('home');
+    }
+
+    public function prepareSubscription(Request $request): RedirectResponse
+    {
+        if (Auth::check()) {
+            if ((int) $request->session()->get('demo_workspace_user_id') !== (int) $request->user()->id) {
+                return redirect()->route('home');
+            }
+
+            Auth::logout();
+        }
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()
+            ->route('register', ['from_demo' => 1])
+            ->withCookie($this->forgetCookie(self::ACCESS_COOKIE))
+            ->withCookie($this->forgetCookie('farmapp_demo_recovery'));
+    }
+
+    public function switchProfile(Request $request, TenantContext $tenantContext): RedirectResponse
+    {
+        abort_unless($tenantContext->hasTenant(), 404);
+        $tenant = $tenantContext->tenant();
+
+        abort_unless(
+            $tenant->is_demo
+                && (string) $request->session()->get('demo_workspace_tenant_id') === (string) $tenant->id
+                && (int) $request->session()->get('demo_workspace_user_id') === (int) $request->user()->id,
+            404
+        );
+
+        $roles = array_values(array_diff(array_keys(config('permissions.roles', [])), ['superadmin']));
+        $validated = $request->validate([
+            'profile' => ['required', Rule::in($roles)],
+        ]);
+
+        abort_unless(
+            $tenant->users()
+                ->wherePivot('role_key', $validated['profile'])
+                ->wherePivot('status', 'active')
+                ->exists(),
+            422
+        );
+
+        $request->session()->put('demo_workspace_profile', $validated['profile']);
+
+        return redirect()->route('home');
+    }
+
+    private function forgetCookie(string $name)
+    {
+        return cookie(
+            $name,
+            '',
+            -1,
+            '/',
+            config('session.domain'),
+            config('session.secure'),
+            true,
+            false,
+            'lax'
+        );
     }
 }

@@ -3,8 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\Client;
+use App\Models\Tenant;
 use App\Models\Typeusers;
 use App\Models\User;
+use App\Support\TenantContext;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -33,35 +35,59 @@ class RoleUsersSeeder extends Seeder
 
     public function run(): void
     {
-        foreach ($this->accounts as $role => $account) {
-            $typeUser = Typeusers::firstOrCreate(['libelle' => $role]);
+        $tenant = Tenant::firstOrCreate(
+            ['slug' => 'demo'],
+            [
+                'name' => 'Ferme de démonstration',
+                'status' => 'active',
+                'is_demo' => true,
+                'demo_expires_at' => now()->addDays(30),
+            ]
+        );
+        $context = app(TenantContext::class);
+        $context->set($tenant);
 
-            $user = User::firstOrNew(['email' => $account['email']]);
-            $user->name = $account['name'];
-            $user->id_type_user = $typeUser->id;
-            $user->statut = 1;
+        try {
+            foreach ($this->accounts as $role => $account) {
+                $typeUser = Typeusers::firstOrCreate(['libelle' => $role]);
 
-            if (! $user->exists) {
-                $user->password = Hash::make('11111111');
+                $user = User::firstOrNew(['email' => $account['email']]);
+                $user->name = $account['name'];
+                $user->id_type_user = $typeUser->id;
+                $user->statut = 1;
+
+                if (! $user->exists) {
+                    $user->password = Hash::make('11111111');
+                }
+
+                $user->save();
+
+                if ($role !== 'superadmin') {
+                    $tenant->users()->syncWithoutDetaching([$user->id => [
+                        'role_key' => $role,
+                        'status' => 'active',
+                        'accepted_at' => now(),
+                    ]]);
+                }
             }
 
-            $user->save();
-        }
+            // Rattache le compte client à une fiche client dédiée.
+            $clientUser = User::where('email', $this->accounts['client']['email'])->first();
 
-        // Rattache le compte client à une fiche client dédiée.
-        $clientUser = User::where('email', $this->accounts['client']['email'])->first();
-
-        if ($clientUser) {
-            Client::firstOrCreate(
-                ['email' => $this->accounts['client']['email']],
-                [
-                    'nom' => 'Client Démo FarmApp',
-                    'telephone' => '690000000',
-                    'adresse' => 'Douala',
-                    'id_user' => $clientUser->id,
-                    'statut' => 1,
-                ]
-            );
+            if ($clientUser) {
+                Client::firstOrCreate(
+                    ['email' => $this->accounts['client']['email']],
+                    [
+                        'nom' => 'Client Démo FarmApp',
+                        'telephone' => '690000000',
+                        'adresse' => 'Douala',
+                        'id_user' => $clientUser->id,
+                        'statut' => 1,
+                    ]
+                );
+            }
+        } finally {
+            $context->clear();
         }
     }
 }

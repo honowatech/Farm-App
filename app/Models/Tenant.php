@@ -11,18 +11,19 @@ class Tenant extends Model
 {
     use HasUlids;
 
+    public const TRIAL_RECOVERY_DAYS = 30;
+
     protected $fillable = [
         'name',
         'slug',
         'status',
         'is_demo',
         'demo_expires_at',
+        'demo_claim_token_hash',
     ];
 
-    /** @var bool */
     private bool $activeSubscriptionLoaded = false;
 
-    /** @var \App\Models\Subscription|null */
     private ?Subscription $activeSubscription = null;
 
     protected function casts(): array
@@ -60,16 +61,46 @@ class Tenant extends Model
 
             $this->activeSubscription = $this->subscriptions()
                 ->with('plan')
-                ->whereIn('status', ['active', 'trialing'])
                 ->where(function ($query) {
-                    $query->whereNull('current_period_ends_at')
-                        ->orWhere('current_period_ends_at', '>', now());
+                    $query->where(function ($active) {
+                        $active->where('status', 'active')
+                            ->where(function ($period) {
+                                $period->whereNull('current_period_ends_at')
+                                    ->orWhere('current_period_ends_at', '>', now());
+                            });
+                    })->orWhere(function ($trial) {
+                        $trial->where('status', 'trialing')
+                            ->where('trial_ends_at', '>', now());
+                    });
                 })
                 ->orderByDesc('created_at')
                 ->first();
         }
 
         return $this->activeSubscription;
+    }
+
+    public function expiredTrialSubscription(): ?Subscription
+    {
+        return $this->subscriptions()
+            ->with('plan')
+            ->where('status', 'trialing')
+            ->whereNotNull('trial_ends_at')
+            ->where('trial_ends_at', '<=', now())
+            ->orderByDesc('trial_ends_at')
+            ->first();
+    }
+
+    public function recoverableTrialSubscription(): ?Subscription
+    {
+        return $this->subscriptions()
+            ->with('plan')
+            ->where('status', 'trialing')
+            ->whereNotNull('trial_ends_at')
+            ->where('trial_ends_at', '<=', now())
+            ->where('trial_ends_at', '>=', now()->subDays(self::TRIAL_RECOVERY_DAYS))
+            ->orderByDesc('trial_ends_at')
+            ->first();
     }
 
     /**

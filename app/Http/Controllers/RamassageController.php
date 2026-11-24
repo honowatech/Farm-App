@@ -24,11 +24,14 @@ class RamassageController extends Controller
     public function index(Request $request)
     {
         $bandes = Bande::orderBy('nom')->get();
-        $ramassages = Ramassage::where('commentaire', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('to_do_date', 'like', '%'.$request->input('recherche').'%')
+        $recherche = (string) $request->input('recherche');
+        $ramassages = Ramassage::where(function ($query) use ($recherche) {
+            $query->where('commentaire', 'like', '%'.$recherche.'%')
+                ->orWhere('to_do_date', 'like', '%'.$recherche.'%');
+        })
             ->orderBy('updated_at', 'desc')
             ->paginate(20);
-        session()->flash('search', $request->input('recherche'));
+        session()->flash('search', $recherche);
 
         return view('admin.pages.ramassage.index', compact('ramassages', 'bandes'));
     }

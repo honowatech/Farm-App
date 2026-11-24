@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\Typeusers;
 use App\Models\User;
+use App\Support\TenantQuota;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -17,9 +18,10 @@ class ClientController extends Controller
      */
     public function index(Request $request)
     {
-        $clients = Client::where('nom', 'like', '%'.$request->input('recherche').'%')
-
-            ->orWhere('email', 'like', '%'.$request->input('recherche').'%')
+        $clients = Client::where(function ($query) use ($request) {
+            $query->where('nom', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('email', 'like', '%'.$request->input('recherche').'%');
+        })
             ->orderBy('updated_at', 'desc')
             ->paginate(20);
         session()->flash('search', $request->input('recherche'));
@@ -87,8 +89,10 @@ class ClientController extends Controller
             'adresse' => 'bail|required|min:4',
         ]);
         // dd($nom,$email,$password,$telephone,$adresse,);
-        // On applique le quota du profil « client » avant toute création.
-        app(\App\Support\TenantQuota::class)->assertProfileWithinLimit('client');
+        // On applique les quotas du profil et des fiches clients avant création.
+        $quota = app(TenantQuota::class);
+        $quota->assertProfileWithinLimit('client');
+        $quota->assertWithinLimit('clients', Client::count());
 
         // on crèe son compte utilisateur
         $user = new User;
@@ -98,7 +102,7 @@ class ClientController extends Controller
         $user->id_type_user = $id_type_user;
         $user->save();
 
-        app(\App\Support\TenantQuota::class)->attachUser($user, 'client');
+        app(TenantQuota::class)->attachUser($user, 'client');
         // On enregistre le client
         $client = new Client;
         $client->nom = $nom;

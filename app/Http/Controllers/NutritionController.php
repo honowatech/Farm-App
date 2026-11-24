@@ -9,6 +9,7 @@ use App\Models\Matiere_premiere;
 use App\Models\Nutrition;
 use App\Models\Stock_matiere_premiere;
 use App\Models\Type_animal;
+use App\Support\TenantValidation;
 use App\Traits\FindsValidFoodSettings;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -51,11 +52,11 @@ class NutritionController extends Controller
         // 1. Validation des entrées
         // On attend maintenant 'unite_string' au lieu de 'id_unite' pour la validation.
         $validator = Validator::make($request->all(), [
-            'bande' => 'required|integer|exists:bandes,id',
-            'id_aliment' => 'required|integer|exists:matiere_premieres,id',
+            'bande' => ['required', 'integer', TenantValidation::exists('bandes')],
+            'id_aliment' => ['required', 'integer', TenantValidation::exists('matiere_premieres')],
             'qte' => 'required|numeric|min:0.01',
             'date' => 'required|date',
-            'id_unite' => 'required|integer|exists:unite,id',
+            'id_unite' => ['required', 'integer', TenantValidation::exists('unite')],
             'unite_string' => 'required|string|in:kg,g,sac', // Ajout pour la logique de conversion
         ], [
             'bande.required' => 'La sélection d\'une bande est obligatoire.',

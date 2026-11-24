@@ -2,6 +2,7 @@
 
 namespace Modules\GestionCaisse\Http\Controllers;
 
+use App\Support\TenantValidation;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\GestionCaisse\Entities\Compte;
@@ -28,7 +29,7 @@ class CompteController extends Controller
     {
         $request->validate([
             'type_account' => 'required|string|in:caisse,banque',
-            'currency_id' => 'required|numeric',
+            'currency_id' => ['required', 'integer', TenantValidation::exists('gestion_caisse_devises')],
         ]);
 
         if ($request->type_account === 'caisse') {
@@ -73,7 +74,7 @@ class CompteController extends Controller
             'nom' => 'nullable|required_if:type_account,caisse|string|max:255',
             'numero_compte' => 'nullable|required_if:type_account,banque|string|max:255',
             'nom_banque' => 'nullable|required_if:type_account,banque|string|max:255',
-            'devise' => 'required|exists:gestion_caisse_devises,id',
+            'devise' => ['required', TenantValidation::exists('gestion_caisse_devises')],
         ]);
 
         try {

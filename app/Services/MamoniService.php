@@ -3,11 +3,14 @@
 namespace App\Services;
 
 use App\Models\PlatformSetting;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class MamoniService
 {
+    private const TOKEN_CACHE_KEY = 'mamoni_access_token';
+
     /**
      * Retourne la configuration MaMoNi (globale plateforme, modifiable par le
      * super administrateur via l'écran dédié).
@@ -35,18 +38,44 @@ class MamoniService
      */
     public function token(): ?string
     {
-        return Cache::remember('mamoni_access_token', now()->addMinutes(45), function () {
-            $config = $this->config();
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-            ])->post($config['base_url'].'/v1/auth/login', [
-                'login' => $config['login'],
-                'password' => $config['password'],
-            ]);
+        $config = $this->config();
+        $fingerprint = hash('sha256', implode("\0", [
+            $config['base_url'],
+            $config['login'],
+            $config['password'],
+        ]));
+        $cached = Cache::get(self::TOKEN_CACHE_KEY);
 
-            return $response->successful() ? $response->json('data.access_token') : null;
-        });
+        if (
+            is_array($cached)
+            && ($cached['fingerprint'] ?? null) === $fingerprint
+            && is_string($cached['token'] ?? null)
+            && $cached['token'] !== ''
+        ) {
+            return $cached['token'];
+        }
+
+        Cache::forget(self::TOKEN_CACHE_KEY);
+
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json',
+        ])->post($config['base_url'].'/v1/auth/login', [
+            'login' => $config['login'],
+            'password' => $config['password'],
+        ]);
+        $token = $response->successful() ? $response->json('data.access_token') : null;
+
+        if (is_string($token) && $token !== '') {
+            Cache::put(self::TOKEN_CACHE_KEY, [
+                'fingerprint' => $fingerprint,
+                'token' => $token,
+            ], now()->addMinutes(45));
+
+            return $token;
+        }
+
+        return null;
     }
 
     /**
@@ -65,15 +94,23 @@ class MamoniService
             ];
         }
 
-        $response = Http::withToken($token)
-            ->withHeaders(['Content-Type' => 'application/json', 'Accept' => 'application/json'])
-            ->post($config['base_url'].'/v1/payments/init', [
-                'channel' => $config['channel'],
-                'phone_number' => $phone,
-                'amount' => $amount,
-                'external_reference' => $externalRef,
-                'client_name' => $clientName,
-            ]);
+        $payload = [
+            'channel' => $config['channel'],
+            'phone_number' => $phone,
+            'amount' => $amount,
+            'external_reference' => $externalRef,
+            'client_name' => $clientName,
+        ];
+        $response = $this->postWithToken($config['base_url'].'/v1/payments/init', $payload, $token);
+
+        if ($response->status() === 401) {
+            Cache::forget(self::TOKEN_CACHE_KEY);
+            $refreshedToken = $this->token();
+
+            if ($refreshedToken) {
+                $response = $this->postWithToken($config['base_url'].'/v1/payments/init', $payload, $refreshedToken);
+            }
+        }
 
         $ok = $response->successful() || $response->status() === 201;
 
@@ -97,9 +134,17 @@ class MamoniService
             return ['status' => 401, 'final' => false, 'payment_status' => null, 'data' => null];
         }
 
-        $response = Http::withToken($token)
-            ->withHeaders(['Content-Type' => 'application/json', 'Accept' => 'application/json'])
-            ->post($config['base_url'].'/v1/payments/verify/'.$gatewayReference);
+        $url = $config['base_url'].'/v1/payments/verify/'.$gatewayReference;
+        $response = $this->postWithToken($url, [], $token);
+
+        if ($response->status() === 401) {
+            Cache::forget(self::TOKEN_CACHE_KEY);
+            $refreshedToken = $this->token();
+
+            if ($refreshedToken) {
+                $response = $this->postWithToken($url, [], $refreshedToken);
+            }
+        }
 
         $data = $response->json('data');
         $paymentStatus = $data['status'] ?? null;
@@ -139,5 +184,12 @@ class MamoniService
         $message = $response->json('message') ?? 'identifiants invalides ou service indisponible';
 
         return ['ok' => false, 'message' => 'Échec de connexion : '.$message];
+    }
+
+    private function postWithToken(string $url, array $payload, string $token): Response
+    {
+        return Http::withToken($token)
+            ->withHeaders(['Content-Type' => 'application/json', 'Accept' => 'application/json'])
+            ->post($url, $payload);
     }
 }

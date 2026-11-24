@@ -9,6 +9,8 @@ use App\Models\Produit;
 use App\Models\Stock_produit;
 use App\Models\Type_animal;
 use App\Models\Type_produit;
+use App\Support\TenantQuota;
+use App\Support\TenantValidation;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -22,10 +24,12 @@ class BandeController extends Controller
     public function index(Request $request)
     {
         $annimals = Type_animal::orderBy('nom')->get();
-        $bandes = Bande::where('nom', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('nbre_sujet', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('age_depart', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('prix_acquisition', 'like', '%'.$request->input('recherche').'%')
+        $bandes = Bande::where(function ($query) use ($request) {
+            $query->where('nom', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('nbre_sujet', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('age_depart', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('prix_acquisition', 'like', '%'.$request->input('recherche').'%');
+        })
             ->orderBy('updated_at', 'desc')
             ->paginate(20);
         session()->flash('search', $request->input('recherche'));
@@ -56,14 +60,15 @@ class BandeController extends Controller
         // Validation des données
         $validated = $request->validate([
             'nom' => 'bail|required|unique:bandes|max:255|min:4',
-            'type_animal' => 'bail|required|integer|exists:type_animals,id', // Vérifie que le type d'animal existe
+            'type_animal' => ['bail', 'required', 'integer', TenantValidation::exists('type_animals')], // Vérifie que le type d'animal existe
             'age_depart' => 'bail|required|numeric|min:1',
-            'batiment' => 'bail|required|integer|exists:batiments,id', // Vérifie que le bâtiment existe
+            'batiment' => ['bail', 'required', 'integer', TenantValidation::exists('batiments')], // Vérifie que le bâtiment existe
             'unite_age_depart' => 'bail|required|string|in:jour,semaine,mois,annee',
             'nbre_sujet' => 'bail|required|numeric|min:1',
             'date' => 'bail|required|date|before_or_equal:today', // La date ne peut pas être dans le futur
             'prix_acquisition' => 'bail|required|numeric|min:0',
         ]);
+        app(TenantQuota::class)->assertWithinLimit('bandes', Bande::count());
 
         // Préparation des données
         $nom = $request->input('nom');

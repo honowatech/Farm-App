@@ -49,4 +49,11 @@ class LoginController extends Controller
     {
         return $request->only($this->username(), 'password') + ['statut' => 1];
     }
+
+    protected function authenticated(Request $request, $user)
+    {
+        if ($user->isSuperAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+    }
 }

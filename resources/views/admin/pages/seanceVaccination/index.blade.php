@@ -73,12 +73,12 @@
                                             <td>
                                                 <span class="font-weight-bolder">
 
-                                                    {{name($seance_Vaccination->veterinaire->nom)}}
+                                                    {{$seance_Vaccination->veterinaire?->nom ?? '—'}}
                                                 </span>
                                             </td>
                                             <td>
                                                 <span class="font-weight-bolder">
-                                                    {{name($seance_Vaccination->bande->nom)}}
+                                                    {{$seance_Vaccination->bande?->nom ?? '—'}}
                                                 </span>
                                             </td>
 	                                        <td>

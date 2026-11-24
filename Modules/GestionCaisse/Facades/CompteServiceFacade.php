@@ -4,6 +4,9 @@ namespace Modules\GestionCaisse\Facades;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\Facades\DB;
+use LogicException;
+use Modules\Depenses\Entities\Depense;
 use Modules\GestionCaisse\Entities\Compte;
 use Modules\GestionCaisse\Entities\Devise;
 use Modules\GestionCaisse\Entities\Transaction;
@@ -212,26 +215,31 @@ class CompteServiceFacade extends Facade
      */
     public static function verifierSoldeSuffisant($compteId, $montant, $id_depense)
     {
-        $compte = Compte::findOrFail($compteId);
-
-        if ($compte->current_balance < $montant) {
-            return false;
+        if (! $id_depense || ! Depense::query()->whereKey($id_depense)->exists()) {
+            throw new LogicException('Une dépense enregistrée est requise pour débiter une caisse.');
         }
 
-        // Subtract the amount from the current balance
-        $compte->current_balance -= $montant;
-        $compte->save();
+        return DB::transaction(function () use ($compteId, $montant, $id_depense) {
+            $compte = Compte::query()->lockForUpdate()->findOrFail($compteId);
+            $balance = (int) ($compte->current_balance ?? 0);
 
-        // Create a new transaction record
-        Transaction::create([
-            'compte_id' => $compteId,
-            'montant' => $montant,
-            'user_id' => auth()->user()->id,
-            'id_depense' => $id_depense,
-            'transaction_type' => 'sortie', // Updated key for transaction type
-            'transaction_date' => now(), // Updated key for transaction date
-        ]);
+            if ($balance < (int) $montant) {
+                return false;
+            }
 
-        return true;
+            $compte->current_balance = $balance - (int) $montant;
+            $compte->save();
+
+            Transaction::create([
+                'compte_id' => $compteId,
+                'montant' => $montant,
+                'user_id' => auth()->id(),
+                'id_depense' => $id_depense,
+                'transaction_type' => 'sortie',
+                'transaction_date' => now(),
+            ]);
+
+            return true;
+        });
     }
 }

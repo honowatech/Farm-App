@@ -7,27 +7,55 @@ use App\Models\Commande;
 use App\Models\Facture;
 use App\Models\Produit;
 use App\Support\TenantContext;
+use App\Support\TenantValidation;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class ClientPortalController extends Controller
 {
     /**
-     * Résout la fiche client de l'utilisateur connecté et initialise le
-     * contexte tenant pour que toutes les requêtes soient cloisonnées.
+     * Résout la fiche client de l'utilisateur dans le tenant déjà autorisé.
      */
     private function client(): Client
     {
         $client = Client::where('id_user', auth()->id())->first();
 
-        abort_unless($client, 403, 'Aucune fiche client associée à ce compte.');
+        // Démo partagée : via le sélecteur de profil, l'utilisateur connecté reste
+        // l'admin, mais il prévisualise le rôle client. On résout alors la fiche
+        // client du tenant de démonstration au lieu de chercher une fiche pour l'admin.
+        if (! $client && session('demo_workspace_profile') === 'client') {
+            $context = app(TenantContext::class);
 
-        if ($client->tenant_id) {
-            app(TenantContext::class)->set($client->tenant);
+            if ($context->hasTenant()) {
+                $tenant = $context->tenant();
+
+                // Résout le compte client canonique de la ferme de démo
+                // (client@{slug}.test) pour tomber sur la fiche alimentée par le
+                // seeder annuel, plutôt que sur le premier client actif venu.
+                $clientUser = $tenant->users()
+                    ->wherePivot('role_key', 'client')
+                    ->wherePivot('status', 'active')
+                    ->where('users.email', 'client@'.$tenant->slug.'.test')
+                    ->first();
+
+                if (! $clientUser) {
+                    $clientUser = $tenant->users()
+                        ->wherePivot('role_key', 'client')
+                        ->wherePivot('status', 'active')
+                        ->orderBy('users.id')
+                        ->first();
+                }
+
+                if ($clientUser) {
+                    $client = Client::where('id_user', $clientUser->id)->first();
+                }
+            }
         }
+
+        abort_unless($client, 403, 'Aucune fiche client associée à ce compte.');
 
         return $client;
     }
@@ -72,7 +100,7 @@ class ClientPortalController extends Controller
         $this->client();
 
         $data = $request->validate([
-            'id_produit' => ['required', 'integer', 'exists:produits,id'],
+            'id_produit' => ['required', 'integer', TenantValidation::exists('produits')],
             'qte' => ['nullable', 'integer', 'min:1'],
         ]);
 
@@ -288,11 +316,19 @@ class ClientPortalController extends Controller
     {
         $this->client();
 
-        return view('client.pages.profil');
+        return view('client.pages.profil', [
+            'demoProfile' => session('demo_workspace_profile') === 'client',
+        ]);
     }
 
     public function profilUpdate(Request $request)
     {
+        // En démo partagée, l'utilisateur connecté reste l'admin : on ne doit
+        // jamais modifier son compte à travers l'espace client prévisualisé.
+        if (session('demo_workspace_profile') === 'client') {
+            abort(403, 'La modification du profil est désactivée en mode démonstration.');
+        }
+
         $user = auth()->user();
 
         $data = $request->validate([

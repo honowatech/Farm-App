@@ -27,6 +27,12 @@
         </div>
         <div class="card pl-1 pr-1">
             <div class="content-body">
+                @if(session('message'))
+                    <div class="alert alert-success">{{ session('message') }}</div>
+                @endif
+                @if(session('error'))
+                    <div class="alert alert-danger">{{ session('error') }}</div>
+                @endif
                 <div class="row justify-content-between bg-light-secondary" >
                     <a class="btn btn-secondary btn-gradient-secondary m-1" href="{{route('categorie.create')}}">
                         <i data-feather='plus' style="width: 20px;height: 20px;"></i> Nouvelle catégorie
@@ -60,7 +66,7 @@
                                 @php
                                     $count = 20 * $categories->currentPage() - 19;
                                 @endphp
-                                @foreach($categories as $categorie)
+                                @forelse($categories as $categorie)
                                     <tr class="text-center">
                                         <td>
                                             {{ $count }}
@@ -75,7 +81,7 @@
                                                     <i data-feather="more-vertical"></i>
                                                 </button>
                                                 <div class="dropdown-menu">
-                                                    <a class="dropdown-item" onclick="response_ajax('info_description',['{{ $categorie->id }}'],'{{ route('categorie.show', $categorie->id) }}','GET')" data-toggle="modal" data-target="#description">
+                                                    <a class="dropdown-item" href="#" onclick="response_ajax('info_description',['{{ $categorie->id }}'],'{{ route('categorie.show', $categorie->id) }}','GET'); return false;" data-toggle="modal" data-target="#description">
                                                         <i data-feather='eye'></i>
                                                         <span class="ml-1">{{ __('depenses::translated.Informations') }}</span>
                                                     </a>
@@ -95,7 +101,11 @@
                                             </div>
                                         </td>
                                     </tr>
-                                @endforeach
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="py-2 text-center text-muted">Aucune catégorie enregistrée.</td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -123,7 +133,7 @@
                                     </li>
                                 @else
                                     <li class="page-item">
-                                        <a class="page-link" onclick="mettre({{ $categories->currentPage()-1 }})" rel="prev">Suivant</a>
+                                        <a class="page-link" onclick="mettre({{ $categories->currentPage()-1 }})" rel="prev">Précédent</a>
                                     </li>
                                 @endif
 
@@ -188,7 +198,7 @@
                                     {{-- Next Page Link --}}
                                     @if ($categories->hasMorePages())
                                         <li class="page-item">
-                                            <a class="page-link" onclick="mettre({{ $categories->currentPage()-1 }})" rel="next" aria-label="@lang('pagination.next')">&rsaquo;</a>
+                                            <a class="page-link" onclick="mettre({{ $categories->currentPage()+1 }})" rel="next" aria-label="@lang('pagination.next')">&rsaquo;</a>
                                         </li>
                                     @else
                                         <li class="page-item disabled" aria-disabled="true" aria-label="@lang('pagination.next')">
@@ -216,7 +226,7 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-10 mx-auto" id="info_description">
-                        Infos de chaque Batîment ici !
+                        Les informations de la catégorie s'afficheront ici.
                     </div>
                 </div>
             </div>

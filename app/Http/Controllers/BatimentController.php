@@ -14,8 +14,10 @@ class BatimentController extends Controller
      */
     public function index(Request $request)
     {
-        $batiments = Batiment::where('nom', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('description', 'like', '%'.$request->input('recherche').'%')
+        $batiments = Batiment::where(function ($query) use ($request) {
+            $query->where('nom', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('description', 'like', '%'.$request->input('recherche').'%');
+        })
             ->orderBy('updated_at', 'desc')
             ->paginate(20);
         session()->flash('search', $request->input('recherche'));

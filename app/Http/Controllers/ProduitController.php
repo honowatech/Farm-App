@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Produit;
 use App\Models\Type_animal;
 use App\Models\Type_produit;
+use App\Support\TenantQuota;
 use Illuminate\Http\Request;
 
 class ProduitController extends Controller
@@ -16,8 +17,10 @@ class ProduitController extends Controller
      */
     public function index(Request $request)
     {
-        $produits = Produit::where('nom', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('description', 'like', '%'.$request->input('recherche').'%')
+        $produits = Produit::where(function ($query) use ($request) {
+            $query->where('nom', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('description', 'like', '%'.$request->input('recherche').'%');
+        })
             ->orderBy('updated_at', 'desc')
             ->paginate(20);
         session()->flash('search', $request->input('recherche'));
@@ -81,6 +84,8 @@ class ProduitController extends Controller
             'type_animal' => 'bail|required|numeric|max:255',
             'description' => 'bail|required||min:5',
         ]);
+        app(TenantQuota::class)->assertWithinLimit('produits', Produit::count());
+
         $produit = new Produit;
         $produit->nom = $nom;
         $produit->id_type_produit = $type_produit;

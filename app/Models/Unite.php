@@ -23,4 +23,14 @@ class Unite extends Model
     {
         return $this->hasMany('App\Models\Derive_produit', 'id_unite');
     }
+
+    public function nutritions()
+    {
+        return $this->hasMany(Nutrition::class, 'id_unite');
+    }
+
+    public function foodSettingVersions()
+    {
+        return $this->hasMany(FoodSettingVersion::class, 'id_unite');
+    }
 }

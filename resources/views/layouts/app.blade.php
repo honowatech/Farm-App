@@ -128,6 +128,18 @@
             padding-left: 1rem;
             padding-right: 1rem;
         }
+        .dropdown-user-menu {
+            width: 18rem;
+            max-width: calc(100vw - 1rem);
+            white-space: normal;
+        }
+        .dropdown-user-menu .dropdown-item {
+            white-space: normal;
+            line-height: 1.35;
+        }
+        .dropdown-user-menu form {
+            min-width: 0;
+        }
         @media (max-width: 991.98px) {
             .card .table:not(.table-sm) th,
             .card .table:not(.table-sm) td {
@@ -142,6 +154,40 @@
                 padding-right: 0.45rem;
             }
         }
+        .demo-subscribe-banner {
+            position: fixed;
+            z-index: 1040;
+            right: 1.25rem;
+            bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            max-width: calc(100vw - 2.5rem);
+            padding: 0.75rem 1rem;
+            border: 1px solid #e6e4f0;
+            border-radius: 0.75rem;
+            background: #fff;
+            box-shadow: 0 0.5rem 1.5rem rgba(34, 41, 47, 0.18);
+        }
+        .demo-subscribe-banner-copy {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.35;
+        }
+        @media (max-width: 575.98px) {
+            .demo-subscribe-banner {
+                right: 1rem;
+                bottom: 4.5rem;
+                left: 1rem;
+                max-width: none;
+                justify-content: space-between;
+                gap: 0.5rem;
+                padding: 0.65rem 0.75rem;
+            }
+            .demo-subscribe-banner-copy {
+                font-size: 0.8rem;
+            }
+        }
     </style>
 
     @yield('css')
@@ -149,6 +195,14 @@
 <!-- END: Head-->
 <!-- BEGIN: Body-->
 <body class="vertical-layout vertical-menu-modern bordered-layout footer-sticky pace-done footer-fixed footer-static" data-open="click" data-menu="vertical-menu-modern" data-col="" data-current-route="{{ Route::currentRouteName() }}">
+    @php
+        $tenantContext = app(\App\Support\TenantContext::class);
+        $expiredTrial = $tenantContext->hasTenant() ? $tenantContext->tenant()->expiredTrialSubscription() : null;
+        $recoverableTrial = $tenantContext->hasTenant() ? $tenantContext->tenant()->recoverableTrialSubscription() : null;
+        $visitorDemo = $tenantContext->hasTenant()
+            && $tenantContext->tenant()->is_demo
+            && (string) $tenantContext->id() === (string) session('demo_workspace_tenant_id');
+    @endphp
     <!-- BEGIN: Header-->
     <nav class="header-navbar navbar navbar-expand-lg align-items-center floating-nav navbar-light navbar-shadow shadow">
         <div class="navbar-container d-flex content">
@@ -173,14 +227,44 @@
                     <a class="nav-link dropdown-toggle dropdown-user-link" id="dropdown-user" href="javascript:void(0);" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <div class="user-nav d-sm-flex d-none">
                             <span class="user-name font-weight-bolder"> {{ auth()->user()->name }} </span>
-                            <span class="user-status">{{auth()->user()->type_user->libelle}}</span>
+                            <span class="user-status">{{ auth()->user()->roleName() }}</span>
                         </div>
                         <span class="avatar" style="padding: 0.2rem;">
                           <i data-feather="user" class="text-dark" style="height: 30px; width: 30px;"></i>
                           <span class="avatar-status-online"></span>
                         </span>
                     </a>
-                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown-user">
+                    <div class="dropdown-menu dropdown-menu-right dropdown-user-menu" aria-labelledby="dropdown-user">
+                        @if($tenantContext->hasTenant() && auth()->user()->roleName() === 'admin')
+                            <a class="dropdown-item" href="{{ route('onboarding.index') }}">
+                                <i class="mr-50" data-feather="help-circle"></i> Guide interactif
+                            </a>
+                            <div class="dropdown-divider"></div>
+                        @endif
+                        @if($recoverableTrial && auth()->user()->roleName() === 'admin')
+                            <a class="dropdown-item" href="{{ route('tenant.subscription.index') }}">
+                                <i class="mr-50" data-feather="arrow-up-circle"></i> Souscrire en gardant mes données
+                            </a>
+                            <div class="dropdown-divider"></div>
+                        @endif
+                        @if($tenantContext->hasTenant() && $tenantContext->tenant()->is_demo && (string) $tenantContext->id() === (string) session('demo_workspace_tenant_id'))
+                            <form action="{{ route('demo.profile.switch') }}" method="POST" class="px-1 py-50">
+                                @csrf
+                                <label for="demo-profile" class="small mb-25">Voir la plateforme comme</label>
+                                <select id="demo-profile" name="profile" class="form-control form-control-sm mb-50">
+                                    @foreach(config('permissions.roles', []) as $role => $permissions)
+                                        @continue($role === 'superadmin')
+                                        <option value="{{ $role }}" @selected(session('demo_workspace_profile', 'admin') === $role)>{{ ucfirst($role) }}</option>
+                                    @endforeach
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm btn-block">Changer de profil</button>
+                            </form>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{{ route('demo.subscribe') }}">
+                                <i class="mr-50" data-feather="arrow-up-circle"></i> Voir les forfaits
+                            </a>
+                            <div class="dropdown-divider"></div>
+                        @endif
                         <a class="dropdown-item" href="{{route('home')}}">
                             <i class="mr-50" data-feather="settings"></i> Settings
                         </a>
@@ -225,10 +309,27 @@
         </div>
     </nav>
     <!-- END: Header-->
-    @if(auth()->user()->type_user?->libelle === 'client')
+    @if(auth()->user()->roleName() === 'client')
         @include('client.menu')
     @else
         @include('shared.menu')
+    @endif
+    @if($expiredTrial && auth()->user()->roleName() === 'admin' && ! request()->routeIs('tenant.subscription.*'))
+        <div class="content app-content pt-1">
+            <div class="alert alert-warning d-flex flex-column flex-md-row align-items-md-center justify-content-between" role="alert">
+                <span>
+                    Votre période d’essai est terminée. Vos données restent en lecture seule.
+                    @unless($recoverableTrial)
+                        La période de souscription avec conservation des données (30 jours) est écoulée.
+                    @endunless
+                </span>
+                @if($recoverableTrial)
+                    <a href="{{ route('tenant.subscription.index') }}" class="btn btn-primary btn-sm mt-1 mt-md-0 ml-md-1">
+                        Souscrire en gardant mes données
+                    </a>
+                @endif
+            </div>
+        </div>
     @endif
     <!-- BEGIN: Content-->
     @yield('contenu')
@@ -252,6 +353,15 @@
             </span>
         </p>
     </footer>
+    @if($visitorDemo)
+        <aside class="demo-subscribe-banner" role="region" aria-label="Souscription FarmApp">
+            <div class="demo-subscribe-banner-copy">
+                <strong>Vous découvrez FarmApp ?</strong>
+                <span>Choisissez un forfait pour votre exploitation.</span>
+            </div>
+            <a href="{{ route('demo.subscribe') }}" class="btn btn-primary btn-sm">Voir les forfaits</a>
+        </aside>
+    @endif
     <button class="btn btn-primary btn-icon scroll-top" type="button" aria-label="Retour en haut"><i data-feather="arrow-up"></i></button>
     <!-- END: Footer-->
     <!-- BEGIN: Vendor JS-->

@@ -7,9 +7,12 @@ use App\Models\Tenant;
 use App\Models\Typeusers;
 use App\Models\User;
 use App\Support\FeatureGate;
+use App\Support\TenantContext;
+use App\Support\TenantQuota;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class PlanFeatureTest extends TestCase
@@ -46,12 +49,15 @@ class PlanFeatureTest extends TestCase
         $migration = require database_path('migrations/2026_11_16_150000_create_tenant_control_plane_tables.php');
         $migration->up();
 
-        Route::middleware(['tenant.resolve', 'tenant.member', 'feature'])
+        Route::middleware(['tenant.resolve', 'tenant.member', 'trial.readonly', 'feature'])
             ->get('/test-feature-nutrition', fn () => response('nutrition'))
             ->name('nutrition.index');
-        Route::middleware(['tenant.resolve', 'tenant.member', 'feature'])
+        Route::middleware(['tenant.resolve', 'tenant.member', 'trial.readonly', 'feature'])
             ->get('/test-feature-sales', fn () => response('sales'))
             ->name('vente.index');
+        Route::middleware(['tenant.resolve', 'tenant.member', 'trial.readonly', 'feature'])
+            ->post('/test-feature-nutrition-update', fn () => response('updated'))
+            ->name('nutrition.update');
     }
 
     private function plan(array $features, array $limits = []): Plan
@@ -133,6 +139,58 @@ class PlanFeatureTest extends TestCase
         $this->assertSame(999, $tenant->limit('inexistante', 999));
     }
 
+    public function test_expired_trial_is_not_an_active_subscription(): void
+    {
+        $plan = $this->plan(['elevage' => true]);
+        $tenant = Tenant::create([
+            'name' => 'Ferme expirée',
+            'slug' => 'ferme-expiree',
+            'status' => 'active',
+        ]);
+        $tenant->subscriptions()->create([
+            'plan_id' => $plan->id,
+            'status' => 'trialing',
+            'trial_ends_at' => now()->subMinute(),
+        ]);
+
+        $this->assertNull($tenant->activeSubscription());
+        $this->assertFalse($tenant->hasFeature('elevage'));
+    }
+
+    public function test_expired_trial_keeps_feature_pages_read_only_and_blocks_writes(): void
+    {
+        $plan = $this->plan(['elevage' => true]);
+        $tenant = Tenant::create([
+            'name' => 'Ferme lecture seule',
+            'slug' => 'ferme-lecture-seule',
+            'status' => 'active',
+        ]);
+        $tenant->domains()->create([
+            'domain' => 'ferme-lecture-seule.example.test',
+            'verified_at' => now(),
+        ]);
+        $user = $this->userOfType('admin');
+        $tenant->users()->attach($user->id, [
+            'role_key' => 'admin',
+            'status' => 'active',
+        ]);
+        $tenant->subscriptions()->create([
+            'plan_id' => $plan->id,
+            'status' => 'trialing',
+            'trial_ends_at' => now()->subMinute(),
+        ]);
+
+        $this->actingAs($user)
+            ->get('http://ferme-lecture-seule.example.test/test-feature-nutrition')
+            ->assertOk()
+            ->assertSeeText('nutrition');
+
+        $this->actingAs($user)
+            ->postJson('http://ferme-lecture-seule.example.test/test-feature-nutrition-update')
+            ->assertForbidden()
+            ->assertJsonPath('message', 'Votre période d’essai est terminée. Vos données restent accessibles en lecture seule jusqu’à la souscription.');
+    }
+
     public function test_feature_gate_maps_routes_to_features(): void
     {
         $this->assertSame('elevage', FeatureGate::forRoute('nutrition.index'));
@@ -200,9 +258,9 @@ class PlanFeatureTest extends TestCase
 
         $this->actingAs($admin);
 
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        $this->expectException(ValidationException::class);
 
-        app(\App\Support\TenantQuota::class)->assertProfileWithinLimit('agent');
+        app(TenantQuota::class)->assertProfileWithinLimit('agent');
     }
 
     public function test_profile_quota_allows_when_under_limit(): void
@@ -215,8 +273,36 @@ class PlanFeatureTest extends TestCase
 
         $this->actingAs($admin);
 
-        app(\App\Support\TenantQuota::class)->assertProfileWithinLimit('agent');
+        app(TenantQuota::class)->assertProfileWithinLimit('agent');
 
         $this->addToAssertionCount(1);
+    }
+
+    public function test_profile_quota_uses_tenant_role_not_global_user_role(): void
+    {
+        $plan = $this->plan([], ['profiles' => ['agent' => 1]]);
+        $tenant = $this->tenantWithActiveSubscription($plan);
+        $user = $this->userOfType('admin');
+        $tenant->users()->attach($user->id, [
+            'role_key' => 'agent',
+            'status' => 'active',
+            'accepted_at' => now(),
+        ]);
+        app(TenantContext::class)->set($tenant);
+
+        $this->expectException(ValidationException::class);
+
+        app(TenantQuota::class)->assertProfileWithinLimit('agent');
+    }
+
+    public function test_resource_quota_blocks_creation_at_the_limit(): void
+    {
+        $plan = $this->plan([], ['bandes' => 2]);
+        $tenant = $this->tenantWithActiveSubscription($plan);
+        app(TenantContext::class)->set($tenant);
+
+        $this->expectException(ValidationException::class);
+
+        app(TenantQuota::class)->assertWithinLimit('bandes', 2);
     }
 }

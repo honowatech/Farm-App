@@ -23,9 +23,11 @@ class SeanceVaccinationController extends Controller
             array_push($verification, 0);
         }
         $valeur_verifie = implode($verification);
-        $seance_Vaccinations = Seance_de_vaccination::where('vaccin_attribuer', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('verification', 'like', '%'.$valeur_verifie.'%')
-            ->orWhere('created_at', 'like', '%'.$request->input('recherche').'%')
+        $seance_Vaccinations = Seance_de_vaccination::where(function ($query) use ($request, $valeur_verifie) {
+            $query->where('vaccin_attribuer', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('verification', 'like', '%'.$valeur_verifie.'%')
+                ->orWhere('created_at', 'like', '%'.$request->input('recherche').'%');
+        })
             ->orderBy('created_at', 'desc')
             ->paginate(20);
         session()->flash('search', $request->input('recherche'));

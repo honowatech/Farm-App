@@ -39,7 +39,9 @@ class PaiementController extends Controller
 
         PlatformSetting::set('mamoni.base_url', rtrim($data['base_url'], '/'));
         PlatformSetting::set('mamoni.login', $data['login']);
-        PlatformSetting::set('mamoni.password', $data['password'] ?? '');
+        if (filled($data['password'] ?? null)) {
+            PlatformSetting::set('mamoni.password', $data['password']);
+        }
         PlatformSetting::set('mamoni.channel', $data['channel']);
         PlatformSetting::set('mamoni.enabled', $request->has('enabled') ? '1' : '0');
 

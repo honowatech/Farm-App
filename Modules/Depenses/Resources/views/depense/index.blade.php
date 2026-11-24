@@ -26,6 +26,10 @@
 
             <div class="card pl-1 pr-1">
                 <div class="content-body">
+                    @if(session('message'))
+                        <div class="alert alert-success">{{ session('message') }}</div>
+                    @endif
+                    <div id="searchError" class="alert alert-danger d-none" role="alert"></div>
                     <div class="row bg-light-secondary">
                         <div class="col-12">
                             <a class="btn btn-secondary btn-gradient-secondary m-1" href="{{ route('depenses.create') }}">
@@ -121,7 +125,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($depenses as $depense)
+                                @forelse($depenses as $depense)
                                     <tr class="text-center">
                                         @php
                                             $count = 20 * $depenses->currentPage() - 19 + $loop->index;
@@ -147,6 +151,14 @@
                                                     <i data-feather="more-vertical"></i>
                                                 </button>
                                                 <div class="dropdown-menu">
+                                                    <a class="dropdown-item" href="{{ route('depenses.edit', $depense->id) }}">
+                                                        <i data-feather="edit-2"></i>
+                                                        <span class="ml-1">Modifier</span>
+                                                    </a>
+                                                    <a class="dropdown-item" href="#" onclick="response_ajax('info_description', [], '{{ route('depenses.show', $depense->id) }}', 'GET'); return false;" data-toggle="modal" data-target="#description">
+                                                        <i data-feather="eye"></i>
+                                                        <span class="ml-1">Informations</span>
+                                                    </a>
                                                     <span class="dropdown-item" onclick="actions('form_delete_{{ $depense->id }}', '{{ __('depenses::translated.Effacer') }}')">
                                                         <i class="text-danger" data-feather='trash'></i>
                                                         <span class="ml-1">{{ __('depenses::translated.Effacer') }}</span>
@@ -159,7 +171,11 @@
                                             </div>
                                         </td>
                                     </tr>
-                                @endforeach
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="py-2 text-center text-muted">Aucune dépense trouvée.</td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -187,7 +203,7 @@
                                     </li>
                                 @else
                                     <li class="page-item">
-                                        <a class="page-link" onclick="mettre({{ $depenses->currentPage()-1 }})" rel="prev">Suivant</a>
+                                        <a class="page-link" onclick="mettre({{ $depenses->currentPage()-1 }})" rel="prev">Précédent</a>
                                     </li>
                                 @endif
 
@@ -252,7 +268,7 @@
                                     {{-- Next Page Link --}}
                                     @if ($depenses->hasMorePages())
                                         <li class="page-item">
-                                            <a class="page-link" onclick="mettre({{ $depenses->currentPage()-1 }})" rel="next" aria-label="@lang('pagination.next')">&rsaquo;</a>
+                                            <a class="page-link" onclick="mettre({{ $depenses->currentPage()+1 }})" rel="next" aria-label="@lang('pagination.next')">&rsaquo;</a>
                                         </li>
                                     @else
                                         <li class="page-item disabled" aria-disabled="true" aria-label="@lang('pagination.next')">
@@ -309,11 +325,10 @@
 @section('javascript')
     <script type="text/javascript">
         function mettre(number_page){
-           document.querySelector('#page').value = number_page;
-           document.querySelector('#search').submit()
+            document.querySelector('#page').value = number_page;
+            fetchTransactions();
         }
 
-    $(document).ready(function() {
         function fetchTransactions() {
             var formData = $('#search').serialize();
             $.ajax({
@@ -322,20 +337,24 @@
                 data: formData,
                 success: function(response) {
                     $('#results').html(response); // Insérer le HTML généré par Blade
+                    $('#searchError').addClass('d-none').text('');
                     feather.replace(); // Recharger les icônes de Feather
                 },
                 error: function(xhr) {
-                    console.error(xhr.responseText);
-                    // Gérer les erreurs éventuelles
+                    var message = 'Impossible de charger les dépenses.';
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        message = Object.values(xhr.responseJSON.errors)[0][0];
+                    }
+                    $('#searchError').text(message).removeClass('d-none');
                 }
             });
         }
 
-        // Écouter les événements de changement sur les inputs
-        $('#search input, #search select').on('change', function() {
-            fetchTransactions(); // Appel de la fonction d'actualisation des résultats
+        $(document).ready(function() {
+            $('#search input, #search select').on('change', function() {
+                document.querySelector('#page').value = 1;
+                fetchTransactions();
+            });
         });
-    });
-
     </script>
 @endsection

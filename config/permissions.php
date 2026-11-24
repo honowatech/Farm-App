@@ -290,6 +290,7 @@ return [
         'paiement.settings.test' => 'paiement.settings',
 
         // Modules
+        'gestion-caisse.index' => 'caisse.view',
         'depenses.getPrixUnitaire' => 'depense.view',
         'depense.search' => 'depense.view',
         'salarie.search' => 'salarie.view',

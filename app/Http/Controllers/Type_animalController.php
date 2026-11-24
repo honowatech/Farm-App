@@ -22,8 +22,10 @@ class Type_animalController extends Controller
             'normal' => 'primary',
             'ponte' => 'secondary',
         ];
-        $type_animals = Type_animal::where('nom', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('description', 'like', '%'.$request->input('recherche').'%')
+        $type_animals = Type_animal::where(function ($query) use ($request) {
+            $query->where('nom', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('description', 'like', '%'.$request->input('recherche').'%');
+        })
             ->orderBy('updated_at', 'desc')
             ->paginate(20);
         session()->flash('search', $request->input('recherche'));

@@ -3,8 +3,6 @@
 namespace App\Support;
 
 use App\Models\Tenant;
-use App\Models\Typeusers;
-use App\Models\User;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -32,9 +30,12 @@ class TenantQuota
             return null;
         }
 
-        return $user->tenants()
+        $tenants = $user->tenants()
             ->wherePivot('status', 'active')
-            ->first();
+            ->where('tenants.status', 'active')
+            ->get();
+
+        return $tenants->count() === 1 ? $tenants->first() : null;
     }
 
     /**
@@ -54,19 +55,34 @@ class TenantQuota
             return;
         }
 
-        $typeUser = Typeusers::where('libelle', $profile)->first();
-
-        if (! $typeUser) {
-            return;
-        }
-
-        $count = User::where('id_type_user', $typeUser->id)
-            ->whereHas('tenants', fn ($query) => $query->where('tenants.id', $tenant->id))
+        $count = $tenant->users()
+            ->wherePivot('role_key', $profile)
+            ->wherePivot('status', 'active')
             ->count();
 
         if ($count >= (int) $quota) {
             throw ValidationException::withMessages([
                 'type_user' => "Le quota de {$quota} profil(s) « {$profile} » est atteint. Changez de forfait pour en créer davantage.",
+            ]);
+        }
+    }
+
+    /**
+     * Lève une ValidationException si un quota de ressource est atteint.
+     */
+    public function assertWithinLimit(string $key, int $currentCount): void
+    {
+        $tenant = $this->currentTenant();
+
+        if (! $tenant) {
+            return;
+        }
+
+        $quota = $tenant->limit($key);
+
+        if ($quota !== null && $currentCount >= (int) $quota) {
+            throw ValidationException::withMessages([
+                $key => "La limite de {$quota} « {$key} » est atteinte. Changez de forfait pour créer davantage de ressources.",
             ]);
         }
     }

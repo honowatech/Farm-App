@@ -19,7 +19,7 @@ return new class extends Migration
         'derive_produit', 'detail_fournisseur', 'factures', 'food_setting_versions',
         'foods_setting', 'fournisseurs', 'ligne_factures', 'logo', 'matiere_premieres',
         'mortalite_causes', 'mortalites', 'nettoyages', 'nutritions',
-        'paiement_salaires', 'payment_transactions', 'produits', 'programmes_vaccination',
+        'paiement_salaires', 'produits', 'programmes_vaccination',
         'ramassages', 'salaries', 'seance_de_vaccination', 'stock_matiere_premieres',
         'stock_produits', 'type_animals', 'type_produits', 'unite', 'ventes', 'veterinaires',
         // Modules (noms effectifs des entités)

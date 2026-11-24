@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Support\RoutePermission;
+use App\Support\TenantContext;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -91,19 +93,23 @@ class User extends Authenticatable
 
     public function roleName(): ?string
     {
-        $context = app(\App\Support\TenantContext::class);
+        $context = app(TenantContext::class);
 
         if ($context->hasTenant()) {
             $tenantId = $context->id();
+            $membershipRole = $context->membershipRole((int) $this->getKey());
+
+            if ($membershipRole !== null) {
+                return $membershipRole;
+            }
 
             if (! array_key_exists($tenantId, $this->tenantRoleCache)) {
-                $this->tenantRoleCache[$tenantId] = $context->membershipRole((int) $this->getKey())
-                    ?? $this->tenants()
-                        ->where('tenants.id', $tenantId)
-                        ->wherePivot('status', 'active')
-                        ->first()
-                        ?->pivot
-                        ?->role_key;
+                $this->tenantRoleCache[$tenantId] = $this->tenants()
+                    ->where('tenants.id', $tenantId)
+                    ->wherePivot('status', 'active')
+                    ->first()
+                    ?->pivot
+                    ?->role_key;
             }
 
             return $this->tenantRoleCache[$tenantId];
@@ -118,7 +124,7 @@ class User extends Authenticatable
     public function permissionKeys(): array
     {
         $role = $this->roleName();
-        $context = app(\App\Support\TenantContext::class);
+        $context = app(TenantContext::class);
         $cacheKey = $context->hasTenant()
             ? $context->id().':'.($role ?? '__no_active_membership__')
             : 'legacy:'.($role ?? '__no_role__');
@@ -174,7 +180,7 @@ class User extends Authenticatable
 
     public function canAccessRoute(?string $routeName): bool
     {
-        $permission = \App\Support\RoutePermission::resolve($routeName);
+        $permission = RoutePermission::resolve($routeName);
 
         if ($permission === '__always_allowed__') {
             return true;

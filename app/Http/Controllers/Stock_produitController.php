@@ -2,16 +2,35 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Produit;
+use App\Models\Stock_produit;
+use App\Services\StockService;
 use Illuminate\Http\Request;
 
 class Stock_produitController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return Response
-     */
-    public function index() {}
+    public function index(Request $request, StockService $stocks)
+    {
+        $produits = Produit::query()
+            ->when($request->filled('recherche'), fn ($query) => $query->where('nom', 'like', '%'.$request->input('recherche').'%'))
+            ->orderBy('nom')
+            ->get()
+            ->map(function (Produit $produit) use ($stocks) {
+                $produit->stock_courant = $stocks->stockProduit($produit->id);
+
+                return $produit;
+            });
+
+        $mouvements = Stock_produit::with(['produit'])
+            ->when($request->filled('recherche'), function ($query) use ($request) {
+                $query->whereHas('produit', fn ($produit) => $produit->where('nom', 'like', '%'.$request->input('recherche').'%'));
+            })
+            ->orderByDesc('id')
+            ->paginate(25)
+            ->withQueryString();
+
+        return view('admin.pages.stock_produit.index', compact('produits', 'mouvements'));
+    }
 
     /**
      * Show the form for creating a new resource.

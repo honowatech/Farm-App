@@ -16,11 +16,15 @@ class CategorieController extends Controller
      */
     public function index(Request $request)
     {
-        $categories = Categorie::where('nom', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('description', 'like', '%'.$request->input('recherche').'%')
+        $recherche = $request->input('recherche');
+        $categories = Categorie::query()
+            ->where(function ($query) use ($recherche) {
+                $query->where('nom', 'like', '%'.$recherche.'%')
+                    ->orWhere('description', 'like', '%'.$recherche.'%');
+            })
             ->orderBy('updated_at', 'desc')
             ->paginate(20);
-        session()->flash('search', $request->input('recherche'));
+        session()->flash('search', $recherche);
 
         return view('depenses::categorie.index', compact('categories'));
     }
@@ -44,28 +48,25 @@ class CategorieController extends Controller
     {
         $validatedData = $request->validate([
             'id_type_depense' => 'required|in:ponctuel,reguliere',
-            'frequence' => 'required_if:id_type_depense,reguliere',
-            'prix_unitaire' => 'required_if:id_type_depense,reguliere',
+            'frequence' => 'required_if:id_type_depense,reguliere|nullable|in:quotidien,hebdomadaire,bimensuel,mensuel,trimestriel,semestriel,annuel',
+            'prix_unitaire' => 'required_if:id_type_depense,reguliere|nullable|numeric|min:1',
             'nom' => 'required|string|max:255',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:255',
         ]);
 
-        // Création de la nouvelle catégorie
-        $categorie = new Categorie;
-        $categorie->type = $request->id_type_depense;
-        $categorie->frequence = $request->frequence;
-        $categorie->prix_unitaire = $request->prix_unitaire;
-        $categorie->nom = $request->nom;
-        if ($request->filled('description')) {
-            $categorie->description = $request->description;
-        } else {
-            $categorie->description = 'Aucune description pour cette catégorie';
+        if ($this->hasDuplicateName($validatedData['nom'])) {
+            return back()->withInput()->withErrors(['nom' => 'Une catégorie portant ce nom existe déjà.']);
         }
-        $categorie->save();
-        $message = 'categorie '.strtoupper($request->nom)." créé avec <b class='text-success'> Succès.</b>";
-        session()->flash('message', $message);
 
-        return redirect()->route('categorie.index');
+        $categorie = new Categorie;
+        $categorie->type = $validatedData['id_type_depense'];
+        $categorie->frequence = $validatedData['frequence'] ?? null;
+        $categorie->prix_unitaire = $validatedData['prix_unitaire'] ?? null;
+        $categorie->nom = trim($validatedData['nom']);
+        $categorie->description = $validatedData['description'] ?? 'Aucune description pour cette catégorie';
+        $categorie->save();
+
+        return redirect()->route('categorie.index')->with('message', 'Catégorie créée avec succès.');
     }
 
     /**
@@ -87,7 +88,7 @@ class CategorieController extends Controller
      * @param  int  $id
      * @return Renderable
      */
-    public function edit($id, Request $request)
+    public function edit($id)
     {
         $categorie = Categorie::FindOrFail($id);
 
@@ -102,24 +103,22 @@ class CategorieController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $nom = $request->input('nom');
-        $description = $request->input('description');
         $validated = $request->validate([
-            'nom' => 'bail|required|max:255',
+            'nom' => 'bail|required|string|max:255',
+            'description' => 'nullable|string|max:255',
         ]);
-        if (Categorie::where('nom', $nom)->whereNotIn('id', [$id])->count() > 0) {
-            $validated = $request->validate([
-                'nom' => 'unique:categorie_depenses',
-            ]);
-        }
-        $categorie = Categorie::findOrFail($id);
-        $categorie->nom = $nom;
-        $categorie->description = $description;
-        $categorie->save();
-        $message = ucfirst(strtoupper($nom))." mis à jour avec <b class='text-success'> Succès.</b> ";
-        session()->flash('message', $message);
 
-        return redirect()->route('categorie.index');
+        $categorie = Categorie::findOrFail($id);
+
+        if ($this->hasDuplicateName($validated['nom'], $categorie->getKey())) {
+            return back()->withInput()->withErrors(['nom' => 'Une catégorie portant ce nom existe déjà.']);
+        }
+
+        $categorie->nom = trim($validated['nom']);
+        $categorie->description = $validated['description'] ?? null;
+        $categorie->save();
+
+        return redirect()->route('categorie.index')->with('message', 'Catégorie mise à jour avec succès.');
     }
 
     /**
@@ -128,13 +127,28 @@ class CategorieController extends Controller
      * @param  int  $id
      * @return Renderable
      */
-    public function destroy($id, Request $request)
+    public function destroy($id)
     {
         $categorie = Categorie::FindOrFail($id);
-        $message = 'categorie '.ucfirst($categorie->nom)." supprimé avec <b class='text-success'> Succès.</b>";
-        $categorie->delete();
-        session()->flash('message', $message);
 
-        return redirect()->route('categorie.index');
+        if ($categorie->categorie()->exists()) {
+            return redirect()->route('categorie.index')->with('error', 'Cette catégorie ne peut pas être supprimée car elle est utilisée par des dépenses.');
+        }
+
+        $categorie->delete();
+
+        return redirect()->route('categorie.index')->with('message', 'Catégorie supprimée avec succès.');
+    }
+
+    private function hasDuplicateName(string $name, ?int $ignoreId = null): bool
+    {
+        $query = Categorie::query()
+            ->whereRaw('LOWER(TRIM(nom)) = ?', [mb_strtolower(trim($name))]);
+
+        if ($ignoreId !== null) {
+            $query->where('id', '<>', $ignoreId);
+        }
+
+        return $query->exists();
     }
 }

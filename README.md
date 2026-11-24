@@ -65,9 +65,10 @@ php artisan db:seed
 Le seed est **additif et idempotent** : il conserve les données existantes et peut être rejoué sans créer de doublons.
 
 - `RolePermissionSeeder` : crée les 10 profils et synchronise leurs permissions.
-- `RoleUsersSeeder` : crée les 10 comptes de démonstration (mot de passe défini uniquement à la création).
-- `MonthActivitySeeder` : génère 30 jours d'activité sur les modules accessibles aux profils (nutrition, ramassages, vaccinations, nettoyages, mortalité, achats/stocks, ventes/factures/paiements, dépenses, caisse, salaires/paie, coûts de bande).
-- `Phase5DemoSeeder` : ne s'exécute que si la table `bandes` est vide (référentiels de base).
+- `RoleUsersSeeder` : crée les comptes de démonstration et rattache les profils métier au tenant `demo`.
+- `Phase5DemoSeeder` : crée les données de base dans le tenant `demo` si aucune bande n'existe.
+- `MultiTenantDemoSeeder` : crée des fermes de démonstration isolées, leurs membres, forfaits et données métier.
+- `MonthActivitySeeder` : ancien seeder SQL non cloisonné ; il n'est plus lancé par `DatabaseSeeder` et s'arrête explicitement si la colonne `tenant_id` existe.
 
 ## Modules
 
@@ -75,13 +76,19 @@ Le seed est **additif et idempotent** : il conserve les données existantes et p
 - `Salarie` : salariés et paiements de salaires.
 - `GestionCaisse` : comptes, devises, transferts.
 
-## Socle multi-tenant (déploiement non activé)
+## Multi-tenant
 
-Le chantier multi-tenant commence par les tables centrales `tenants`, `tenant_domains`, `tenant_user`, `plans` et `subscriptions`. Elles préparent les entreprises, leurs membres, les domaines vérifiés et les forfaits à fonctionnalités et limites configurables.
+Les tables `tenants`, `tenant_domains`, `tenant_user`, `plans` et `subscriptions` portent les entreprises, leurs domaines vérifiés, les appartenances par profil, les abonnements, fonctionnalités et limites. Les tables métier sont cloisonnées par `tenant_id` et leur accès Eloquent est filtré par le contexte tenant.
 
-Le middleware `tenant.resolve` résout un tenant uniquement depuis un domaine vérifié rattaché à une entreprise active ; les domaines inconnus, non vérifiés et les démonstrations expirées sont refusés. Le middleware `tenant.member` exige ensuite une adhésion active. En contexte tenant, les permissions et le rôle administrateur sont calculés depuis `tenant_user.role_key`, et non depuis le rôle historique global de l'utilisateur. Ces middlewares sont enregistrés mais ne sont volontairement pas appliqués aux routes métier historiques.
+Les routes métier et le portail client exigent une appartenance active. `tenant.resolve` utilise un domaine vérifié, ou le domaine central configuré dans `APP_URL` lorsqu'un utilisateur possède exactement une appartenance active. Les domaines inconnus sont refusés ; le repli local n'est disponible qu'avec `APP_ENV=local`. Le rôle et les permissions sont calculés dans le contexte courant depuis `tenant_user.role_key`.
 
-Ce socle n'active pas encore l'isolation des données métier ni l'inscription publique. Ne pas exposer des espaces d'entreprise avant la migration des données existantes, le cloisonnement de toutes les requêtes métier et les tests empêchant l'accès inter-entreprises.
+Le bouton « Démo » connecte à la « Ferme de démonstration » partagée, pré-remplie avec un an de données fictives couvrant l'élevage, la production, les achats, les stocks, les ventes, les dépenses, la caisse, les salariés, la paie, l'entretien et les vaccinations, avec un suivi quotidien détaillé sur les 30 derniers jours. Tous les visiteurs partagent ce même espace de démonstration (données persistantes, non expirées). La souscription depuis la démo ouvre le parcours de création d'entreprise. Une bannière persistante dans l'espace de démonstration propose les forfaits.
+
+L'inscription crée l'entreprise, son administrateur et son abonnement d'essai ou payé. Les vérifications de forfait couvrent les fonctionnalités ainsi que les limites de profils, utilisateurs, bandes, produits et clients. Les paiements d'inscription sont associés à un jeton secret et ne peuvent être consommés qu'une fois. Après expiration de l'essai d'une entreprise, l'accès passe en lecture seule. Son administrateur peut souscrire un forfait via MaMoNi pendant les 30 jours suivants; le même tenant et ses données sont alors conservés. Une fois cette fenêtre passée, la souscription avec conservation des données n'est plus disponible.
+
+Après l'inscription, l'administrateur arrive sur le guide interactif. Celui-ci présente cinq exemples pédagogiques (élevage, dépenses, stocks, ventes et trésorerie) avec des données fictives rendues uniquement dans les vues du guide; aucun enregistrement métier n'est créé ou modifié. La progression est sauvegardée par utilisateur et par entreprise dans `tenant_onboarding_progress`. Le guide peut être relancé depuis le menu du profil. La table est créée par la migration `2026_11_23_000000_create_tenant_onboarding_progress_table`.
+
+Les comptes et entreprises générés par les seeders sont réservés au développement et à la démonstration. Ne pas les utiliser en production ; configurer les domaines, secrets et forfaits de production avant le déploiement.
 
 ## Pagination AJAX
 

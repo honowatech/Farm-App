@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\Typeusers;
 use App\Models\User;
+use App\Support\TenantQuota;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -64,7 +65,13 @@ class UserController extends Controller
             'type_user' => 'bail|required|min:1',
         ]);
 
-        app(\App\Support\TenantQuota::class)->assertProfileWithinLimit($type->libelle);
+        $quota = app(TenantQuota::class);
+        $tenant = $quota->currentTenant();
+
+        if ($tenant) {
+            $quota->assertWithinLimit('utilisateurs', $tenant->users()->wherePivot('status', 'active')->count());
+        }
+        $quota->assertProfileWithinLimit($type->libelle);
 
         $user = new User;
         $user->name = $name;
@@ -73,7 +80,7 @@ class UserController extends Controller
         $user->id_type_user = $type_user;
         $user->save();
 
-        app(\App\Support\TenantQuota::class)->attachUser($user, $type->libelle);
+        app(TenantQuota::class)->attachUser($user, $type->libelle);
 
         $message = strtoupper($user->type_user->libelle).' '.strtoupper($name)." créé avec <b class='text-success'> Succès.</b>";
         session()->flash('message', $message);

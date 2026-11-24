@@ -14,10 +14,12 @@ class VeterinaireController extends Controller
      */
     public function index(Request $request)
     {
-        $veterinaires = Veterinaire::where('nom', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('adresse', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('telephone', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('telephone_secondaire', 'like', '%'.$request->input('recherche').'%')
+        $veterinaires = Veterinaire::where(function ($query) use ($request) {
+            $query->where('nom', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('adresse', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('telephone', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('telephone_secondaire', 'like', '%'.$request->input('recherche').'%');
+        })
             ->orderBy('updated_at', 'desc')
             ->paginate(20);
         session()->flash('search', $request->input('recherche'));

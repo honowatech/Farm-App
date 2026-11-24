@@ -58,6 +58,10 @@ class TenantControlPlaneTest extends TestCase
         Route::middleware(['tenant.resolve', 'tenant.member', 'agent_access'])
             ->get('/test-tenant-sales', fn () => response('sales'))
             ->name('vente.index');
+        Route::middleware(['web', 'tenant.resolve', 'tenant.member'])
+            ->get('/test-tenant-effective-role', fn () => response(auth()->user()->roleName()));
+        Route::middleware(['web', 'auth', 'tenant.resolve', 'tenant.member'])
+            ->get('/test-demo-layout', fn () => view('layouts.app'));
     }
 
     public function test_tenant_membership_keeps_the_role_and_status_per_company(): void
@@ -152,6 +156,32 @@ class TenantControlPlaneTest extends TestCase
         $this->assertNotNull($subscription->trial_ends_at);
     }
 
+    public function test_demo_backfill_rollback_preserves_tenant_with_subscription(): void
+    {
+        $tenant = Tenant::create([
+            'name' => 'Ferme démo',
+            'slug' => 'demo',
+            'status' => 'active',
+        ]);
+        $plan = Plan::create([
+            'code' => 'rollback-plan',
+            'name' => 'Rollback',
+            'price' => 1000,
+            'currency' => 'XAF',
+            'billing_interval' => 'monthly',
+        ]);
+        $subscription = $tenant->subscriptions()->create([
+            'plan_id' => $plan->id,
+            'status' => 'active',
+        ]);
+
+        $migration = require database_path('migrations/2026_11_18_000001_attach_existing_data_to_demo_tenant.php');
+        $migration->down();
+
+        $this->assertDatabaseHas('tenants', ['id' => $tenant->id]);
+        $this->assertDatabaseHas('subscriptions', ['id' => $subscription->id]);
+    }
+
     public function test_verified_active_domain_resolves_tenant_only_for_the_request(): void
     {
         $tenant = Tenant::create([
@@ -203,6 +233,66 @@ class TenantControlPlaneTest extends TestCase
             ->assertNotFound();
 
         $this->assertFalse(app(TenantContext::class)->hasTenant());
+    }
+
+    public function test_local_domain_fallback_is_disabled_outside_local_environment(): void
+    {
+        config(['app.env' => 'production']);
+
+        $this->get('http://unmapped.local/test-tenant-context')
+            ->assertNotFound();
+    }
+
+    public function test_local_fallback_does_not_choose_between_multiple_tenants(): void
+    {
+        $user = User::create([
+            'name' => 'Membre multi-tenant',
+            'email' => 'multi-tenant@example.test',
+            'password' => 'secret-password',
+        ]);
+
+        foreach (['ferme-a', 'ferme-b'] as $slug) {
+            $tenant = Tenant::create([
+                'name' => $slug,
+                'slug' => $slug,
+                'status' => 'active',
+            ]);
+            $tenant->users()->attach($user->id, [
+                'role_key' => 'admin',
+                'status' => 'active',
+            ]);
+        }
+
+        $this->actingAs($user)
+            ->get('http://localhost/test-tenant-membership')
+            ->assertNotFound();
+    }
+
+    public function test_central_host_resolves_a_single_active_membership(): void
+    {
+        config([
+            'app.env' => 'production',
+            'app.url' => 'https://farmapp.example.test',
+        ]);
+        $tenant = Tenant::create([
+            'name' => 'Ferme centrale',
+            'slug' => 'ferme-centrale',
+            'status' => 'active',
+        ]);
+        $user = User::create([
+            'name' => 'Administrateur',
+            'email' => 'central-admin@example.test',
+            'password' => 'secret-password',
+        ]);
+        $tenant->users()->attach($user->id, [
+            'role_key' => 'admin',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($user)
+            ->get('https://farmapp.example.test/test-tenant-membership')
+            ->assertOk()
+            ->assertSeeText('member');
     }
 
     public function test_only_active_members_can_access_a_tenant_route(): void
@@ -288,5 +378,144 @@ class TenantControlPlaneTest extends TestCase
         $this->actingAs($agent)
             ->getJson('http://ferme-a.example.test/test-tenant-sales')
             ->assertForbidden();
+    }
+
+    public function test_demo_profile_switch_changes_only_the_active_demo_role(): void
+    {
+        $tenant = Tenant::create([
+            'name' => 'Espace démo',
+            'slug' => 'espace-demo',
+            'status' => 'active',
+            'is_demo' => true,
+            'demo_expires_at' => now()->addDay(),
+        ]);
+        $tenant->domains()->create([
+            'domain' => 'espace-demo.example.test',
+            'verified_at' => now(),
+        ]);
+        $admin = User::create([
+            'name' => 'Admin démo',
+            'email' => 'demo-admin@example.test',
+            'password' => 'secret-password',
+        ]);
+        $agent = User::create([
+            'name' => 'Agent démo',
+            'email' => 'demo-agent@example.test',
+            'password' => 'secret-password',
+        ]);
+        $tenant->users()->attach($admin->id, [
+            'role_key' => 'admin',
+            'status' => 'active',
+        ]);
+        $tenant->users()->attach($agent->id, [
+            'role_key' => 'agent',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($admin)
+            ->withSession([
+                'demo_workspace_tenant_id' => $tenant->id,
+                'demo_workspace_user_id' => $admin->id,
+                'demo_workspace_profile' => 'admin',
+            ])
+            ->get('http://espace-demo.example.test/test-tenant-effective-role')
+            ->assertOk()
+            ->assertSeeText('admin');
+
+        $this->post('http://espace-demo.example.test/demo/profile', ['profile' => 'agent'])
+            ->assertRedirect(route('home'))
+            ->assertSessionHas('demo_workspace_profile', 'agent');
+
+        $this->get('http://espace-demo.example.test/test-tenant-effective-role')
+            ->assertOk()
+            ->assertSeeText('agent');
+    }
+
+    public function test_demo_client_profile_displays_the_client_navigation(): void
+    {
+        if (! Schema::hasTable('logo')) {
+            Schema::create('logo', function (Blueprint $table) {
+                $table->id();
+                $table->string('path');
+                $table->string('tenant_id', 26)->nullable();
+                $table->softDeletes();
+                $table->timestamps();
+            });
+        }
+
+        $tenant = Tenant::create([
+            'name' => 'Espace démo client',
+            'slug' => 'espace-demo-client',
+            'status' => 'active',
+            'is_demo' => true,
+            'demo_expires_at' => now()->addDay(),
+        ]);
+        $tenant->domains()->create([
+            'domain' => 'espace-demo-client.example.test',
+            'verified_at' => now(),
+        ]);
+        $admin = User::create([
+            'name' => 'Admin démo',
+            'email' => 'demo-client-admin@example.test',
+            'password' => 'secret-password',
+        ]);
+        $client = User::create([
+            'name' => 'Client démo',
+            'email' => 'demo-client@example.test',
+            'password' => 'secret-password',
+        ]);
+        $tenant->users()->attach($admin->id, [
+            'role_key' => 'admin',
+            'status' => 'active',
+        ]);
+        $tenant->users()->attach($client->id, [
+            'role_key' => 'client',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($admin)
+            ->withSession([
+                'demo_workspace_tenant_id' => $tenant->id,
+                'demo_workspace_user_id' => $admin->id,
+                'demo_workspace_profile' => 'admin',
+            ])
+            ->post('http://espace-demo-client.example.test/demo/profile', ['profile' => 'client'])
+            ->assertRedirect(route('home'))
+            ->assertSessionHas('demo_workspace_profile', 'client');
+
+        $this->get('http://espace-demo-client.example.test/test-demo-layout')
+            ->assertOk()
+            ->assertSeeText('Mon panier');
+    }
+
+    public function test_demo_profile_switch_cannot_be_used_for_a_regular_tenant(): void
+    {
+        $tenant = Tenant::create([
+            'name' => 'Ferme normale',
+            'slug' => 'ferme-normale',
+            'status' => 'active',
+        ]);
+        $tenant->domains()->create([
+            'domain' => 'ferme-normale.example.test',
+            'verified_at' => now(),
+        ]);
+        $admin = User::create([
+            'name' => 'Admin',
+            'email' => 'regular-admin@example.test',
+            'password' => 'secret-password',
+        ]);
+        $tenant->users()->attach($admin->id, [
+            'role_key' => 'admin',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($admin)
+            ->withSession([
+                'demo_workspace_tenant_id' => $tenant->id,
+                'demo_workspace_user_id' => $admin->id,
+                'demo_workspace_profile' => 'admin',
+            ])
+            ->post('http://ferme-normale.example.test/demo/profile', ['profile' => 'agent'])
+            ->assertNotFound();
     }
 }

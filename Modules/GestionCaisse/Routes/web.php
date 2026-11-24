@@ -11,8 +11,8 @@
 |
 */
 
-Route::middleware(['web', 'auth', 'agent_access'])->prefix('gestion-caisse')->group(function () {
-    Route::get('/', 'Modules\GestionCaisse\Http\Controllers\CompteController@index');
+Route::middleware(['web', 'auth', 'tenant.resolve', 'tenant.member', 'trial.readonly', 'feature', 'agent_access'])->prefix('gestion-caisse')->group(function () {
+    Route::get('/', 'Modules\GestionCaisse\Http\Controllers\CompteController@index')->name('gestion-caisse.index');
     Route::resource('compte', 'Modules\GestionCaisse\Http\Controllers\CompteController');
     Route::resource('devise', 'Modules\GestionCaisse\Http\Controllers\DeviseController');
     Route::resource('transfert', 'Modules\GestionCaisse\Http\Controllers\TransfertController');

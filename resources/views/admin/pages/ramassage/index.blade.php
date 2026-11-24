@@ -119,17 +119,17 @@
 	                                        </td>
                                             <td>
                                                 <span class="font-weight-bolder">
-                                                    {{ucfirst($ramassage->bande->nom)}}
+                                                    {{$ramassage->bande?->nom ?? '—'}}
                                                 </span>
                                             </td>
                                             <td>
                                                 <span class="font-weight-bolder">
-                                                    {{ucfirst($ramassage->produit->nom)}}
+                                                    {{$ramassage->produit?->nom ?? '—'}}
                                                 </span>
                                             </td>
                                             <td>
                                                 <span class="font-weight-bolder">
-                                                    {{ucfirst($ramassage->produit->type_animal->nom)}}
+                                                    {{$ramassage->produit?->type_animal?->nom ?? '—'}}
                                                 </span>
                                             </td>
                                             <td>
@@ -298,14 +298,14 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalCenterTitle">infos sur le ramassage de {{ucfirst($ramassage->produit->nom)}}</h5>
+                    <h5 class="modal-title" id="exampleModalCenterTitle">infos sur le ramassage de {{$ramassage->produit?->nom ?? '—'}}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     <p>
-                       <b>nom du produit: </b> <span class="badge badge-glow badge-light-dark">{{ucfirst($ramassage->produit->nom)}}</span><br>
+                       <b>nom du produit: </b> <span class="badge badge-glow badge-light-dark">{{$ramassage->produit?->nom ?? '—'}}</span><br>
                        <b>date et heure du rammassage: </b><span class="badge badge-glow badge-light-dark">
                                                     @php
                                                         $date = new DateTime($ramassage->to_do_date);
@@ -315,9 +315,9 @@
                                                 <span class="badge badge-glow badge-light-dark">
                                                     {{$date->format('H')}}h:{{$date->format('i')}}
                                                 </span> <br>
-                       <b>nombre de produit ramassé: </b><span class="badge badge-glow badge-light-dark"> {{ json_decode($ramassage->valeurs_derive, true)[0] }}</span><br>
+                       <b>nombre de produit ramassé: </b><span class="badge badge-glow badge-light-dark"> {{ (json_decode($ramassage->valeurs_derive ?? '[]', true) ?: [])[0] ?? '—' }}</span><br>
                        {{-- <b>Agent impliqué: </b><span class="badge badge-glow badge-light-dark">{{$ramassage->agent_name->nom}} </span><br> --}}
-                       <b>Provenance: </b><span class="badge badge-glow badge-light-dark">{{$ramassage->bande->nom}} </span>
+                       <b>Provenance: </b><span class="badge badge-glow badge-light-dark">{{$ramassage->bande?->nom ?? '—'}} </span>
                     </p>
                 </div>
                 <div class="text-center modal-footer">

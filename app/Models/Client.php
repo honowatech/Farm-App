@@ -16,7 +16,7 @@ class Client extends Model
 
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['nom', 'telephone', 'adresse', 'email', 'id_user'];
+    protected $fillable = ['nom', 'telephone', 'adresse', 'email', 'id_user', 'statut'];
 
     protected $visible = ['nom', 'telephone', 'adresse', 'email', 'id_user'];
 
@@ -27,6 +27,6 @@ class Client extends Model
 
     public function client_facture()
     {
-        return $this->hasMany('App\Models\Facture', 'id');
+        return $this->hasMany('App\Models\Facture', 'id_client');
     }
 }

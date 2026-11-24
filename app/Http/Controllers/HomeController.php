@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bande;
 use App\Models\Batiment;
+use App\Models\Client;
 use App\Models\Facture;
 use App\Models\Matiere_premiere;
 use App\Models\Nettoyage;
@@ -12,6 +13,10 @@ use App\Models\Seance_de_vaccination;
 use App\Models\Vente;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use Modules\Depenses\Entities\Depense;
+use Modules\GestionCaisse\Entities\Compte;
+use Modules\Salarie\Entities\Salaries;
 
 class HomeController extends Controller
 {
@@ -34,6 +39,17 @@ class HomeController extends Controller
     {
         session()->forget('info');
 
+        $user = Auth::user();
+        $role = $user->roleName();
+
+        if ($role === 'superadmin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        if ($role === 'client') {
+            return redirect()->route('client.dashboard');
+        }
+
         // Récupérer les bandes en cours
         $bandes_query = Bande::where('date_lancement_bande', '<', now())
             ->where('statut_bande', 'encours')
@@ -44,18 +60,6 @@ class HomeController extends Controller
 
         // Collection paginée pour l'affichage du tableau de bord.
         $bandes_paginees = $bandes_query->paginate(10, ['*'], 'bande_page');
-
-        $role = Auth::user()->type_user?->libelle;
-
-        // Le super administrateur (propriétaire de la plateforme) accède à l'espace central.
-        if ($role === 'superadmin') {
-            return redirect()->route('admin.dashboard');
-        }
-
-        // Le client (B2B/B2C) accède à son portail dédié.
-        if ($role === 'client') {
-            return redirect()->route('client.dashboard');
-        }
 
         // Si l'utilisateur est un agent, afficher la vue agent
         if ($role === 'agent') {
@@ -117,7 +121,6 @@ class HomeController extends Controller
 
         // Profils métier (vétérinaire, magasinier, commercial, comptable,
         // caissier, rh, client) : tableau de bord partagé et filtré.
-        $user = Auth::user();
         $stats = [];
 
         if ($user->hasPermission('bande.view')) {
@@ -133,15 +136,15 @@ class HomeController extends Controller
         }
 
         if ($user->hasPermission('depense.view')) {
-            $stats[] = ['label' => 'Dépenses (30 jours)', 'value' => number_format((float) \Modules\Depenses\Entities\Depense::where('date_depense', '>=', now()->subDays(30))->sum('montant'), 0, ',', ' ').' FCFA', 'icon' => 'dollar-sign', 'color' => 'warning'];
+            $stats[] = ['label' => 'Dépenses (30 jours)', 'value' => number_format((float) Depense::where('date_depense', '>=', now()->subDays(30))->sum('montant'), 0, ',', ' ').' FCFA', 'icon' => 'dollar-sign', 'color' => 'warning'];
         }
 
         if ($user->hasPermission('salarie.view')) {
-            $stats[] = ['label' => 'Salariés actifs', 'value' => \Modules\Salarie\Entities\Salaries::where('statut', 1)->count(), 'icon' => 'award', 'color' => 'secondary'];
+            $stats[] = ['label' => 'Salariés actifs', 'value' => Salaries::where('statut', 1)->count(), 'icon' => 'award', 'color' => 'secondary'];
         }
 
         if ($user->hasPermission('caisse.view')) {
-            $solde = (float) \Modules\GestionCaisse\Entities\Compte::sum('current_balance');
+            $solde = (float) Compte::sum('current_balance');
             $stats[] = ['label' => 'Solde des comptes', 'value' => number_format($solde, 0, ',', ' ').' FCFA', 'icon' => 'briefcase', 'color' => 'dark'];
         }
 
@@ -181,14 +184,14 @@ class HomeController extends Controller
         ];
 
         $liens = array_values(array_filter($liens, function (array $lien) use ($user) {
-            return \Illuminate\Support\Facades\Route::has($lien['route'])
+            return Route::has($lien['route'])
                 && $user->canAccessRoute($lien['route']);
         }));
 
         // Un client voit ses propres factures
         $facturesClient = collect();
         if ($role === 'client') {
-            $client = \App\Models\Client::where('id_user', $user->id)->first();
+            $client = Client::where('id_user', $user->id)->first();
             if ($client) {
                 $facturesClient = Facture::where('id_client', $client->id)->latest('date_facturation')->take(10)->get();
             }

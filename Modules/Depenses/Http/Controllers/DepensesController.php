@@ -2,11 +2,17 @@
 
 namespace Modules\Depenses\Http\Controllers;
 
+use App\Support\TenantValidation;
+use Carbon\Carbon;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Modules\Depenses\Entities\Categorie;
 use Modules\Depenses\Entities\Depense;
+use Modules\GestionCaisse\Entities\Compte;
+use Modules\GestionCaisse\Entities\Transaction;
 use Modules\GestionCaisse\Facades\CompteServiceFacade;
 
 class DepensesController extends Controller
@@ -49,44 +55,35 @@ class DepensesController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'id_type_depense' => 'required|bail|numeric',
-            'nature_depense' => 'required|bail|string',
-            'prix_unitaire' => 'required|bail|numeric|min:0',
-            'date' => 'required|bail|date|before_or_equal:today',
-            'id_caisse' => 'nullable|exists:gestion_caisse_comptes,id',
+        $validated = $this->validateExpense($request);
 
-        ], [
-            'id_type_depense.required' => 'Veuillez entrer un type de dépense',
-            ' nature_depense.required' => 'Veuillez entrer la nature de la dépense',
-            ' prix_unitaire.required' => 'Veuillez entrer le montant de la dépense',
-            'date.required' => 'Veuillez entrer la date de la dépense',
-            'date.before_or_equal' => 'La date de la dépense ne peut pas être postérieure à aujourd\'hui',
-
-            'nature_depense.required' => 'Veuillez donné le motif de la dépense',
-        ]);
-        try {
+        DB::transaction(function () use ($validated) {
             $depense = new Depense;
-            $depense->montant = $request->input('prix_unitaire');
-            $depense->date_depense = $request->input('date');
-            $depense->id_saver = auth()->user()->id;
-            $depense->id_categorie = $request->input('id_type_depense');
-            $depense->motif_depense = $request->input('nature_depense');
-            $depense->fournisseur = $request->filled('fournisseur') ? $request->input('fournisseur') : 'autre';
-            $depense->description = $request->filled('description') ? $request->input('description') : 'Aucune description pour cette dépense';
-            if ($request->filled('id_caisse')) {
-                if (! CompteServiceFacade::verifierSoldeSuffisant($request->input('id_caisse'), $depense->montant, $depense->id)) {
-                    return redirect()->back()->withErrors(['error' => 'Le solde de la caisse est insuffisant pour cette dépense.']);
-                }
-                $depense->id_compte = $request->input('id_caisse');
-            }
-
+            $depense->montant = $validated['prix_unitaire'];
+            $depense->date_depense = $validated['date'];
+            $depense->id_saver = auth()->id();
+            $depense->id_categorie = $validated['id_type_depense'];
+            $depense->motif_depense = $validated['nature_depense'];
+            $depense->fournisseur = ($validated['fournisseur'] ?? null) ?: 'autre';
+            $depense->description = ($validated['description'] ?? null) ?: 'Aucune description pour cette dépense';
+            $depense->id_compte = $validated['id_caisse'] ?? null;
             $depense->save();
 
-            return redirect()->route('depenses.index')->with('message', 'Dépense enregistrée avec succès');
-        } catch (\Exception $e) {
-            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
-        }
+            if (
+                $depense->id_compte
+                && ! CompteServiceFacade::verifierSoldeSuffisant(
+                    $depense->id_compte,
+                    $depense->montant,
+                    $depense->id
+                )
+            ) {
+                throw ValidationException::withMessages([
+                    'id_caisse' => 'Le solde de la caisse est insuffisant pour cette dépense.',
+                ]);
+            }
+        });
+
+        return redirect()->route('depenses.index')->with('message', 'Dépense enregistrée avec succès');
     }
 
     /**
@@ -95,9 +92,12 @@ class DepensesController extends Controller
      * @param  int  $id
      * @return Renderable
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        return view('depenses::depense.show');
+        $depense = Depense::with('categorie_depense')->findOrFail($id);
+        $view = $request->ajax() ? 'depenses::depense.show' : 'depenses::depense.show-page';
+
+        return view($view, compact('depense'));
     }
 
     /**
@@ -108,7 +108,11 @@ class DepensesController extends Controller
      */
     public function edit($id)
     {
-        return view('depenses::depense.edit');
+        $depense = Depense::findOrFail($id);
+        $caisses = CompteServiceFacade::listComptes();
+        $categories = Categorie::orderBy('nom')->get();
+
+        return view('depenses::depense.edit', compact('depense', 'caisses', 'categories'));
     }
 
     /**
@@ -119,7 +123,36 @@ class DepensesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $validated = $this->validateExpense($request);
+
+        DB::transaction(function () use ($validated, $id) {
+            $depense = Depense::query()->lockForUpdate()->findOrFail($id);
+            $this->restoreCashMovement($depense);
+
+            $depense->montant = $validated['prix_unitaire'];
+            $depense->date_depense = $validated['date'];
+            $depense->id_categorie = $validated['id_type_depense'];
+            $depense->motif_depense = $validated['nature_depense'];
+            $depense->fournisseur = ($validated['fournisseur'] ?? null) ?: 'autre';
+            $depense->description = ($validated['description'] ?? null) ?: 'Aucune description pour cette dépense';
+            $depense->id_compte = $validated['id_caisse'] ?? null;
+            $depense->save();
+
+            if (
+                $depense->id_compte
+                && ! CompteServiceFacade::verifierSoldeSuffisant(
+                    $depense->id_compte,
+                    $depense->montant,
+                    $depense->id
+                )
+            ) {
+                throw ValidationException::withMessages([
+                    'id_caisse' => 'Le solde de la caisse est insuffisant pour cette dépense.',
+                ]);
+            }
+        });
+
+        return redirect()->route('depenses.index')->with('message', 'Dépense mise à jour avec succès.');
     }
 
     /**
@@ -130,36 +163,42 @@ class DepensesController extends Controller
      */
     public function destroy($id)
     {
-        //
+        DB::transaction(function () use ($id) {
+            $depense = Depense::query()->lockForUpdate()->findOrFail($id);
+            $this->restoreCashMovement($depense);
+            $depense->delete();
+        });
+
+        return redirect()->route('depenses.index')->with('message', 'Dépense supprimée avec succès.');
     }
 
     public function search(Request $request)
     {
+        $filters = $request->validate([
+            'date_debut' => ['nullable', 'date'],
+            'date_fin' => ['nullable', 'date', 'after_or_equal:date_debut'],
+        ]);
         $query = Depense::query();
 
-        // Filtrage par dates
-        if ($request->filled('date_debut')) {
-            $query->where('date_depense', '>=', $request->input('date_debut'));
+        if (! empty($filters['date_debut'])) {
+            $query->where('date_depense', '>=', Carbon::parse($filters['date_debut'])->startOfMinute());
         }
 
-        if ($request->filled('date_fin')) {
-            $query->where('date_depense', '<=', $request->input('date_fin'));
+        if (! empty($filters['date_fin'])) {
+            $query->where('date_depense', '<=', Carbon::parse($filters['date_fin'])->endOfMinute());
         }
 
-        // Filtrage par catégorie (id_type)
         if ($request->filled('id_type')) {
             $id_type = $request->input('id_type');
             $query->where('id_categorie', $id_type);
         }
 
-        // Filtrage par fournisseur
         if ($request->filled('fournisseur')) {
             $fournisseur = $request->input('fournisseur');
             $query->where('fournisseur', $fournisseur);
         }
 
-        // Exécution de la requête et récupération des résultats
-        $depenses = $query->paginate(30);
+        $depenses = $query->orderByDesc('date_depense')->paginate(20);
 
         return view('depenses::depense.infos', compact('depenses'))->render();
     }
@@ -167,13 +206,64 @@ class DepensesController extends Controller
     public function getPrixUnitaire($id)
     {
         // Cherche la catégorie de dépense par son ID
-        $categorie = Categorie::find($id);
+        $categorie = Categorie::findOrFail($id);
 
         // Si la catégorie est trouvée, retourne son prix unitaire, sinon retourne 0
-        if ($categorie) {
-            return response()->json(['prix_unitaire' => $categorie->prix_unitaire ?? 0]);
+        return response()->json(['prix_unitaire' => $categorie->prix_unitaire ?? 0]);
+    }
+
+    private function validateExpense(Request $request): array
+    {
+        return $request->validate([
+            'id_type_depense' => ['required', 'integer', TenantValidation::exists('categorie_depenses')],
+            'nature_depense' => ['required', 'string', 'max:255'],
+            'prix_unitaire' => ['required', 'integer', 'min:1'],
+            'date' => ['required', 'date', 'before_or_equal:today'],
+            'id_caisse' => ['nullable', 'integer', TenantValidation::exists('gestion_caisse_comptes')],
+            'fournisseur' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:5000'],
+        ], [
+            'id_type_depense.required' => 'Veuillez choisir un type de dépense.',
+            'nature_depense.required' => 'Veuillez indiquer le motif de la dépense.',
+            'prix_unitaire.required' => 'Veuillez entrer le montant de la dépense.',
+            'prix_unitaire.integer' => 'Le montant doit être un nombre entier.',
+            'prix_unitaire.min' => 'Le montant doit être supérieur à zéro.',
+            'date.before_or_equal' => 'La date de la dépense ne peut pas être postérieure à aujourd\'hui.',
+        ]);
+    }
+
+    private function restoreCashMovement(Depense $depense): void
+    {
+        $transactions = Transaction::query()
+            ->where('id_depense', $depense->getKey())
+            ->where('transaction_type', 'sortie')
+            ->lockForUpdate()
+            ->get();
+
+        if ($transactions->count() > 1 || ($depense->id_compte && $transactions->count() !== 1)) {
+            throw ValidationException::withMessages([
+                'error' => 'Cette dépense ne possède pas un mouvement de caisse cohérent; sa modification est bloquée pour protéger le solde.',
+            ]);
         }
 
-        return response()->json(['prix_unitaire' => 0]);
+        if ($transactions->isEmpty()) {
+            return;
+        }
+
+        $transaction = $transactions->first();
+
+        if (
+            ($depense->id_compte && (int) $depense->id_compte !== (int) $transaction->compte_id)
+            || round((float) $depense->montant, 2) !== round((float) $transaction->montant, 2)
+        ) {
+            throw ValidationException::withMessages([
+                'error' => 'Le mouvement de caisse ne correspond plus à cette dépense; sa modification est bloquée.',
+            ]);
+        }
+
+        $compte = Compte::query()->lockForUpdate()->findOrFail($transaction->compte_id);
+        $compte->current_balance += $transaction->montant;
+        $compte->save();
+        $transaction->delete();
     }
 }

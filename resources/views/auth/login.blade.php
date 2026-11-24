@@ -123,6 +123,11 @@
                                             <a href="{{ route('demo.login') }}" class="btn btn-success btn-block">
                                                 <i data-feather="play" class="mr-50"></i> Voir la démo
                                             </a>
+                                            @if(request()->cookie('farmapp_demo_access') || request()->cookie('farmapp_demo_recovery'))
+                                                <a href="{{ route('demo.subscribe') }}" class="btn btn-outline-primary btn-block mt-1">
+                                                    Voir les forfaits
+                                                </a>
+                                            @endif
                                         </div>
                                     </div>
 

@@ -18,10 +18,17 @@
         </div>
 
         <div class="content-body">
+            @if($demoProfile)
+                <div class="alert alert-warning" role="alert">
+                    <i data-feather="info" class="mr-50"></i>
+                    Vous consultez la démo en mode client : la modification du profil est désactivée.
+                </div>
+            @endif
             <div class="card">
                 <div class="card-body">
                     <form action="{{ route('client.profil.update') }}" method="POST">
                         @csrf
+                        <fieldset @if($demoProfile) disabled="disabled" @endif>
                         <div class="row">
                             <div class="col-md-6 col-12">
                                 <div class="form-group">
@@ -54,10 +61,13 @@
 
                         <div class="d-flex justify-content-between align-items-center">
                             <a href="{{ route('client.dashboard') }}" class="btn btn-outline-secondary">Annuler</a>
+                            @if(!$demoProfile)
                             <button type="submit" class="btn btn-success">
                                 <i data-feather="save" class="mr-50"></i> Enregistrer
                             </button>
+                            @endif
                         </div>
+                        </fieldset>
                     </form>
                 </div>
             </div>

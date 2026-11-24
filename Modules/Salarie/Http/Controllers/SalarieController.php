@@ -24,10 +24,12 @@ class SalarieController extends Controller
             'mois' => 'Mois',
             'annee' => 'Année(s)',
         ];
-        $salaries = Salaries::where('nom', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('adresse', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('telephone', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('telephone_secondaire', 'like', '%'.$request->input('recherche').'%')
+        $salaries = Salaries::where(function ($query) use ($request) {
+            $query->where('nom', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('adresse', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('telephone', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('telephone_secondaire', 'like', '%'.$request->input('recherche').'%');
+        })
             ->orderBy('updated_at', 'desc')
             ->paginate(20);
         session()->flash('search', $request->input('recherche'));

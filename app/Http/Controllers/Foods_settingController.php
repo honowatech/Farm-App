@@ -7,13 +7,14 @@ use App\Models\FoodSettingVersion;
 use App\Models\Matiere_premiere;
 use App\Models\Type_animal;
 use App\Models\Unite;
+use App\Support\TenantValidation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; // Utilise le nouveau modèle parent
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\MessageBag;
 
- // Utilise le nouveau modèle de version
+// Utilise le nouveau modèle de version
 
 class Foods_settingController extends Controller
 {
@@ -57,13 +58,13 @@ class Foods_settingController extends Controller
     {
         // 1. Validation des données du formulaire
         $validator = Validator::make($request->all(), [
-            'type' => 'required|exists:type_animals,id',
-            'aliment' => 'required|exists:matiere_premieres,id',
+            'type' => ['required', TenantValidation::exists('type_animals')],
+            'aliment' => ['required', TenantValidation::exists('matiere_premieres')],
             'invoice' => 'required|array|min:1',
             'invoice.*.age_min' => 'required|integer|min:0',
             'invoice.*.age_max' => 'required|integer|min:0|gte:invoice.*.age_min',
             'invoice.*.qte' => 'required|numeric|min:0.01',
-            'invoice.*.unite' => 'required|exists:unite,id',
+            'invoice.*.unite' => ['required', TenantValidation::exists('unite')],
             'invoice.*.frequency' => 'required|integer|min:1',
             'invoice.*.period' => 'required|string',
         ], [
@@ -229,11 +230,11 @@ class Foods_settingController extends Controller
         $rules = [
             'invoice' => 'required|array|min:1',
             // L'ID doit être optionnel (pour les nouvelles lignes) mais s'il est présent, il doit exister.
-            'invoice.*.id' => 'nullable|integer|exists:food_setting_versions,id',
+            'invoice.*.id' => ['nullable', 'integer', TenantValidation::exists('food_setting_versions')],
             'invoice.*.age_min' => 'required|integer|min:0',
             'invoice.*.age_max' => 'required|integer|min:0|gte:invoice.*.age_min',
             'invoice.*.qte' => 'required|numeric|min:0.01',
-            'invoice.*.unite' => 'required|exists:unite,id',
+            'invoice.*.unite' => ['required', TenantValidation::exists('unite')],
             'invoice.*.frequency' => 'required|integer|min:1',
             'invoice.*.period' => 'required|string',
         ];

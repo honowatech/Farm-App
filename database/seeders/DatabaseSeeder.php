@@ -11,10 +11,10 @@ class DatabaseSeeder extends Seeder
      * Seed the application's database.
      *
      * L'ordre est important :
-     * 1. Phase5DemoSeeder ne s'exécute que sur une base vide (référentiels de base).
-     * 2. RolePermissionSeeder crée les 10 profils et leurs permissions.
-     * 3. RoleUsersSeeder crée un compte de démonstration par profil.
-     * 4. MonthActivitySeeder ajoute 30 jours d'activité, sans écraser l'existant.
+     * 1. RolePermissionSeeder crée les profils et leurs permissions.
+     * 2. RoleUsersSeeder rattache les comptes de démonstration au tenant démo.
+     * 3. Phase5DemoSeeder crée les référentiels du tenant démo sur une base vide.
+     * 4. MultiTenantDemoSeeder ajoute des entreprises de démonstration isolées.
      */
     public function run(): void
     {
@@ -26,16 +26,15 @@ class DatabaseSeeder extends Seeder
             RoleUsersSeeder::class,
         ]);
 
-        // 2. Référentiels de base (uniquement sur base vide).
+        // 2. Référentiels de base (uniquement sur base vide), dans le tenant démo.
         if (DB::table('bandes')->count() === 0) {
             $this->call(Phase5DemoSeeder::class);
         }
 
-        // 3. Forfaits, entreprises de démonstration et activité métier.
+        // 3. Forfaits et entreprises de démonstration isolées.
         $this->call([
             PlanSeeder::class,
             MultiTenantDemoSeeder::class,
-            MonthActivitySeeder::class,
         ]);
     }
 }

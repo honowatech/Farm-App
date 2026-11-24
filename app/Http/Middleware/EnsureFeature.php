@@ -29,7 +29,14 @@ class EnsureFeature
         $tenant = $this->tenantContext->tenant();
         $feature = FeatureGate::forRoute($request->route()?->getName());
 
-        if (! FeatureGate::allows($tenant, $feature)) {
+        $allowed = FeatureGate::allows($tenant, $feature);
+
+        if (! $allowed && $request->isMethodSafe()) {
+            $trialPlan = $tenant->expiredTrialSubscription()?->plan;
+            $allowed = $trialPlan?->hasFeature($feature) ?? false;
+        }
+
+        if (! $allowed) {
             return $this->deny($request, 'Cette fonctionnalité n\'est pas incluse dans votre forfait.');
         }
 

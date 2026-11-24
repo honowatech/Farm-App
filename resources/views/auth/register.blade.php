@@ -74,6 +74,11 @@
                                 </a>
                                 <h4 class="mb-1 text-center card-title" style="color:black;">Créer votre entreprise 👋</h4>
                                 <p class="mb-2 text-center card-text" style="color:black;">Choisissez un forfait, créez votre compte et démarrez.</p>
+                                @if($fromDemo)
+                                    <div class="alert alert-info" role="status">
+                                        Choisissez un forfait pour créer votre espace FarmApp.
+                                    </div>
+                                @endif
 
                                 <div class="step-indicator">
                                     <div class="dot active" id="dot-1">1</div>
@@ -88,7 +93,7 @@
                                     <input type="hidden" name="plan_id" id="plan_id" value="{{ old('plan_id') }}">
                                     <input type="hidden" name="billing_mode" id="billing_mode" value="">
                                     <input type="hidden" name="payment_transaction_id" id="payment_transaction_id" value="">
-
+                                    <input type="hidden" name="payment_registration_token" id="payment_registration_token" value="">
                                     {{-- Étape 1 : choix du forfait --}}
                                     <div class="step-pane active" id="step-1">
                                         <div class="row">
@@ -320,7 +325,7 @@
                 if (res.ok && res.transaction_id) {
                     var extra = 'Réf. ' + res.external_reference + (res.provider_slug ? ' · ' + res.provider_slug : '');
                     showPaymentStatus('pending', extra);
-                    pollPayment(res.transaction_id);
+                    pollPayment(res.transaction_id, res.registration_token);
                 } else {
                     showPaymentStatus('failed', res.message || 'Erreur lors de l\'initiation.');
                 }
@@ -331,9 +336,12 @@
             });
         }
 
-        function pollPayment(transactionId) {
+        function pollPayment(transactionId, registrationToken) {
             pollingTimer = setInterval(function () {
-                $.post('{{ url("/register/pay/status") }}/' + transactionId, { _token: '{{ csrf_token() }}' }, function (res) {
+                $.post('{{ url("/register/pay/status") }}/' + transactionId, {
+                    _token: '{{ csrf_token() }}',
+                    registration_token: registrationToken
+                }, function (res) {
                     if (res.final) {
                         clearInterval(pollingTimer);
                         pollingTimer = null;
@@ -341,6 +349,7 @@
                             showPaymentStatus('successful');
                             $('#billing_mode').val('payment');
                             $('#payment_transaction_id').val(transactionId);
+                            $('#payment_registration_token').val(registrationToken);
                             setTimeout(function () { $('#register-form').submit(); }, 1200);
                         } else {
                             var extra = 'Réf. ' + (res.external_reference || '');
@@ -399,6 +408,7 @@
             $('#btn-trial').on('click', function () {
                 $('#billing_mode').val('trial');
                 $('#payment_transaction_id').val('');
+                $('#payment_registration_token').val('');
                 $('#register-form').submit();
             });
 

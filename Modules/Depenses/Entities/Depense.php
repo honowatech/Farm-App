@@ -13,7 +13,7 @@ class Depense extends Model
 
     protected $visible = ['montant', 'fournisseur', 'description', 'date_depense', 'id_saver', 'id_categorie', 'motif_depense'];
 
-    protected $table = 'depense_depenses';
+    protected $table = 'depenses';
 
     public $timestamps = true;
 
@@ -21,6 +21,6 @@ class Depense extends Model
 
     public function categorie_depense()
     {
-        return $this->belongsTo('Modules\Depenses\Entities\Categorie', 'id_categorie');
+        return $this->belongsTo(Categorie::class, 'id_categorie');
     }
 }

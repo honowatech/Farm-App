@@ -14,10 +14,12 @@ class AgentController extends Controller
      */
     public function index(Request $request)
     {
-        $agents = Agent::where('nom', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('adresse', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('telephone', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('telephone_secondaire', 'like', '%'.$request->input('recherche').'%')
+        $agents = Agent::where(function ($query) use ($request) {
+            $query->where('nom', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('adresse', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('telephone', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('telephone_secondaire', 'like', '%'.$request->input('recherche').'%');
+        })
             ->orderBy('updated_at', 'desc')
             ->paginate(20);
         session()->flash('search', $request->input('recherche'));

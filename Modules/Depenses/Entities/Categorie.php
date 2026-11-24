@@ -12,12 +12,12 @@ class Categorie extends Model
 
     protected $visible = ['nom', 'description', 'frequence', 'description', 'prix_unitaire'];
 
-    protected $table = 'depense_categorie_depenses';
+    protected $table = 'categorie_depenses';
 
     public $timestamps = true;
 
     public function categorie()
     {
-        return $this->hasMany('Modules\Depenses\Entities\Depense');
+        return $this->hasMany(Depense::class, 'id_categorie');
     }
 }

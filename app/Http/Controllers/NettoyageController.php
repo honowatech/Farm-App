@@ -23,9 +23,11 @@ class NettoyageController extends Controller
             array_push($verification, 0);
         }
         $valeur_verifie = implode($verification);
-        $nettoyages = Nettoyage::where('date', 'like', '%'.$request->input('recherche').'%')
-            ->orWhere('verif', 'like', '%'.$valeur_verifie.'%')
-            ->orWhere('created_at', 'like', '%'.$request->input('recherche').'%')
+        $nettoyages = Nettoyage::where(function ($query) use ($request, $valeur_verifie) {
+            $query->where('date', 'like', '%'.$request->input('recherche').'%')
+                ->orWhere('verif', 'like', '%'.$valeur_verifie.'%')
+                ->orWhere('created_at', 'like', '%'.$request->input('recherche').'%');
+        })
             ->orderBy('created_at', 'desc')
             ->paginate(20);
         session()->flash('search', $request->input('recherche'));

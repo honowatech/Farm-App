@@ -23,17 +23,17 @@
 	                                        </td>
                                             <td>
                                                 <span class="font-weight-bolder">
-                                                    {{ucfirst($ramassage->bande->nom)}}
+                                                    {{$ramassage->bande?->nom ?? '—'}}
                                                 </span>
                                             </td>
                                             <td>
                                                 <span class="font-weight-bolder">
-                                                    {{ucfirst($ramassage->produit->nom)}}
+                                                    {{$ramassage->produit?->nom ?? '—'}}
                                                 </span>
                                             </td>
                                             <td>
                                                 <span class="font-weight-bolder">
-                                                    {{ucfirst($ramassage->produit->type_animal->nom)}}
+                                                    {{$ramassage->produit?->type_animal?->nom ?? '—'}}
                                                 </span>
                                             </td>
                                             <td>

@@ -2,14 +2,12 @@
 
 namespace App\Models;
 
-use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 class PaymentTransaction extends Model
 {
-    use BelongsToTenant;
     use LogsActivity;
 
     protected $table = 'payment_transactions';
@@ -26,6 +24,7 @@ class PaymentTransaction extends Model
         'client_name',
         'receipt_url',
         'response',
+        'registration_token_hash',
     ];
 
     protected $visible = [

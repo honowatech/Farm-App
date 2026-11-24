@@ -5,7 +5,7 @@
                 <label for="libelle">Libelle</label>
                 <span class="text-danger cursor-pointer" title="Obligatoire">*</span>
                 <div class="form-group">
-                    <input type="text" id="libelle" class="form-control" name="libelle" placeholder="Libellé" value="{{$unite->libelle}}" / required>
+                    <input type="text" id="libelle" class="form-control" name="libelle" placeholder="Libellé" maxlength="255" value="{{$unite->libelle}}" required>
                 </div>
                 <small class="alert alert-danger"></small>
             </div>
@@ -15,7 +15,7 @@
                 <label for="abrege">Abrege</label>
                 <span class="text-danger cursor-pointer" title="Obligatoire">*</span>
                 <div class="form-group">
-                    <input type="text" id="abrege" class="form-control " name="abrege" placeholder="Abrégé" value="{{$unite->abrege}}" / required>
+                    <input type="text" id="abrege" class="form-control " name="abrege" placeholder="Abrégé" maxlength="255" value="{{$unite->abrege}}" required>
                 </div>
                 <small class="alert alert-danger"></small>
             </div>

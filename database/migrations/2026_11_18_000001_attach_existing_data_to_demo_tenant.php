@@ -17,7 +17,7 @@ return new class extends Migration
         'derive_produit', 'detail_fournisseur', 'factures', 'food_setting_versions',
         'foods_setting', 'fournisseurs', 'ligne_factures', 'logo', 'matiere_premieres',
         'mortalite_causes', 'mortalites', 'nettoyages', 'nutritions',
-        'paiement_salaires', 'payment_transactions', 'produits', 'programmes_vaccination',
+        'paiement_salaires', 'produits', 'programmes_vaccination',
         'ramassages', 'salaries', 'seance_de_vaccination', 'stock_matiere_premieres',
         'stock_produits', 'type_animals', 'type_produits', 'unite', 'ventes', 'veterinaires',
         'depense_depenses', 'depense_categorie_depenses',
@@ -64,8 +64,9 @@ return new class extends Migration
                     DB::table($table)->where('tenant_id', $demoId)->update(['tenant_id' => null]);
                 }
             }
-
-            DB::table('tenants')->where('id', $demoId)->delete();
         }
+
+        // The demo tenant may have existed before this migration or may now be
+        // referenced by subscriptions and memberships; do not delete it here.
     }
 };

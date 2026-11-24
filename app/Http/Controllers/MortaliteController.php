@@ -6,6 +6,7 @@ use App\Models\Bande;
 use App\Models\Mortalite;
 use App\Models\MortaliteCause;
 use App\Services\MortaliteService;
+use App\Support\TenantValidation;
 use Illuminate\Http\Request;
 
 class MortaliteController extends Controller
@@ -36,10 +37,10 @@ class MortaliteController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'id_bande' => 'required|exists:bandes,id',
+            'id_bande' => ['required', TenantValidation::exists('bandes')],
             'date' => 'required|date',
             'nombre_morts' => 'required|integer|min:0',
-            'id_cause' => 'nullable|exists:mortalite_causes,id',
+            'id_cause' => ['nullable', TenantValidation::exists('mortalite_causes')],
             'observation' => 'nullable|string|max:1000',
         ]);
 
@@ -69,10 +70,10 @@ class MortaliteController extends Controller
     public function update(Request $request, Mortalite $mortalite)
     {
         $data = $request->validate([
-            'id_bande' => 'required|exists:bandes,id',
+            'id_bande' => ['required', TenantValidation::exists('bandes')],
             'date' => 'required|date',
             'nombre_morts' => 'required|integer|min:0',
-            'id_cause' => 'nullable|exists:mortalite_causes,id',
+            'id_cause' => ['nullable', TenantValidation::exists('mortalite_causes')],
             'observation' => 'nullable|string|max:1000',
         ]);
 

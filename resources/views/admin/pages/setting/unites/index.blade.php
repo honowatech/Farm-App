@@ -10,17 +10,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($unites as $unite)
+                        @forelse($unites as $unite)
                         <tr class="text-center">
                             <td class="border">
-                                <span>
-                                    {{ucfirst($unite->libelle)}}                   
-                                </span>
+                                {{ ucfirst($unite->libelle) }}
                             </td>
                             <td class="border">
-                                <span class="font-weight-bolder">
-                                    {{ucfirst($unite->abrege)}}               
-                                </span>
+                                <span class="font-weight-bolder">{{ ucfirst($unite->abrege) }}</span>
                             </td>
                             <td class="border">
                                 <div>
@@ -32,17 +28,23 @@
                                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                                             <span class="ml-1">Editer</span>
                                         </a>
-                                        <span class="text-danger dropdown-item" data-toggle="modal" onclick="remplir('{{route('unite.destroy',$unite->id)}}','{{$unite->libelle}}','Supprimer','button_footer')" data-target="#danger">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                            <span class="ml-1 text-danger" type="button">
-                                                Supprimer
-                                            </span>
-                                        </span>
+                                        <form method="POST" action="{{ route('unite.destroy', $unite->id) }}" onsubmit="return confirm('Supprimer cette unité ?')" class="m-0">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i data-feather="trash"></i>
+                                                <span class="ml-1">Supprimer</span>
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </td>
                         </tr>
-                        @endforeach
+                        @empty
+                        <tr>
+                            <td colspan="3" class="py-2 text-center text-muted">Aucune unité enregistrée pour cette entreprise.</td>
+                        </tr>
+                        @endforelse
                 </tbody>
             </table>
         </div>
