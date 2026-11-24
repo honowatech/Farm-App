@@ -35,7 +35,7 @@
                                     <h3 class="card-title">Formulaire de création</h3>
                                 </div>
                                 <div class="card-body">
-                                    <form class="form" action="{{route('bande.store')}}" method="POST">
+                                    <form data-tour-step="fields" class="form" action="{{route('bande.store')}}" method="POST">
                                                     @csrf
                                                     <div class="mx-auto row col-lg-10">
                                                         <!-- Bâtiment -->
@@ -177,7 +177,7 @@
                                                     </div>
                                             </div>
                                             <!-- Boutons -->
-                                            <div class="row col-12">
+                                            <div data-tour-step="actions" class="row col-12">
                                                 <div class="mx-auto text-center d-none d-md-block col-lg-8">
                                                     <button type="reset" class="btn btn-danger col-4">Effacer</button>
                                                     <button type="submit" class="btn btn-success col-4">Enregistrer</button>

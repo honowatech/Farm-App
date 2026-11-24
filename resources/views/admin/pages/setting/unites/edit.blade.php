@@ -21,7 +21,7 @@
             </div>
         </div>
     </div>
-    <div class="row col-12 mx-auto">
+    <div data-tour-step="actions" class="row col-12 mx-auto">
         <div class="text-center col-12 mx-auto">
             <button type="submit" id="save_unite" class="btn col-8 mx-auto btn-success mt-1" onclick="savegarder('save_unite','PATCH','result_save',['libelle','abrege'],'{{route('unite.update',$unite->id)}}',['info_gestion','','{{route('unite.index')}}','GET'],'edition')"> 
                 Enregistrer

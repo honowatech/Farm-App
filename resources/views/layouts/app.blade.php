@@ -202,6 +202,21 @@
         $visitorDemo = $tenantContext->hasTenant()
             && $tenantContext->tenant()->is_demo
             && (string) $tenantContext->id() === (string) session('demo_workspace_tenant_id');
+
+        // Tour interactif de la page courante (spotlight), le cas échéant.
+        $currentRouteName = \Illuminate\Support\Facades\Route::currentRouteName();
+        $featureTour = $tenantContext->hasTenant()
+            ? \App\Support\FeatureTour::forRoute($currentRouteName)
+            : null;
+        $featureTourAutoStart = false;
+        if ($featureTour) {
+            $featureTourAutoStart = ! \App\Models\TenantOnboardingProgress::query()
+                ->where('tenant_id', $tenantContext->id())
+                ->where('user_id', auth()->id())
+                ->where('guide_key', 'tour:'.$currentRouteName)
+                ->whereNotNull('completed_at')
+                ->exists();
+        }
     @endphp
     <!-- BEGIN: Header-->
     <nav class="header-navbar navbar navbar-expand-lg align-items-center floating-nav navbar-light navbar-shadow shadow">
@@ -363,6 +378,9 @@
         </aside>
     @endif
     <button class="btn btn-primary btn-icon scroll-top" type="button" aria-label="Retour en haut"><i data-feather="arrow-up"></i></button>
+    @if($featureTour)
+    <button class="btn btn-outline-primary btn-icon" type="button" id="farmTourTrigger" title="Visite guidée : {{ $featureTour['title'] }}" aria-label="Lancer la visite guidée" style="position: fixed; right: 1rem; bottom: 4rem; z-index: 1030; border-radius: 50%;" onclick="window.FarmAppTour && window.FarmAppTour.start && window.FarmAppTour.start()"><i data-feather="help-circle"></i></button>
+    @endif
     <!-- END: Footer-->
     <!-- BEGIN: Vendor JS-->
     <script src="{{ asset('app-assets/vendors/js/vendors.min.js') }}"></script>
@@ -1161,6 +1179,7 @@
             }
         })();
     </script>
+    @include('partials.feature-tour', ['tour' => $featureTour, 'autoStart' => $featureTourAutoStart])
 </body>
 <!-- END: Body-->
 </html>

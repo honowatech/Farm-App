@@ -34,7 +34,7 @@
                                 <h3 class="card-title">Formulaire de création</h3>
                             </div>
                             <div class="card-body">
-                                <form class="form" action="{{ route('mortalite.store') }}" method="POST" data-offline-queue="1" data-redirect="{{ route('mortalite.index') }}">
+                                <form data-tour-step="fields" class="form" action="{{ route('mortalite.store') }}" method="POST" data-offline-queue="1" data-redirect="{{ route('mortalite.index') }}">
                                     @csrf
                                     <div class="mx-auto row col-lg-10">
                                         <div class="mx-auto col-md-6 col-12">
@@ -115,7 +115,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="row col-12">
+                                    <div data-tour-step="actions" class="row col-12">
                                         <div class="mx-auto text-center d-none d-md-block col-lg-8 col-md-12 col-12">
                                             <a href="{{ route('mortalite.index') }}" class="mt-1 btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-danger mt-md-2 mr-md-4">
                                                 <i class="mr-1" data-feather="x"></i> Annuler

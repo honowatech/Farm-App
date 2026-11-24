@@ -29,10 +29,10 @@
 
             <div class="content-body">
                 <div class="row justify-content-between bg-light-secondary" >
-                    <a class="m-1 btn btn-secondary btn-gradient-secondary" href="{{route('bande.create')}}">
+                    <a class="m-1 btn btn-secondary btn-gradient-secondary" data-tour-step="create" href="{{route('bande.create')}}">
                         <i data-feather='plus' style="width: 20px;height: 20px;"></i> Nouvelle bande
                     </a>
-                        <form class="mt-1 col-12" id="search" method="GET">
+                        <form class="mt-1 col-12" id="search" method="GET" data-tour-step="search">
                             @csrf
                             <div class="row">
 
@@ -73,7 +73,7 @@
                     </div>
                 </div>
                 <!-- Table without card start -->
-                <div class="row" id="table-without-card">
+                <div class="row" id="table-without-card" data-tour-step="table">
                         <div class="table-responsive" id="results">
                             <table class="table">
                                 <thead>

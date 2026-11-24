@@ -27,7 +27,7 @@
                 <div class="content-body">
                     <div class="row bg-light-secondary">
                         <div class="col-12">
-                            <a class="btn btn-secondary btn-gradient-secondary m-1" href="{{ route('transfert.create') }}">
+                            <a data-tour-step="create" class="btn btn-secondary btn-gradient-secondary m-1" href="{{ route('transfert.create') }}">
                                 <i data-feather='plus' class="text-success" style="width: 20px;height: 20px;"></i> Nouveau transfert
                             </a>
                         </div>
@@ -104,7 +104,7 @@
                 </div>
 
                 <!-- Table without card start -->
-	               <div class="row" id="table-without-card">
+	               <div data-tour-step="table" class="row" id="table-without-card">
                         <div class="table-responsive" id="results">
                             <table class="table">
                                 <thead>

@@ -30,7 +30,7 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body">
-                                <form class="form mt-3" action="{{ route('categorie.store') }}" method="POST">
+                                <form data-tour-step="fields" class="form mt-3" action="{{ route('categorie.store') }}" method="POST">
                                     @csrf
                                     <div class="row col-lg-10 mx-auto">
                                         <div class="col-md-8 col-12 mx-auto">
@@ -108,7 +108,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="row col-12">
+                                    <div data-tour-step="actions" class="row col-12">
                                         <div class="d-none d-md-block text-center col-bg-5 col-lg-8 col-md-12 col-12 mx-auto">
                                              <button type="reset" class="btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-danger mt-1 mt-md-2 mr-md-4">
                                                 <i class="mr-1" data-feather='x'></i> {{ __('depenses::translated.Effacer') }}

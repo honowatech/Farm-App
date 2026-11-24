@@ -68,6 +68,25 @@ class OnboardingController extends Controller
         return response()->json(['completed' => true]);
     }
 
+    /**
+     * Marque comme terminé le tour interactif d'une page (clé `tour:{route}`).
+     */
+    public function completeTour(string $route, TenantContext $tenantContext): JsonResponse
+    {
+        abort_unless(array_key_exists($route, config('onboarding.tours', [])), 404);
+
+        TenantOnboardingProgress::query()->updateOrCreate(
+            [
+                'tenant_id' => $tenantContext->id(),
+                'user_id' => auth()->id(),
+                'guide_key' => 'tour:'.$route,
+            ],
+            ['completed_at' => now()]
+        );
+
+        return response()->json(['completed' => true]);
+    }
+
     private function modules(): array
     {
         return [

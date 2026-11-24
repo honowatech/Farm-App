@@ -29,8 +29,8 @@
 
             <div class="content-body">
                 <div class="row justify-content-between bg-light-secondary" >
-                    <a class="m-1 btn btn-secondary btn-gradient-secondary" href="{{route('seanceVaccination.create')}}"><i data-feather='plus' style="width: 20px;height: 20px;"></i> Nouvelle vaccination</a>
-                        <form action="{{ route('seanceVaccination.index') }}" class="mt-1 col-lg-3" id="search" method="GET">
+                    <a data-tour-step="create" class="m-1 btn btn-secondary btn-gradient-secondary" href="{{route('seanceVaccination.create')}}"><i data-feather='plus' style="width: 20px;height: 20px;"></i> Nouvelle vaccination</a>
+                        <form data-tour-step="search" action="{{ route('seanceVaccination.index') }}" class="mt-1 col-lg-3" id="search" method="GET">
                             @csrf
                             <div class="form-group">
                                 <div class="input-group input-group-merge">
@@ -45,7 +45,7 @@
                     </div>
                 </div>
                 <!-- Table without card start -->
-                <div class="row" id="table-without-card">
+                <div data-tour-step="table" class="row" id="table-without-card">
                         <div class="table-responsive">
                             <table class="table">
                                 <thead>

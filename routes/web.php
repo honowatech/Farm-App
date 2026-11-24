@@ -182,6 +182,11 @@ Route::middleware(['auth', 'tenant.resolve', 'tenant.member', 'role:admin'])
         Route::post('/progression/{guide}', [OnboardingController::class, 'complete'])->name('complete');
     });
 
+// Fin d'un tour interactif de page, accessible à tous les profils authentifiés.
+Route::post('/guide/tour/{route}/terminer', [OnboardingController::class, 'completeTour'])
+    ->middleware(['auth', 'tenant.resolve', 'tenant.member'])
+    ->name('tour.complete');
+
 Route::middleware(['auth', 'tenant.resolve', 'tenant.member', 'role:admin'])
     ->prefix('abonnement')
     ->name('tenant.subscription.')

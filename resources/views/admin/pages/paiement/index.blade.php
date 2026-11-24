@@ -28,7 +28,7 @@
                 </div>
                 <div class="card-body">
                     <div data-ajax-table>
-                    <div class="table-responsive">
+                    <div data-tour-step="table" class="table-responsive">
                         <table class="table">
                             <thead>
                                 <tr>

@@ -40,7 +40,7 @@
                                 <h4 class="card-title">Formulaire d'Ajout</h4>
                             </div>
                             <div class="card-body">
-                                <form action="{{route('derive_produit.store')}}" method="POST" class="invoice-repeater">
+                                <form data-tour-step="fields" action="{{route('derive_produit.store')}}" method="POST" class="invoice-repeater">
                                     @csrf
                                     <input type="hidden" name="produit" value="{{$produit->id}}">
                                     <div class="col-md-10 col-12 mx-auto">
@@ -124,7 +124,7 @@
                                                     </div>
                                                 </div>
                                     </div>
-                                    <div class="row col-12">
+                                    <div data-tour-step="actions" class="row col-12">
                                         <div class="d-none d-md-block text-center col-bg-5 col-lg-8 col-md-12 col-12 mx-auto">
                                              <button type="reset" class="btn col-8 col-sm-7 col-lg-5  col-xl-3 col-md-4 btn-danger mt-1 mt-md-2 mr-md-4">
                                                 <i class="mr-1" data-feather='x'></i> Effacer

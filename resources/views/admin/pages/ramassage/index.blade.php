@@ -28,10 +28,10 @@
     <div class="pr-1 pl-1 card">
             <div class="content-body">
                 <div class="row justify-content-between bg-light-secondary" >
-                    <a class="m-1 btn btn-secondary btn-gradient-secondary" href="{{route('ramassage.create')}}">
+                    <a data-tour-step="create" class="m-1 btn btn-secondary btn-gradient-secondary" href="{{route('ramassage.create')}}">
                         <i data-feather='plus' style="width: 20px;height: 20px;"></i> Nouveau ramassage
                     </a>
-                        <form class="mt-1 col-12" id="search" method="GET">
+                        <form data-tour-step="search" class="mt-1 col-12" id="search" method="GET">
                             @csrf
                             <div class="mx-auto row">
                                 <!-- type -->
@@ -93,7 +93,7 @@
                     </div>
                 </div>
                 <!-- Table without card start -->
-                <div class="row" id="table-without-card">
+                <div data-tour-step="table" class="row" id="table-without-card">
                         <div class="table-responsive" id="results">
                             <table class="table">
                                 <thead>

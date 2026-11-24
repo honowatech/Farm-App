@@ -1,5 +1,5 @@
    <h5>Nouveau logo</h5>
-   <form action="{{route('logo.store')}}" method="POST" enctype="multipart/form-data">
+   <form data-tour-step="fields" action="{{route('logo.store')}}" method="POST" enctype="multipart/form-data">
     @csrf
         <div class="row col-12 mx-auto">
             <div class="col-12">
@@ -19,7 +19,7 @@
                 </div>
             </div>
         </div>
-        <div class="row col-12 mx-auto">
+        <div data-tour-step="actions" class="row col-12 mx-auto">
             <div class="text-center col-12 mx-auto">
                 <button type="submit" id="upload_file" class="btn col-8 mx-auto btn-success mt-1" > 
                     Enregistrer

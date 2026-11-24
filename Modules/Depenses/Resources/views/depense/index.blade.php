@@ -32,12 +32,12 @@
                     <div id="searchError" class="alert alert-danger d-none" role="alert"></div>
                     <div class="row bg-light-secondary">
                         <div class="col-12">
-                            <a class="btn btn-secondary btn-gradient-secondary m-1" href="{{ route('depenses.create') }}">
+                            <a data-tour-step="create" class="btn btn-secondary btn-gradient-secondary m-1" href="{{ route('depenses.create') }}">
                                 <i data-feather='plus' style="width: 20px;height: 20px;"></i> Nouvelle dépense
                             </a>
                         </div>
 
-                        <form class="col-12 mt-1" id="search" method="GET">
+                        <form data-tour-step="search" class="col-12 mt-1" id="search" method="GET">
                             @csrf
                             <div class="row mx-auto">
 
@@ -111,7 +111,7 @@
                 </div>
 
                 <!-- Table without card start -->
-                <div class="row" id="table-without-card">
+                <div data-tour-step="table" class="row" id="table-without-card">
                     <div class="table-responsive" id="results">
                         <table class="table">
                             <thead>

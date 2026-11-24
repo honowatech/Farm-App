@@ -32,7 +32,7 @@
                             <h3 class="card-title">{{ __('depenses::translated.Formulaire de création') }}</h3>
                         </div>
                         <div class="card-body">
-                            <form id="expenseForm" class="form" action="{{ route('depenses.store') }}" method="POST">
+                            <form data-tour-step="fields" id="expenseForm" class="form" action="{{ route('depenses.store') }}" method="POST">
                                 @csrf
                                 <div class="row col-lg-8 mx-auto" id='replace'>
                                     <div class="form-group col-12 py-1">
@@ -128,7 +128,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row col-12">
+                                <div data-tour-step="actions" class="row col-12">
                                     <div class="d-none d-md-block text-center col-bg-5 col-lg-8 col-md-12 col-12 mx-auto">
                                         <button type="reset" class="btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-danger mt-1 mt-md-2 mr-md-4">
                                             <i class="mr-1" data-feather='x'></i> {{ __('depenses::translated.Effacer') }}

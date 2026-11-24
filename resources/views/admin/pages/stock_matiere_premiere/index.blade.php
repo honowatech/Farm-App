@@ -19,7 +19,7 @@
             <div class="col-12 col-xl-5">
                 <div class="card">
                     <div class="card-header"><h4 class="card-title">État des stocks</h4></div>
-                    <div class="table-responsive">
+                    <div data-tour-step="table" class="table-responsive">
                         <table class="table">
                             <thead><tr><th>Matière première</th><th class="text-right">Disponible</th><th class="text-right">Seuil</th></tr></thead>
                             <tbody>
@@ -42,7 +42,7 @@
                 <div class="card">
                     <div class="card-header"><h4 class="card-title">Historique des mouvements</h4></div>
                     <div class="card-body">
-                        <form method="GET" class="mb-1">
+                        <form data-tour-step="search" method="GET" class="mb-1">
                             <div class="input-group">
                                 <input type="search" name="recherche" value="{{ request('recherche') }}" class="form-control" placeholder="Rechercher une matière première">
                                 <div class="input-group-append"><button class="btn btn-primary" type="submit">Rechercher</button></div>

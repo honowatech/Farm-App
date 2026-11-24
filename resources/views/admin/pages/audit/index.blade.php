@@ -22,7 +22,7 @@
                     <h4 class="card-title">Journal d'audit</h4>
                 </div>
                 <div class="card-body">
-                    <form method="GET" class="mb-1">
+                    <form data-tour-step="search" method="GET" class="mb-1">
                         <div class="row">
                             <div class="col-12 col-md-3 form-group">
                                 <label for="evenement">Action</label>
@@ -37,7 +37,7 @@
                     </form>
 
                     <div data-ajax-table>
-                    <div class="table-responsive">
+                    <div data-tour-step="table" class="table-responsive">
                         <table class="table">
                             <thead>
                                 <tr>

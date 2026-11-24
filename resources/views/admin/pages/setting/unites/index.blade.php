@@ -1,4 +1,4 @@
-<div class="row" id="table-without-card">
+<div data-tour-step="table" class="row" id="table-without-card">
             <div class="col-12" data-ajax-table>
             <div class="table-responsive">
                 <table class="table">

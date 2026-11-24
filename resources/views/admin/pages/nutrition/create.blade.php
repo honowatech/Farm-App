@@ -30,7 +30,7 @@
                         <div class="card">
                             <div class="card-body">
                                 {{-- La route de l'action est déplacée sur le formulaire principal --}}
-                                <form class="form" action="{{route('nutrition.store')}}" method="POST" data-offline-queue="1" data-redirect="{{ route('nutrition.index') }}">
+                                <form data-tour-step="fields" class="form" action="{{route('nutrition.store')}}" method="POST" data-offline-queue="1" data-redirect="{{ route('nutrition.index') }}">
                                     @csrf
                                     <div class="mx-auto row col-lg-10">
                                         <div class="col-12 col-md-6">
@@ -68,7 +68,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="mt-3 row col-12">
+                                    <div data-tour-step="actions" class="mt-3 row col-12">
                                         <div class="mx-auto text-center col-lg-8 col-12">
                                             <button type="reset" class="mr-1 btn btn-danger">
                                                 <i class="mr-1" data-feather='x'></i> Annuler

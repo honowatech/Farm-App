@@ -29,7 +29,7 @@
 
             <div class="content-body">
                 <div class="row justify-content-between bg-light-secondary" >
-                    <a class="m-1 btn btn-secondary btn-gradient-secondary" href="{{route('produit.create')}}">
+                    <a data-tour-step="create" class="m-1 btn btn-secondary btn-gradient-secondary" href="{{route('produit.create')}}">
                         <i data-feather='plus' style="width: 20px;height: 20px;"></i> Nouveau produit
                     </a>
                     <a class="m-1 btn btn-success btn-gradient-success" href="{{ route('produit.export') }}">
@@ -38,7 +38,7 @@
                     <a class="m-1 btn btn-danger btn-gradient-danger" href="{{ route('produit.export.pdf') }}">
                         <i class="fa-solid fa-file-pdf mr-50"></i> Exporter PDF
                     </a>
-                        <form action="{{ route('produit.index') }}" class="mt-1 col-lg-3" id="search" method="GET">
+                        <form data-tour-step="search" action="{{ route('produit.index') }}" class="mt-1 col-lg-3" id="search" method="GET">
                             @csrf
                             <div class="form-group">
                                 <div class="input-group input-group-merge">
@@ -53,7 +53,7 @@
                     </div>
                 </div>
                 <!-- Table without card start -->
-                <div class="row" id="table-without-card">
+                <div data-tour-step="table" class="row" id="table-without-card">
                         <div class="table-responsive">
                             <table class="table">
                                 <thead>

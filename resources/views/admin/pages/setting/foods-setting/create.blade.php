@@ -58,7 +58,7 @@
                                     </h4>
                                 </div>
                                 <div class="card-body">
-                                    <form method="POST"
+                                    <form data-tour-step="fields" method="POST"
                                         action="{{ isset($nutritions) && $nutritions->isNotEmpty() ? route('foods-setting.update', ['id_type_animal' => $nutritions->first()->foodSetting->id_type_animal, 'id_aliment' => $nutritions->first()->foodSetting->aliment]) : route('foods-setting.store') }}"
                                         class="invoice-repeater">
                                         @csrf
@@ -271,7 +271,7 @@
                                         </div>
                                         <hr />
 
-                                        <div class="ml-3 row col-12">
+                                        <div data-tour-step="actions" class="ml-3 row col-12">
                                             <div class="text-center d-none d-md-block col-bg-5 offset-2 col-lg-7 col-md-12 col-12">
                                                 <button type="reset" class="btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-danger mr-md-4">
                                                     <i class="mr-1" data-feather='x'></i> Effacer

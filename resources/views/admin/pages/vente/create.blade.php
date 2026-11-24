@@ -31,7 +31,7 @@
                                     <h3 class="card-title">Formulaire</h3>
                                 </div>
                                 <div class="card-body">
-                                    <form class="form" >
+                                    <form data-tour-step="fields" class="form" >
                                         <div class="mx-auto row col-lg-8" >
                                             <div class="mx-auto text-center  col-bg-5 col-lg-8 col-md-12 col-12">
                                                 <button id="CM" onclick="STForm('cabrel','{{ route('formulaire') }}','GET',null,null,null)" class="px-4 btn btn-secondary" type="button" data-toggle="modal" data-target="#ajout">
@@ -191,7 +191,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="row col-12">
+                                        <div data-tour-step="actions" class="row col-12">
                                             <div class="mx-auto text-center d-none d-md-block col-bg-5 col-lg-8 col-md-12 col-12">
                                                  <button type="reset" onclick="reset_form('id_produit')" class="mt-1 btn col-8 col-sm-7 col-lg-5 col-xl-3 col-md-4 btn-danger mt-md-2 mr-md-4">
                                                     <i class="mr-1"></i> Effacer

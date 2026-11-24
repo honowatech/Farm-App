@@ -26,7 +26,7 @@
             <div class="card">
                 <div class="card-header"><h3 class="card-title">Informations de la dépense</h3></div>
                 <div class="card-body">
-                    <form action="{{ route('depenses.update', $depense->id) }}" method="POST">
+                    <form data-tour-step="fields" action="{{ route('depenses.update', $depense->id) }}" method="POST">
                         @csrf
                         @method('PATCH')
                         <div class="form-group">
@@ -92,7 +92,7 @@
                             @error('id_caisse')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
 
-                        <div class="d-flex justify-content-end">
+                        <div data-tour-step="actions" class="d-flex justify-content-end">
                             <a href="{{ route('depenses.index') }}" class="btn btn-outline-secondary mr-1">Annuler</a>
                             <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
                         </div>

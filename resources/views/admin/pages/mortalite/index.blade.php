@@ -21,13 +21,13 @@
                 <div class="card-header">
                     <div class="row justify-content-between w-100">
                         <h4 class="card-title">Mortalités enregistrées</h4>
-                        <a class="btn btn-secondary btn-gradient-secondary" href="{{ route('mortalite.create') }}">
+                        <a data-tour-step="create" class="btn btn-secondary btn-gradient-secondary" href="{{ route('mortalite.create') }}">
                             <i data-feather="plus" style="width: 20px;height: 20px;"></i> Nouvelle mortalité
                         </a>
                     </div>
                 </div>
                 <div class="card-body">
-                    <form method="GET" class="mb-1">
+                    <form data-tour-step="search" method="GET" class="mb-1">
                         <div class="row">
                             <div class="col-12 col-md-4 form-group">
                                 <label for="id_bande">Bande</label>
@@ -42,7 +42,7 @@
                     </form>
 
                     <div data-ajax-table>
-                    <div class="table-responsive">
+                    <div data-tour-step="table" class="table-responsive">
                         <table class="table">
                             <thead>
                                 <tr>

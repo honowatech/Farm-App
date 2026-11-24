@@ -28,7 +28,7 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-body">
-                            <form class="form" action="{{ route('compte.store') }}" method="POST">
+                            <form data-tour-step="fields" class="form" action="{{ route('compte.store') }}" method="POST">
 							    @csrf
 							    <div class="row col-lg-8 mx-auto" id='replace'>
 							        <!-- Nom -->
@@ -104,7 +104,7 @@
 							    </div>
 
 							    <!-- Boutons -->
-							    <div class="row col-12">
+							    <div data-tour-step="actions" class="row col-12">
 							        <div class="text-center col-lg-8 mx-auto">
 							            <button type="reset" class="btn btn-danger mt-2 mr-2">
 							                <i class="mr-1" data-feather='x'></i> {{ __('Effacer') }}
