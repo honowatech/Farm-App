@@ -7,10 +7,8 @@ use App\Models\Bande;
 use App\Models\Derive_produit;
 use App\Models\Produit;
 use App\Models\Ramassage;
-use App\Models\Stock_produit;
-use App\Models\Typeusers;
 use App\Models\Unite;
-use App\Models\User;
+use App\Services\RamassageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -43,13 +41,6 @@ class RamassageController extends Controller
      */
     public function create(Request $request)
     {
-        // $ids_type_user = [];
-        // $typesuser = Typeusers::where(strtoupper('libelle'),strtoupper('agent'))->get();
-        // foreach ($typesuser as $typeuser) {
-        //  // code...
-        //  array_push($ids_type_user,$typeuser->id);
-        // }
-        // $agents = User::whereIn('id_type_user',$ids_type_user)->get();
         $agents = Agent::all();
         $produits = Produit::get();
         $bandes = Bande::get();
@@ -142,7 +133,7 @@ class RamassageController extends Controller
      *
      * @return Response
      */
-    public function store(Request $request)
+    public function store(Request $request, RamassageService $ramassageService)
     {
         $full_error = 0;
         $ids_accomparer = [];
@@ -197,47 +188,18 @@ class RamassageController extends Controller
             ]);
         }
         session()->forget('id_produit');
-        $ramassage = new Ramassage;
-        $ramassage->id_produit = $id_produit;
-        $ramassage->id_bande = $id_bande;
-        $ramassage->ids_derive = json_encode($ids);
-        $ramassage->valeurs_derive = json_encode($qtes);
-        $ramassage->id_prestataire = $id_prestataire;
-        $ramassage->commentaire = $commentaire;
-        $ramassage->id_saver = Auth::user()->id;
-        $ramassage->to_do_date = $date;
-        $ramassage->statut = 1;
-        $ramassage->save();
-        for ($index = 0; $index < count($ids); $index++) {
-            if ($qtes[$index] == 0) {
-                continue;
-            }
-            // ///////////////////////////////////////////////////////////////////////////////////////////
-            $valeur_en_stock = 0;
-            $ajout = 0;
-            $retire = 0;
-            $derive_produit = Derive_produit::findOrFail($ids[$index]);
-            // ///////////////////////////////////////////////////////////////////////////////////////////
-            foreach ($derive_produit->mouvements_de_stock as $stock) {
-                if ($stock->type_mouvement == 'approvisionnement') {
-                    $ajout += $stock->qte;
-                } else {
-                    $retire += $stock->qte;
-                }
-            }
-            $valeur_en_stock = $ajout - $retire;
-            // ///////////////////////////////////////////////////////////////////////////////////////////
-            $stock = new Stock_produit;
-            $stock->id_produit = $id_produit;
-            $stock->qte = $qtes[$index];
-            $stock->id_derive_produit = $ids[$index];
-            $stock->date_entree = $date;
-            $stock->dernier_stock = $valeur_en_stock;
-            $stock->nouveau_stock = $valeur_en_stock + intval($qtes[$index]);
-            $stock->type_mouvement = 'approvisionnement';
-            $stock->save();
-            // ///////////////////////////////////////////////////////////////////////////////////////////
-        }
+
+        $ramassageService->enregistrer([
+            'id_produit' => $id_produit,
+            'id_bande' => $id_bande,
+            'ids' => $ids,
+            'valeurs' => $qtes,
+            'id_prestataire' => $id_prestataire,
+            'commentaire' => $commentaire,
+            'id_saver' => Auth::user()->id,
+            'date' => $date,
+        ]);
+
         $message = "Ramassage créé avec <b class='text-success'> Succès.</b>";
         session()->flash('message', $message);
 

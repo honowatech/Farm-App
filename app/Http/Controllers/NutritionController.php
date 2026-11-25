@@ -2,18 +2,15 @@
 
 namespace App\Http\Controllers;
 
-namespace App\Http\Controllers;
-
 use App\Models\Bande;
 use App\Models\Matiere_premiere;
 use App\Models\Nutrition;
-use App\Models\Stock_matiere_premiere;
 use App\Models\Type_animal;
+use App\Services\NutritionService;
 use App\Support\TenantValidation;
 use App\Traits\FindsValidFoodSettings;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class NutritionController extends Controller
@@ -47,17 +44,15 @@ class NutritionController extends Controller
     /**
      * Enregistre une nouvelle entrée de nutrition pour une bande, en gérant la conversion des unités pour le stock.
      */
-    public function store(Request $request)
+    public function store(Request $request, NutritionService $nutritionService)
     {
-        // 1. Validation des entrées
-        // On attend maintenant 'unite_string' au lieu de 'id_unite' pour la validation.
         $validator = Validator::make($request->all(), [
             'bande' => ['required', 'integer', TenantValidation::exists('bandes')],
             'id_aliment' => ['required', 'integer', TenantValidation::exists('matiere_premieres')],
             'qte' => 'required|numeric|min:0.01',
             'date' => 'required|date',
             'id_unite' => ['required', 'integer', TenantValidation::exists('unite')],
-            'unite_string' => 'required|string|in:kg,g,sac', // Ajout pour la logique de conversion
+            'unite_string' => 'required|string|in:kg,g,sac',
         ], [
             'bande.required' => 'La sélection d\'une bande est obligatoire.',
             'id_aliment.required' => 'La sélection d\'un aliment est obligatoire.',
@@ -70,92 +65,17 @@ class NutritionController extends Controller
         }
 
         $bande = Bande::findOrFail($request->input('bande'));
-        $date_nutrition = Carbon::parse($request->input('date'));
-        $id_aliment = $request->input('id_aliment');
 
-        // 2. Calcul de l'âge et récupération du planning historique
-        $age = $bande->getAgeOnDate($date_nutrition);
-        $food_settings_valides = $this->getValidFoodSettings($bande->id_type_animal, $age, $date_nutrition);
-        $food_setting_choisi = $food_settings_valides->firstWhere('aliment', $id_aliment);
-
-        if ($food_settings_valides->isEmpty() || is_null($food_setting_choisi)) {
-            return redirect()->back()->with('error', 'Aucun planning de nutrition valide n\'a été trouvé pour cet âge à cette date.')->withInput();
-        }
-
-        // 3. Conversion de la quantité en KG pour la gestion du stock
-        $quantiteDonnee = $request->input('qte');
-        $uniteString = strtolower($request->input('unite_string'));
-        $quantiteEnKg = 0;
-
-        switch ($uniteString) {
-            case 'g':
-                $quantiteEnKg = $quantiteDonnee / 1000;
-                break;
-            case 'sac':
-                // On recherche la dernière valeur de conversion pour ce sac lors d'un approvisionnement
-                $dernierAchat = Stock_matiere_premiere::where('id_matiere_premiere', $id_aliment)
-                    ->where('type_mouvement', 'approvisionnement')
-                    ->whereNotNull('conversion_sac')
-                    ->latest('date_entree')
-                    ->first();
-
-                if (! $dernierAchat || ! $dernierAchat->conversion_sac) {
-                    return redirect()->back()->with('error', 'Impossible de trouver le poids de conversion pour un sac de cet aliment. Veuillez vérifier les achats.')->withInput();
-                }
-                $quantiteEnKg = $quantiteDonnee * $dernierAchat->conversion_sac;
-                break;
-            default: // 'kg'
-                $quantiteEnKg = $quantiteDonnee;
-                break;
-        }
-
-        // 4. Vérification du stock disponible en KG
-        $stock_disponible = Stock_matiere_premiere::where('id_matiere_premiere', $id_aliment)
-            ->sum(DB::raw('quantite * (CASE WHEN type_mouvement = "approvisionnement" THEN 1 ELSE -1 END)'));
-
-        if ($stock_disponible < $quantiteEnKg) {
-            return redirect()->back()->with('error', 'Stock insuffisant. Stock actuel : '.$stock_disponible.' Kg, Requis : '.$quantiteEnKg.' Kg.')->withInput();
-        }
-
-        // 5. Vérification des fréquences (logique inchangée)
-        $total_frequency_attendue = $food_settings_valides->sum('frequency');
-        $passages_deja_faits_ce_jour = Nutrition::where('id_bande', $bande->id)
-            ->whereDate('date', $date_nutrition)
-            ->count();
-        $passages_aliment_deja_faits_ce_jour = Nutrition::where('id_bande', $bande->id)
-            ->where('id_aliment', $id_aliment)
-            ->whereDate('date', $date_nutrition)
-            ->count();
-        if ($passages_deja_faits_ce_jour >= $total_frequency_attendue) {
-            return redirect()->back()->with('error', 'Cette bande a déjà atteint le nombre total de repas prévus pour cette date.')->withInput();
-        }
-        if ($passages_aliment_deja_faits_ce_jour >= $food_setting_choisi->frequency) {
-            return redirect()->back()->with('error', 'Cet aliment a déjà été donné le nombre de fois requis pour cette date.')->withInput();
-        }
-
-        // 6. Enregistrement de la nutrition et du mouvement de stock
         try {
-            DB::transaction(function () use ($request, $bande, $quantiteEnKg, $stock_disponible, $id_aliment) {
-                // Enregistre la nutrition avec la quantité et l'unité données par l'utilisateur
-                Nutrition::create([
-                    'id_bande' => $bande->id,
-                    'id_aliment' => $id_aliment,
-                    'qte' => $request->input('qte'),
-                    'date' => $request->input('date'),
-                    'id_unite' => $request->input('id_unite'),
-                ]);
-
-                // Enregistre le mouvement de stock avec la quantité convertie en KG
-                Stock_matiere_premiere::create([
-                    'id_matiere_premiere' => $id_aliment,
-                    'type_mouvement' => 'destockage',
-                    'dernier_stock' => $stock_disponible,
-                    'quantite' => $quantiteEnKg, // On utilise la quantité en KG
-                    'nouveau_stock' => $stock_disponible - $quantiteEnKg,
-                    'date_sortie' => $request->input('date'),
-                    'motif' => 'Nutrition des animaux (Bande: '.$bande->nom.')',
-                ]);
-            });
+            $nutritionService->enregistrer($bande, [
+                'id_aliment' => $request->input('id_aliment'),
+                'qte' => $request->input('qte'),
+                'date' => $request->input('date'),
+                'id_unite' => $request->input('id_unite'),
+                'unite_string' => $request->input('unite_string'),
+            ]);
+        } catch (\RuntimeException $e) {
+            return redirect()->back()->with('error', $e->getMessage())->withInput();
         } catch (\Exception $e) {
             \Log::error("Erreur lors de l'enregistrement de la nutrition : ".$e->getMessage());
 
