@@ -39,7 +39,7 @@ class NutritionController extends Controller
     public function create()
     {
         $animals = Type_animal::All();
-        $bandes = Bande::all();
+        $bandes = Bande::select('id', 'nom', 'statut_bande')->orderBy('nom')->get();
 
         return view('admin.pages.nutrition.create', compact('animals', 'bandes'));
     }

@@ -65,7 +65,7 @@ class ProduitController extends Controller
     public function create()
     {
         $types_animal = Type_animal::get();
-        $types_produits = Type_produit::All();
+        $types_produits = Type_produit::select('id', 'nom')->orderBy('nom')->get();
 
         return view('admin.pages.produit.create', compact('types_animal', 'types_produits'));
     }

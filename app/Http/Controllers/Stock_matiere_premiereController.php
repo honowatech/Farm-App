@@ -11,12 +11,14 @@ class Stock_matiere_premiereController extends Controller
 {
     public function index(Request $request, StockService $stocks)
     {
+        $stocksCourants = $stocks->stocksMatieresPremieres();
+
         $matieres = Matiere_premiere::query()
             ->when($request->filled('recherche'), fn ($query) => $query->where('nom_produit', 'like', '%'.$request->input('recherche').'%'))
             ->orderBy('nom_produit')
             ->get()
-            ->map(function (Matiere_premiere $matiere) use ($stocks) {
-                $matiere->stock_courant = $stocks->stockMatierePremiere($matiere->id);
+            ->map(function (Matiere_premiere $matiere) use ($stocksCourants) {
+                $matiere->stock_courant = $stocksCourants[$matiere->id] ?? 0.0;
 
                 return $matiere;
             });

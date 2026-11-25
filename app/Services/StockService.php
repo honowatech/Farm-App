@@ -19,6 +19,24 @@ class StockService
     }
 
     /**
+     * Stock courant de tous les produits en une seule requête.
+     *
+     * @return array<int, float> Clé = id produit, valeur = dernier stock connu.
+     */
+    public function stocksProduits(): array
+    {
+        return Stock_produit::query()
+            ->select('id_produit', 'nouveau_stock')
+            ->whereIn('id', Stock_produit::query()
+                ->selectRaw('MAX(id)')
+                ->groupBy('id_produit')
+            )
+            ->pluck('nouveau_stock', 'id_produit')
+            ->map(fn ($stock) => (float) $stock)
+            ->all();
+    }
+
+    /**
      * Stock d'un produit dérivé (somme des mouvements approvisionnement/destockage).
      */
     public function stockDerive(int $deriveId): float
@@ -36,6 +54,22 @@ class StockService
         return (float) Stock_matiere_premiere::where('id_matiere_premiere', $matiereId)
             ->selectRaw("COALESCE(SUM(CASE WHEN type_mouvement = 'approvisionnement' THEN quantite ELSE -quantite END), 0) as total")
             ->value('total');
+    }
+
+    /**
+     * Stock courant de toutes les matières premières en une seule requête.
+     *
+     * @return array<int, float> Clé = id matière, valeur = stock calculé.
+     */
+    public function stocksMatieresPremieres(): array
+    {
+        return Stock_matiere_premiere::query()
+            ->select('id_matiere_premiere')
+            ->selectRaw("COALESCE(SUM(CASE WHEN type_mouvement = 'approvisionnement' THEN quantite ELSE -quantite END), 0) as total")
+            ->groupBy('id_matiere_premiere')
+            ->pluck('total', 'id_matiere_premiere')
+            ->map(fn ($stock) => (float) $stock)
+            ->all();
     }
 
     /**

@@ -40,8 +40,8 @@ class NettoyageController extends Controller
      */
     public function create()
     {
-        $agents = Agent::All();
-        $batiments = Batiment::All();
+        $agents = Agent::select('id', 'nom', 'statut')->orderBy('nom')->get();
+        $batiments = Batiment::select('id', 'nom')->orderBy('nom')->get();
         $old_agent = old('agent') == null ? [] : old('agent');
 
         return view('admin.pages.nettoyage.create', compact('agents', 'batiments', 'old_agent'));

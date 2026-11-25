@@ -11,12 +11,14 @@ class Stock_produitController extends Controller
 {
     public function index(Request $request, StockService $stocks)
     {
+        $stocksCourants = $stocks->stocksProduits();
+
         $produits = Produit::query()
             ->when($request->filled('recherche'), fn ($query) => $query->where('nom', 'like', '%'.$request->input('recherche').'%'))
             ->orderBy('nom')
             ->get()
-            ->map(function (Produit $produit) use ($stocks) {
-                $produit->stock_courant = $stocks->stockProduit($produit->id);
+            ->map(function (Produit $produit) use ($stocksCourants) {
+                $produit->stock_courant = $stocksCourants[$produit->id] ?? 0.0;
 
                 return $produit;
             });

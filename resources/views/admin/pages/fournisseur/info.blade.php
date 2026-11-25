@@ -258,7 +258,6 @@
                  valeur += select_details[i]+virgule;
               }
                 document.querySelector('#id_details').value = valeur;
-                // console.log(document.querySelector('#id_details').value)
             });
         }
         function  put_details_id(id){

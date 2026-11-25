@@ -152,7 +152,6 @@
                             }
                             ,1550)
                         }
-                        // console.log(response.includes('danger'))
                         if (modale != false && !response.includes('danger')) {
                             setTimeout(function (){
                                 $('#'+modale).modal('hide')

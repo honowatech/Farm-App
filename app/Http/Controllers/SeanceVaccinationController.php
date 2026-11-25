@@ -41,8 +41,8 @@ class SeanceVaccinationController extends Controller
      */
     public function create()
     {
-        $veterinaires = Veterinaire::All();
-        $bandes = Bande::All();
+        $veterinaires = Veterinaire::select('id', 'nom', 'statut')->orderBy('nom')->get();
+        $bandes = Bande::select('id', 'nom', 'statut_bande')->orderBy('nom')->get();
 
         return view('admin.pages.seanceVaccination.create', compact('veterinaires', 'bandes'));
     }

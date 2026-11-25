@@ -48,9 +48,9 @@ class VenteController extends Controller
      */
     public function create()
     {
-        $types_produits = Type_produit::All();
-        $produits = Produit::All();
-        $clients = Client::All();
+        $types_produits = Type_produit::select('id', 'nom')->orderBy('nom')->get();
+        $produits = Produit::select('id', 'nom', 'prix_unitaire')->orderBy('nom')->get();
+        $clients = Client::select('id', 'nom')->orderBy('nom')->get();
 
         return view('admin.pages.vente.create', compact('produits', 'clients', 'types_produits'));
     }
@@ -94,7 +94,7 @@ class VenteController extends Controller
 
     public function get_client()
     {
-        $clients = Client::All();
+        $clients = Client::select('id', 'nom')->orderBy('nom')->get();
 
         return view('admin.pages.vente.ajax', compact('clients'));
     }
