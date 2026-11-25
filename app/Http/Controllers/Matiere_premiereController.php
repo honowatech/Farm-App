@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Matiere_premiere;
+use App\Services\StockService;
 use Illuminate\Http\Request;
 
 class Matiere_premiereController extends Controller
@@ -12,7 +13,7 @@ class Matiere_premiereController extends Controller
      *
      * @return Response
      */
-    public function index(Request $request)
+    public function index(Request $request, StockService $stocks)
     {
         $table_data = $request->input('table_data');
         if ($table_data != null) {
@@ -29,6 +30,15 @@ class Matiere_premiereController extends Controller
         })
             ->orderBy('updated_at', 'desc')
             ->paginate(20);
+
+        // Stock courant de toutes les matières en une seule requête (anti N+1).
+        $stocksCourants = $stocks->stocksMatieresPremieres();
+        $matierePremieres->getCollection()->transform(function ($matiere) use ($stocksCourants) {
+            $matiere->stock_courant = max(0, (float) ($stocksCourants[$matiere->id] ?? 0));
+
+            return $matiere;
+        });
+
         session()->flash('search', $request->input('recherche'));
 
         return view('admin.pages.matiere_premieres.index', compact('matierePremieres'));

@@ -7,10 +7,10 @@ use App\Models\FoodSettingVersion;
 use App\Models\Matiere_premiere;
 use App\Models\Type_animal;
 use App\Models\Unite;
+use App\Services\FoodSettingService;
 use App\Support\TenantValidation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB; // Utilise le nouveau modèle parent
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\MessageBag;
 
@@ -54,7 +54,7 @@ class Foods_settingController extends Controller
     /**
      * Enregistre un NOUVEAU planning de nutrition avec sa première version.
      */
-    public function store(Request $request)
+    public function store(Request $request, FoodSettingService $foodSettingService)
     {
         // 1. Validation des données du formulaire
         $validator = Validator::make($request->all(), [
@@ -81,43 +81,10 @@ class Foods_settingController extends Controller
         $aliment = $request->input('aliment');
         $invoices = $request->input('invoice');
 
-        // 2. Vérification de l'unicité du planning (parent)
-        $existingSetting = Food_Setting::where('id_type_animal', $type)
-            ->where('aliment', $aliment)
-            ->first();
-
-        if ($existingSetting) {
-            return redirect()->back()->withErrors(['aliment' => 'Un planning pour ce type d\'animal et cet aliment existe déjà. Veuillez le modifier.'])->withInput();
-        }
-
-        // 3. Vérification des chevauchements dans les données soumises
-        // (La validation contre la BDD n'est pas nécessaire car c'est une nouvelle création)
-        // (La logique est dans la méthode `update` qui est plus complexe)
-
-        // 4. Enregistrement dans la base de données via une transaction
         try {
-            DB::transaction(function () use ($invoices, $type, $aliment) {
-                // Étape A : Créer le planning "parent"
-                $foodSettingParent = Food_Setting::create([
-                    'id_type_animal' => $type,
-                    'aliment' => $aliment,
-                ]);
-
-                // Étape B : Créer la première version pour chaque ligne du formulaire
-                foreach ($invoices as $invoice) {
-                    FoodSettingVersion::create([
-                        'food_setting_id' => $foodSettingParent->id,
-                        'age_min' => $invoice['age_min'],
-                        'age_max' => $invoice['age_max'],
-                        'quantite_aliment' => $invoice['qte'],
-                        'id_unite' => $invoice['unite'],
-                        'frequency' => $invoice['frequency'],
-                        'period' => $invoice['period'],
-                        'activated_at' => now(), // La version est active immédiatement
-                        'ended_at' => null,  // Et n'a pas de date de fin
-                    ]);
-                }
-            });
+            $foodSettingService->creer($type, $aliment, $invoices);
+        } catch (\RuntimeException $e) {
+            return redirect()->back()->withErrors(['aliment' => $e->getMessage()])->withInput();
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['database' => 'Une erreur est survenue lors de l\'enregistrement.'])->withInput();
         }
@@ -224,7 +191,7 @@ class Foods_settingController extends Controller
      * Met à jour un planning en archivant l'ancienne version et en créant une nouvelle.
      * C'est le cœur de la logique de versioning.
      */
-    public function update(Request $request, string $id_type_animal, string $id_aliment)
+    public function update(Request $request, string $id_type_animal, string $id_aliment, FoodSettingService $foodSettingService)
     {
         // 1. Validation complète des données du formulaire
         $rules = [
@@ -280,41 +247,9 @@ class Foods_settingController extends Controller
 
         // 3. Exécution de la mise à jour dans une transaction sécurisée
         try {
-            DB::transaction(function () use ($invoices, $id_type_animal, $id_aliment) {
-                // Étape A : Trouver le planning "parent". firstOrFail() lèvera une exception
-                // si le parent n'existe pas, ce qui annulera automatiquement la transaction.
-                $parent = Food_Setting::where('id_type_animal', $id_type_animal)
-                    ->where('aliment', $id_aliment)
-                    ->firstOrFail();
-
-                // Étape B : "Fermer" (archiver) TOUTES les versions actuellement actives pour ce planning.
-                // On met simplement à jour leur champ `ended_at` à la date et heure actuelles.
-                $parent->activeVersionsDetails()->update(['ended_at' => now()]);
-
-                // Étape C : Créer les nouvelles versions actives à partir des données du formulaire.
-                // Chaque ligne du formulaire devient une nouvelle ligne dans la table des versions.
-                foreach ($invoices as $invoice) {
-                    FoodSettingVersion::create([
-                        'food_setting_id' => $parent->id,
-                        'age_min' => $invoice['age_min'],
-                        'age_max' => $invoice['age_max'],
-                        'quantite_aliment' => $invoice['qte'],
-                        'id_unite' => $invoice['unite'],
-                        'frequency' => $invoice['frequency'],
-                        'period' => $invoice['period'],
-                        'activated_at' => now(), // La nouvelle version devient active maintenant
-                        'ended_at' => null,  // Elle n'a pas de date de fin, c'est la version "actuelle"
-                    ]);
-                }
-
-                // Étape D (Optionnel mais recommandé) : Mettre à jour le timestamp `updated_at` du parent
-                // pour refléter que ce planning a été récemment modifié.
-                $parent->touch();
-            });
+            $foodSettingService->mettreAJour($id_type_animal, $id_aliment, $invoices);
         } catch (\Exception $e) {
-            // En cas d'erreur (ex: le parent n'est pas trouvé, ou erreur DB),
-            // la transaction est annulée et on redirige avec une erreur.
-            \Log::error('Erreur de mise à jour du planning de nutrition: '.$e->getMessage()); // Pensez à logger l'erreur pour le débogage
+            \Log::error('Erreur de mise à jour du planning de nutrition: '.$e->getMessage());
 
             return redirect()->back()
                 ->withErrors(['database' => 'Une erreur inattendue est survenue lors de la mise à jour. Veuillez contacter le support.'])

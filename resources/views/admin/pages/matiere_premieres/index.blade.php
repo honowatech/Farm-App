@@ -82,15 +82,14 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                @if(StockMatierepremiere($matierePremiere)['valeur_en_stock'] > 0)
-                                                    <span class="text-{{StockMatierepremiere($matierePremiere)['valeur_en_stock'] > 0 ? 'success' : 'danger'}} font-weight-bolder">
-                                                {{StockMatierepremiere($matierePremiere)['statut_stock']}} {{StockMatierepremiere($matierePremiere)['valeur_en_stock']}} Kg
+                                                @if($matierePremiere->stock_courant > 0)
+                                                    <span class="text-success font-weight-bolder">
+                                                        {{ $matierePremiere->stock_courant }} Kg
                                                     </span>
                                                 @else
-
-                                                <span class="text-{{StockMatierepremiere($matierePremiere)['valeur_en_stock'] > 0 ? 'success' : 'danger'}} font-weight-bolder">
-                                                    {{StockMatierepremiere($matierePremiere)['statut_stock']}}
-                                                </span>
+                                                    <span class="text-danger font-weight-bolder">
+                                                        Stock Épuisé
+                                                    </span>
                                                 @endif
                                             </td>
                                             <td>

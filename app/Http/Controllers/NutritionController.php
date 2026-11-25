@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Bande;
 use App\Models\Matiere_premiere;
 use App\Models\Nutrition;
-use App\Models\Type_animal;
 use App\Services\NutritionService;
 use App\Support\TenantValidation;
 use App\Traits\FindsValidFoodSettings;
@@ -35,10 +34,9 @@ class NutritionController extends Controller
      */
     public function create()
     {
-        $animals = Type_animal::All();
         $bandes = Bande::select('id', 'nom', 'statut_bande')->orderBy('nom')->get();
 
-        return view('admin.pages.nutrition.create', compact('animals', 'bandes'));
+        return view('admin.pages.nutrition.create', compact('bandes'));
     }
 
     /**

@@ -96,8 +96,7 @@
                                 </div>
                                 <div class="card-body">
                                     @php
-                                        $function_matieres_premiere = Matierepremiere($matiere_premieres);
-                                        $a_des_alertes = $bandes_nutrition_alerte->isNotEmpty() || $function_matieres_premiere['pas_en_stock'] > 0;
+                                        $a_des_alertes = $bandes_nutrition_alerte->isNotEmpty() || $matieres_pas_en_stock > 0;
                                     @endphp
 
                                     @forelse($bandes_nutrition_alerte as $bande)
@@ -110,14 +109,14 @@
                                     @empty
                                     @endforelse
 
-                                    @if($function_matieres_premiere['pas_en_stock'] > 0)
+                                    @if($matieres_pas_en_stock > 0)
                                         <div class="alert alert-danger p-1" role="alert">
                                             <div class="d-flex align-items-center">
                                                 <i data-feather="shield-off" class="mr-1"></i>
                                                 <span>
-                                                    {{ $function_matieres_premiere['pas_en_stock'] }} {{ __('matière(s) première(s) épuisée(s)') }}
+                                                    {{ $matieres_pas_en_stock }} {{ __('matière(s) première(s) épuisée(s)') }}
                                                     <a href="#" data-toggle="modal" data-target="#informations"
-                                                       onclick="response_ajax('result_informations','{{ $function_matieres_premiere['ids_pas_en_stock'] }}','{{ route('matiere_premiere.index') }}','GET')">
+                                                       onclick="response_ajax('result_informations','{{ $matieres_pas_en_stock_ids }}','{{ route('matiere_premiere.index') }}','GET')">
                                                         {{ __('Voir') }}
                                                     </a>
                                                 </span>

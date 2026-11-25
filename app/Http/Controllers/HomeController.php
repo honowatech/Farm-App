@@ -11,6 +11,7 @@ use App\Models\Nettoyage;
 use App\Models\Nutrition;
 use App\Models\Seance_de_vaccination;
 use App\Models\Vente;
+use App\Services\StockService;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -90,6 +91,12 @@ class HomeController extends Controller
             $matiere_premieres = Matiere_premiere::get();
             $batiments = Batiment::get();
 
+            // Matières premières épuisées, calculées en une seule requête (anti N+1).
+            $stocksMatieres = app(StockService::class)->stocksMatieresPremieres();
+            $matieresEpuisees = $matiere_premieres->filter(fn ($matiere) => (float) ($stocksMatieres[$matiere->id] ?? 0) <= 0);
+            $matieres_pas_en_stock = $matieresEpuisees->count();
+            $matieres_pas_en_stock_ids = $matieresEpuisees->pluck('id')->implode(',');
+
             // KPIs : chiffre d'affaires et ventes du mois en cours
             $ca_du_mois = Facture::whereMonth('date_facturation', now()->month)
                 ->whereYear('date_facturation', now()->year)
@@ -115,7 +122,9 @@ class HomeController extends Controller
                 'ca_du_mois',
                 'ventes_du_mois',
                 'sujets_en_elevage',
-                'bandes_nutrition_alerte'
+                'bandes_nutrition_alerte',
+                'matieres_pas_en_stock',
+                'matieres_pas_en_stock_ids'
             ));
         }
 
